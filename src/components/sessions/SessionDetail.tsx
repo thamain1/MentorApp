@@ -64,7 +64,7 @@ export function SessionDetail() {
           <p className="text-iron-500">No sessions found</p>
           <button
             onClick={() => navigate('/sessions')}
-            className="mt-4 text-flame-600 font-medium"
+            className="mt-4 text-brand-600 font-medium"
           >
             Back to sessions
           </button>
@@ -134,7 +134,7 @@ export function SessionDetail() {
               onClick={() => setViewAs('mentee')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 viewAs === 'mentee'
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -145,7 +145,7 @@ export function SessionDetail() {
               onClick={() => setViewAs('mentor')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 viewAs === 'mentor'
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -184,7 +184,7 @@ export function SessionDetail() {
               Upcoming
             </h3>
             {upcomingSessions.map((session) => (
-              <Card key={session.id} className="p-4 border-l-4 border-l-flame-500 mb-3">
+              <Card key={session.id} className="p-4 border-l-4 border-l-brand-500 mb-3">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <p className="font-semibold text-iron-900">
@@ -345,7 +345,7 @@ export function SessionDetail() {
                         </p>
                         <button
                           onClick={() => handleOpenNotes(session)}
-                          className="text-xs text-flame-600 font-medium flex items-center gap-1"
+                          className="text-xs text-brand-600 font-medium flex items-center gap-1"
                         >
                           <Edit2 className="w-3 h-3" />
                           {hasMyNotes(session) ? 'Edit' : 'Add'}
@@ -360,8 +360,8 @@ export function SessionDetail() {
 
                     {/* Their Notes (if available) */}
                     {getTheirNotes(session) && (
-                      <div className="p-3 bg-flame-50 rounded-lg">
-                        <p className="text-xs font-medium text-flame-700 mb-1">
+                      <div className="p-3 bg-teal-50 rounded-lg">
+                        <p className="text-xs font-medium text-teal-700 mb-1">
                           {viewAs === 'mentor' ? `${participant.first_name}'s Notes` : "Mentor's Notes"}
                         </p>
                         <p className="text-sm text-iron-700">{getTheirNotes(session)}</p>

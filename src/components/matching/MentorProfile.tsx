@@ -36,7 +36,7 @@ export function MentorProfile() {
           <p className="text-iron-500">Mentor not found</p>
           <button
             onClick={() => navigate('/mentors')}
-            className="mt-4 text-flame-600 font-medium"
+            className="mt-4 text-brand-600 font-medium"
           >
             Back to mentors
           </button>
@@ -86,7 +86,7 @@ export function MentorProfile() {
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="p-3 text-center">
-            <Briefcase className="w-5 h-5 text-flame-500 mx-auto mb-1" />
+            <Briefcase className="w-5 h-5 text-brand-500 mx-auto mb-1" />
             <p className="text-lg font-bold text-iron-900">{mentor.yearsExperience}</p>
             <p className="text-xs text-iron-500">Years Exp.</p>
           </Card>

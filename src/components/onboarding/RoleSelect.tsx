@@ -67,18 +67,18 @@ function RoleCard({ icon: Icon, title, description, ageRange, onClick }: RoleCar
       onClick={onClick}
       className={cn(
         'w-full p-6 rounded-2xl border-2 border-iron-200 text-left',
-        'hover:border-flame-500 hover:bg-flame-50 transition-all',
-        'focus:outline-none focus:ring-2 focus:ring-flame-500 focus:ring-offset-2'
+        'hover:border-brand-500 hover:bg-brand-50 transition-all',
+        'focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2'
       )}
     >
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-flame-100 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Icon className="w-6 h-6 text-flame-600" />
+        <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Icon className="w-6 h-6 text-brand-600" />
         </div>
         <div className="flex-1">
           <h3 className="font-semibold text-iron-900 mb-1">{title}</h3>
           <p className="text-sm text-iron-500 mb-2">{description}</p>
-          <span className="inline-block text-xs font-medium text-flame-600 bg-flame-100 px-2 py-0.5 rounded-full">
+          <span className="inline-block text-xs font-medium text-brand-600 bg-brand-100 px-2 py-0.5 rounded-full">
             {ageRange}
           </span>
         </div>

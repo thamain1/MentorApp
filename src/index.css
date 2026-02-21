@@ -14,17 +14,57 @@
   --color-iron-900: #393940;
   --color-iron-950: #26262b;
 
-  --color-flame-50: #fff7ed;
-  --color-flame-100: #ffedd5;
-  --color-flame-200: #fed7aa;
-  --color-flame-300: #fdba74;
-  --color-flame-400: #fb923c;
-  --color-flame-500: #f97316;
-  --color-flame-600: #ea580c;
-  --color-flame-700: #c2410c;
-  --color-flame-800: #9a3412;
-  --color-flame-900: #7c2d12;
-  --color-flame-950: #431407;
+  /* Primary Brand - Electric Indigo */
+  --color-brand-50: #eef0ff;
+  --color-brand-100: #e0e3ff;
+  --color-brand-200: #c7cbff;
+  --color-brand-300: #a5a8ff;
+  --color-brand-400: #8182ff;
+  --color-brand-500: #5B5CFF;
+  --color-brand-600: #4f4af5;
+  --color-brand-700: #4239d8;
+  --color-brand-800: #3630ae;
+  --color-brand-900: #302e89;
+  --color-brand-950: #1d1b50;
+
+  /* Secondary Accent - Vibrant Teal */
+  --color-teal-50: #effefa;
+  --color-teal-100: #c8fff2;
+  --color-teal-200: #92fee6;
+  --color-teal-300: #53f5d6;
+  --color-teal-400: #20e2c2;
+  --color-teal-500: #00C2A8;
+  --color-teal-600: #04a18c;
+  --color-teal-700: #098072;
+  --color-teal-800: #0d655c;
+  --color-teal-900: #10534c;
+  --color-teal-950: #033330;
+
+  /* Energy Accent - Coral Punch */
+  --color-coral-50: #fff1f3;
+  --color-coral-100: #ffe0e5;
+  --color-coral-200: #ffc6d0;
+  --color-coral-300: #ff9dae;
+  --color-coral-400: #ff6b85;
+  --color-coral-500: #FF5A7A;
+  --color-coral-600: #ed2454;
+  --color-coral-700: #c81844;
+  --color-coral-800: #a7173f;
+  --color-coral-900: #8e183c;
+  --color-coral-950: #50071b;
+
+  /* Keep flame mapped to coral for backwards compatibility */
+  --color-flame-50: #fff1f3;
+  --color-flame-100: #ffe0e5;
+  --color-flame-200: #ffc6d0;
+  --color-flame-300: #ff9dae;
+  --color-flame-400: #ff6b85;
+  --color-flame-500: #FF5A7A;
+  --color-flame-600: #ed2454;
+  --color-flame-700: #c81844;
+  --color-flame-800: #a7173f;
+  --color-flame-900: #8e183c;
+  --color-flame-950: #50071b;
 
   --font-family-sans: 'Inter', system-ui, sans-serif;
 }
@@ -47,7 +87,7 @@ body {
   @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200;
   @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
   @apply disabled:opacity-50 disabled:cursor-not-allowed;
-  @apply bg-flame-500 text-white hover:bg-flame-600 focus:ring-flame-500 active:scale-95;
+  @apply bg-brand-500 text-white hover:bg-brand-600 focus:ring-brand-500 active:scale-95;
 }
 
 .btn-secondary {
@@ -86,13 +126,13 @@ body {
 /* Input */
 .input {
   @apply w-full px-4 py-3 rounded-xl border border-iron-200 bg-white;
-  @apply focus:border-flame-500 focus:ring-2 focus:ring-flame-500/20 outline-none transition-all;
+  @apply focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all;
   @apply placeholder:text-iron-400;
 }
 
 .textarea {
   @apply w-full px-4 py-3 rounded-xl border border-iron-200 bg-white resize-none;
-  @apply focus:border-flame-500 focus:ring-2 focus:ring-flame-500/20 outline-none transition-all;
+  @apply focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 outline-none transition-all;
   @apply placeholder:text-iron-400;
 }
 
@@ -107,7 +147,22 @@ body {
 
 .badge-flame {
   @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-  @apply bg-flame-100 text-flame-700;
+  @apply bg-brand-100 text-brand-700;
+}
+
+.badge-brand {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-brand-100 text-brand-700;
+}
+
+.badge-coral {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-coral-100 text-coral-700;
+}
+
+.badge-teal {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-teal-100 text-teal-700;
 }
 
 .badge-iron {

@@ -91,7 +91,7 @@ function RequestCard({ request, onClick }: RequestCardProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-white border border-iron-100 rounded-xl p-4 hover:border-flame-200 transition-colors"
+      className="w-full text-left bg-white border border-iron-100 rounded-xl p-4 hover:border-brand-200 transition-colors"
     >
       <div className="flex items-center gap-3">
         <Avatar name={mentorName} src={request.mentor.avatar_url} size="md" />

@@ -55,7 +55,7 @@ export function FindMentor() {
             onClick={() => setSelectedSpecialty(null)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               selectedSpecialty === null
-                ? 'bg-flame-500 text-white'
+                ? 'bg-brand-500 text-white'
                 : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
             }`}
           >
@@ -67,7 +67,7 @@ export function FindMentor() {
               onClick={() => setSelectedSpecialty(specialty)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 selectedSpecialty === specialty
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -117,7 +117,7 @@ function MentorCard({ mentor, onClick }: MentorCardProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-white border border-iron-100 rounded-xl p-4 hover:border-flame-200 transition-colors"
+      className="w-full text-left bg-white border border-iron-100 rounded-xl p-4 hover:border-brand-200 transition-colors"
     >
       <div className="flex items-start gap-3">
         <Avatar name={mentorName} src={mentor.avatar_url} size="lg" />

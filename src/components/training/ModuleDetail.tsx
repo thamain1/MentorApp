@@ -31,7 +31,7 @@ export function ModuleDetail() {
           <p className="text-iron-500">Module not found</p>
           <button
             onClick={() => navigate('/training')}
-            className="mt-4 text-flame-600 font-medium"
+            className="mt-4 text-brand-600 font-medium"
           >
             Back to training
           </button>
@@ -135,15 +135,15 @@ export function ModuleDetail() {
         </div>
 
         {/* Key Takeaways */}
-        <Card className="bg-flame-50 border-flame-200">
-          <h3 className="font-semibold text-flame-800 mb-3 flex items-center gap-2">
+        <Card className="bg-brand-50 border-brand-200">
+          <h3 className="font-semibold text-brand-800 mb-3 flex items-center gap-2">
             <Lightbulb className="w-5 h-5" />
             Key Takeaways
           </h3>
           <ul className="space-y-2">
             {module.content.keyTakeaways.map((takeaway, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm text-flame-700">
-                <CheckCircle className="w-4 h-4 text-flame-500 flex-shrink-0 mt-0.5" />
+              <li key={index} className="flex items-start gap-2 text-sm text-brand-700">
+                <CheckCircle className="w-4 h-4 text-brand-500 flex-shrink-0 mt-0.5" />
                 <span>{takeaway}</span>
               </li>
             ))}

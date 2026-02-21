@@ -186,7 +186,7 @@ export function ProfilePage() {
                 size="xl"
               />
             </div>
-            <button className="absolute bottom-1 right-1 w-8 h-8 bg-flame-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+            <button className="absolute bottom-1 right-1 w-8 h-8 bg-brand-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
               <Camera className="w-4 h-4" />
             </button>
           </div>
@@ -235,7 +235,7 @@ export function ProfilePage() {
               {mockCurrentUser.goals.map((goal) => (
                 <span
                   key={goal}
-                  className="px-3 py-1 bg-flame-100 text-flame-700 text-sm rounded-full"
+                  className="px-3 py-1 bg-brand-100 text-brand-700 text-sm rounded-full"
                 >
                   {goal}
                 </span>
@@ -249,8 +249,8 @@ export function ProfilePage() {
           <h3 className="text-sm font-medium text-iron-500 mb-4">Your Stats</h3>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-flame-100 rounded-xl flex items-center justify-center">
-                <Target className="w-5 h-5 text-flame-600" />
+              <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center">
+                <Target className="w-5 h-5 text-brand-600" />
               </div>
               <div>
                 <p className="text-lg font-bold text-iron-900">{mockUserStats.matchesCount}</p>

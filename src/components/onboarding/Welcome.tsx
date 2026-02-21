@@ -10,7 +10,7 @@ export function Welcome({ onContinue }: WelcomeProps) {
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-iron-900 to-iron-950">
       {/* Logo */}
       <div className="mb-8">
-        <div className="w-24 h-24 bg-flame-500 rounded-3xl flex items-center justify-center shadow-xl shadow-flame-500/30">
+        <div className="w-24 h-24 bg-brand-500 rounded-3xl flex items-center justify-center shadow-xl shadow-brand-500/30">
           <Flame className="w-14 h-14 text-white" />
         </div>
       </div>
@@ -41,7 +41,7 @@ export function Welcome({ onContinue }: WelcomeProps) {
 
       <p className="text-iron-500 text-sm mt-6">
         Already have an account?{' '}
-        <button className="text-flame-400 font-medium hover:underline">
+        <button className="text-brand-400 font-medium hover:underline">
           Sign In
         </button>
       </p>

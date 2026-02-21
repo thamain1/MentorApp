@@ -78,7 +78,7 @@ export function SessionsList() {
               onClick={() => setViewAs('mentee')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 viewAs === 'mentee'
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -89,7 +89,7 @@ export function SessionsList() {
               onClick={() => setViewAs('mentor')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
                 viewAs === 'mentor'
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -102,7 +102,7 @@ export function SessionsList() {
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="p-3 text-center">
-            <p className="text-2xl font-bold text-flame-600">{upcomingSessions.length}</p>
+            <p className="text-2xl font-bold text-brand-600">{upcomingSessions.length}</p>
             <p className="text-xs text-iron-500">Upcoming</p>
           </Card>
           <Card className="p-3 text-center">
@@ -185,7 +185,7 @@ export function SessionsList() {
               ))}
             </div>
             {pastSessions.length > 5 && (
-              <button className="w-full mt-3 py-2 text-sm text-flame-600 font-medium">
+              <button className="w-full mt-3 py-2 text-sm text-brand-600 font-medium">
                 View all past sessions ({pastSessions.length})
               </button>
             )}
@@ -233,7 +233,7 @@ function SessionCard({ session, viewAs, onClick, variant, dateLabel }: SessionCa
           <div className="flex items-center gap-3 text-sm text-iron-500">
             {variant === 'upcoming' && dateLabel && (
               <>
-                <span className="font-medium text-flame-600">{dateLabel}</span>
+                <span className="font-medium text-brand-600">{dateLabel}</span>
                 <span>{formatTime(session.scheduled_at)}</span>
               </>
             )}

@@ -17,7 +17,7 @@ export function TrackDetail() {
           <p className="text-iron-500">Training track not found</p>
           <button
             onClick={() => navigate('/training')}
-            className="mt-4 text-flame-600 font-medium"
+            className="mt-4 text-brand-600 font-medium"
           >
             Back to Training
           </button>
@@ -55,7 +55,7 @@ export function TrackDetail() {
         <div className="h-1 bg-iron-100">
           <div
             className={`h-full transition-all ${
-              trackProgress === 100 ? 'bg-green-500' : 'bg-flame-500'
+              trackProgress === 100 ? 'bg-green-500' : 'bg-brand-500'
             }`}
             style={{ width: `${trackProgress}%` }}
           />
@@ -89,7 +89,7 @@ export function TrackDetail() {
                       isCompleted
                         ? 'bg-green-100'
                         : isNext
-                        ? 'bg-flame-100'
+                        ? 'bg-brand-100'
                         : 'bg-iron-100'
                     }`}>
                       {isCompleted ? (
@@ -97,7 +97,7 @@ export function TrackDetail() {
                       ) : isLocked ? (
                         <Lock className="w-5 h-5 text-iron-400" />
                       ) : (
-                        <Play className="w-5 h-5 text-flame-600" />
+                        <Play className="w-5 h-5 text-brand-600" />
                       )}
                     </div>
 
@@ -117,7 +117,7 @@ export function TrackDetail() {
                           <span className="text-xs text-green-600 font-medium">Completed</span>
                         )}
                         {isNext && (
-                          <span className="text-xs text-flame-600 font-medium">Up next</span>
+                          <span className="text-xs text-brand-600 font-medium">Up next</span>
                         )}
                       </div>
                     </div>

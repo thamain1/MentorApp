@@ -59,7 +59,7 @@ export function GroupDirectory() {
               onClick={() => setFilter(tab.value as GroupFilter)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === tab.value
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -113,13 +113,13 @@ function GroupCard({ group, onClick }: GroupCardProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-white border border-iron-100 rounded-xl p-4 hover:border-flame-200 transition-colors"
+      className="w-full text-left bg-white border border-iron-100 rounded-xl p-4 hover:border-brand-200 transition-colors"
     >
       <div className="flex items-start gap-3">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
           group.type === 'interest' ? 'bg-blue-100 text-blue-600' :
           group.type === 'location' ? 'bg-green-100 text-green-600' :
-          'bg-flame-100 text-flame-600'
+          'bg-brand-100 text-brand-600'
         }`}>
           {getTypeIcon()}
         </div>

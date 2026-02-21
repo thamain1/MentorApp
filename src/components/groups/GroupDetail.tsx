@@ -31,7 +31,7 @@ export function GroupDetail() {
           <p className="text-iron-500">Group not found</p>
           <button
             onClick={() => navigate('/groups')}
-            className="mt-4 text-flame-600 font-medium"
+            className="mt-4 text-brand-600 font-medium"
           >
             Back to groups
           </button>
@@ -68,7 +68,7 @@ export function GroupDetail() {
           <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
             group.type === 'interest' ? 'bg-blue-100 text-blue-600' :
             group.type === 'location' ? 'bg-green-100 text-green-600' :
-            'bg-flame-100 text-flame-600'
+            'bg-brand-100 text-brand-600'
           }`}>
             <Users className="w-8 h-8" />
           </div>
@@ -121,10 +121,10 @@ export function GroupDetail() {
 
         {/* Upcoming Event */}
         {group.nextEvent && (
-          <Card className="border-l-4 border-l-flame-500">
+          <Card className="border-l-4 border-l-brand-500">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-flame-100 rounded-xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-flame-600" />
+              <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-brand-600" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-iron-900">{group.nextEvent.title}</p>
@@ -139,7 +139,7 @@ export function GroupDetail() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-iron-900">Recent Activity</h3>
-            <button className="text-sm text-flame-500 font-medium">View All</button>
+            <button className="text-sm text-brand-500 font-medium">View All</button>
           </div>
 
           <div className="space-y-3">
@@ -165,7 +165,7 @@ export function GroupDetail() {
 
         {/* Discussion Link */}
         {group.isJoined && (
-          <Card className="hover:border-flame-200 transition-colors cursor-pointer">
+          <Card className="hover:border-brand-200 transition-colors cursor-pointer">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
                 <MessageCircle className="w-5 h-5 text-blue-600" />

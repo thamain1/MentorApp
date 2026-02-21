@@ -88,7 +88,7 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
             className={cn(
               'h-1 flex-1 rounded-full transition-colors',
               ['name', 'bio', 'interests', 'goals'].indexOf(step) >= i
-                ? 'bg-flame-500'
+                ? 'bg-brand-500'
                 : 'bg-iron-200'
             )}
           />
@@ -164,7 +164,7 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
                 className={cn(
                   'px-4 py-2 rounded-full border-2 text-sm font-medium transition-all',
                   interests.includes(interest)
-                    ? 'border-flame-500 bg-flame-50 text-flame-700'
+                    ? 'border-brand-500 bg-brand-50 text-brand-700'
                     : 'border-iron-200 text-iron-600 hover:border-iron-300'
                 )}
               >
@@ -196,7 +196,7 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
                 className={cn(
                   'px-4 py-2 rounded-full border-2 text-sm font-medium transition-all',
                   goals.includes(goal)
-                    ? 'border-flame-500 bg-flame-50 text-flame-700'
+                    ? 'border-brand-500 bg-brand-50 text-brand-700'
                     : 'border-iron-200 text-iron-600 hover:border-iron-300'
                 )}
               >

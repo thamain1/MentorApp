@@ -60,7 +60,7 @@ export function Guidelines({ role, onAccept, onBack }: GuidelinesProps) {
         {guidelines.map(({ icon: Icon, title, description }) => (
           <div key={title} className="flex gap-4 p-4 bg-iron-50 rounded-xl">
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-              <Icon className="w-5 h-5 text-flame-500" />
+              <Icon className="w-5 h-5 text-brand-500" />
             </div>
             <div>
               <h3 className="font-semibold text-iron-900 mb-1">{title}</h3>
@@ -88,7 +88,7 @@ export function Guidelines({ role, onAccept, onBack }: GuidelinesProps) {
           className={cn(
             'w-6 h-6 rounded-lg border-2 flex items-center justify-center flex-shrink-0 transition-colors',
             accepted
-              ? 'bg-flame-500 border-flame-500'
+              ? 'bg-brand-500 border-brand-500'
               : 'border-iron-300 hover:border-iron-400'
           )}
         >

@@ -68,7 +68,7 @@ export function AdminDashboard() {
               onClick={() => setActiveTab(tab.value as AdminTab)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                 activeTab === tab.value
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -78,7 +78,7 @@ export function AdminDashboard() {
                 <span className={`px-1.5 py-0.5 rounded-full text-xs ${
                   activeTab === tab.value
                     ? 'bg-white/20'
-                    : 'bg-flame-500 text-white'
+                    : 'bg-brand-500 text-white'
                 }`}>
                   {tab.badge}
                 </span>
@@ -116,8 +116,8 @@ export function AdminDashboard() {
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-flame-100 rounded-xl flex items-center justify-center">
-                    <UserCheck className="w-5 h-5 text-flame-600" />
+                  <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center">
+                    <UserCheck className="w-5 h-5 text-brand-600" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-iron-900">{mockAdminStats.activeMatches}</p>
@@ -158,7 +158,7 @@ export function AdminDashboard() {
             </Card>
 
             {/* Quick Actions */}
-            <Card className="hover:border-flame-200 transition-colors cursor-pointer" onClick={() => setActiveTab('matches')}>
+            <Card className="hover:border-brand-200 transition-colors cursor-pointer" onClick={() => setActiveTab('matches')}>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
                   <Clock className="w-5 h-5 text-amber-600" />

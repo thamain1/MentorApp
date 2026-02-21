@@ -78,7 +78,7 @@ export function Toolkit() {
 
       <div className="p-4 space-y-4">
         {/* Intro */}
-        <Card className="bg-gradient-to-br from-flame-500 to-flame-600 border-none text-white">
+        <Card className="bg-gradient-to-br from-brand-500 to-brand-600 border-none text-white">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               <Folder className="w-5 h-5" />
@@ -117,7 +117,7 @@ export function Toolkit() {
               onClick={() => setFilter(tab.value as ResourceFilter)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === tab.value
-                  ? 'bg-flame-500 text-white'
+                  ? 'bg-brand-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -210,7 +210,7 @@ function ResourceCard({
             </pre>
           </div>
           {resource.downloadUrl && (
-            <button className="mt-3 flex items-center gap-2 text-sm text-flame-600 font-medium">
+            <button className="mt-3 flex items-center gap-2 text-sm text-brand-600 font-medium">
               <Download className="w-4 h-4" />
               Download PDF
             </button>
@@ -222,7 +222,7 @@ function ResourceCard({
         <div className="px-4 pb-4 pt-0">
           <div className="p-4 bg-iron-50 rounded-lg text-center">
             <p className="text-sm text-iron-500">Full content available in the app.</p>
-            <button className="mt-2 text-sm text-flame-600 font-medium">
+            <button className="mt-2 text-sm text-brand-600 font-medium">
               Open Resource
             </button>
           </div>

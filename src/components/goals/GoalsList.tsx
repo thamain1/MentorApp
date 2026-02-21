@@ -16,7 +16,7 @@ export function GoalsList() {
 
   const getProgressColor = (progress: number) => {
     if (progress >= 75) return 'bg-green-500';
-    if (progress >= 50) return 'bg-flame-500';
+    if (progress >= 50) return 'bg-brand-500';
     if (progress >= 25) return 'bg-yellow-500';
     return 'bg-iron-300';
   };
@@ -166,7 +166,7 @@ export function GoalsList() {
       {/* Floating Action Button */}
       <button
         onClick={() => setShowAddModal(true)}
-        className="fixed bottom-24 right-4 w-14 h-14 bg-flame-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-flame-600 transition-colors z-30"
+        className="fixed bottom-24 right-4 w-14 h-14 bg-brand-500 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-brand-600 transition-colors z-30"
       >
         <Plus className="w-6 h-6" />
       </button>

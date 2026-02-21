@@ -21,10 +21,10 @@ export function TrainingHub() {
 
       <div className="p-4 space-y-6">
         {/* Overall Progress Card */}
-        <Card className="p-4 bg-gradient-to-br from-flame-500 to-flame-600 text-white">
+        <Card className="p-4 bg-gradient-to-br from-brand-500 to-brand-600 text-white">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-flame-100 text-sm">Overall Progress</p>
+              <p className="text-brand-100 text-sm">Overall Progress</p>
               <p className="text-3xl font-bold">{overallProgress}%</p>
             </div>
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
@@ -65,12 +65,12 @@ export function TrainingHub() {
                   <Card className="p-4 hover:bg-iron-50 transition-colors">
                     <div className="flex items-start gap-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                        isComplete ? 'bg-green-100' : 'bg-flame-100'
+                        isComplete ? 'bg-green-100' : 'bg-brand-100'
                       }`}>
                         {isComplete ? (
                           <CheckCircle className="w-6 h-6 text-green-600" />
                         ) : (
-                          <BookOpen className="w-6 h-6 text-flame-600" />
+                          <BookOpen className="w-6 h-6 text-brand-600" />
                         )}
                       </div>
 
@@ -90,7 +90,7 @@ export function TrainingHub() {
                           <div className="h-2 bg-iron-100 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full transition-all ${
-                                isComplete ? 'bg-green-500' : 'bg-flame-500'
+                                isComplete ? 'bg-green-500' : 'bg-brand-500'
                               }`}
                               style={{ width: `${trackProgress}%` }}
                             />

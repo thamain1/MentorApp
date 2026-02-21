@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  /* Iron Sharpens Iron brand colors */
+  --color-iron-50: #f7f7f8;
+  --color-iron-100: #eeeef0;
+  --color-iron-200: #d9d9de;
+  --color-iron-300: #b8b8c1;
+  --color-iron-400: #91919f;
+  --color-iron-500: #747484;
+  --color-iron-600: #5d5d6b;
+  --color-iron-700: #4c4c57;
+  --color-iron-800: #41414a;
+  --color-iron-900: #393940;
+  --color-iron-950: #26262b;
+
+  --color-flame-50: #fff7ed;
+  --color-flame-100: #ffedd5;
+  --color-flame-200: #fed7aa;
+  --color-flame-300: #fdba74;
+  --color-flame-400: #fb923c;
+  --color-flame-500: #f97316;
+  --color-flame-600: #ea580c;
+  --color-flame-700: #c2410c;
+  --color-flame-800: #9a3412;
+  --color-flame-900: #7c2d12;
+  --color-flame-950: #431407;
+
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+}
+
+html {
+  font-family: var(--font-family-sans);
+}
+
+body {
+  background-color: var(--color-iron-50);
+  color: var(--color-iron-900);
+  margin: 0;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Button base styles */
+.btn-primary {
+  @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-flame-500 text-white hover:bg-flame-600 focus:ring-flame-500 active:scale-95;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-iron-200 text-iron-800 hover:bg-iron-300 focus:ring-iron-400 active:scale-95;
+}
+
+.btn-outline {
+  @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply border-2 border-iron-300 text-iron-700 hover:bg-iron-100 focus:ring-iron-400 active:scale-95;
+}
+
+.btn-ghost {
+  @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply text-iron-600 hover:bg-iron-100 focus:ring-iron-400;
+}
+
+.btn-danger {
+  @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500;
+}
+
+/* Card */
+.card {
+  @apply bg-white rounded-2xl shadow-sm border border-iron-100 p-4;
+}
+
+/* Input */
+.input {
+  @apply w-full px-4 py-3 rounded-xl border border-iron-200 bg-white;
+  @apply focus:border-flame-500 focus:ring-2 focus:ring-flame-500/20 outline-none transition-all;
+  @apply placeholder:text-iron-400;
+}
+
+.textarea {
+  @apply w-full px-4 py-3 rounded-xl border border-iron-200 bg-white resize-none;
+  @apply focus:border-flame-500 focus:ring-2 focus:ring-flame-500/20 outline-none transition-all;
+  @apply placeholder:text-iron-400;
+}
+
+.label {
+  @apply block text-sm font-medium text-iron-700 mb-1;
+}
+
+/* Badges */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-flame {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-flame-100 text-flame-700;
+}
+
+.badge-iron {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-iron-100 text-iron-700;
+}
+
+.badge-success {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-green-100 text-green-700;
+}
+
+/* Mobile-first container */
+.app-container {
+  @apply max-w-md mx-auto min-h-screen bg-white;
+}
+
+/* Safe area for mobile */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0);
+}

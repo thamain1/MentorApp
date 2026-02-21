@@ -3,7 +3,7 @@ import {
   Calendar, MessageCircle, Target, TrendingUp,
   ChevronRight, Sparkles, Clock
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../layout';
 import { Card, Avatar, Badge, Button } from '../ui';
 import { mockCurrentUser } from '../../data/mockData';
@@ -93,7 +93,13 @@ const mockGoals = [
 const dailyPrompt = "What's one thing you're grateful for today?";
 
 export function Dashboard() {
+  const navigate = useNavigate();
   const [checkedIn, setCheckedIn] = useState(false);
+
+  const handleCheckIn = () => {
+    setCheckedIn(true);
+    navigate('/community');
+  };
 
   // Get 6 relevant images based on interests and goals
   const collageImages = useMemo(() => {
@@ -192,7 +198,7 @@ export function Dashboard() {
                   variant="secondary"
                   size="sm"
                   className="bg-white text-flame-600 hover:bg-white/90"
-                  onClick={() => setCheckedIn(true)}
+                  onClick={handleCheckIn}
                 >
                   Check In
                 </Button>

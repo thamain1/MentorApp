@@ -45,7 +45,7 @@ export function FindMentor() {
             placeholder="Search by name, specialty..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            style={{ paddingLeft: '2.5rem' }}
           />
         </div>
 

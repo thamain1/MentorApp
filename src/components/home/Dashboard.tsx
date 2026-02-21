@@ -14,7 +14,7 @@ const interestImages: Record<string, string> = {
   'basketball': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&q=80',
   'football': 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400&q=80',
   'fitness': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-  'sports': 'https://images.unsplash.com/photo-1461896836934-28e4c42c9482?w=400&q=80',
+  'sports': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&q=80',
   'running': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&q=80',
   'health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80',
 

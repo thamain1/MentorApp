@@ -90,7 +90,52 @@ const mockGoals = [
   { id: '2', title: 'Read 2 books this month', progress: 50 },
 ];
 
-const dailyPrompt = "What's one thing you're grateful for today?";
+// Daily prompts - managed by admin/mentor group
+// These rotate based on the day of the year
+const dailyPrompts = [
+  "What's one thing you're grateful for today?",
+  "What's a challenge you're facing that you'd like prayer or support for?",
+  "Share a win from this week, no matter how small!",
+  "What's one goal you're working toward right now?",
+  "Who is someone that has positively impacted your life? Why?",
+  "What's a skill you'd like to develop this year?",
+  "What does being a man of integrity mean to you?",
+  "Share something new you learned recently.",
+  "What's one way you can serve someone else today?",
+  "What advice would you give to your younger self?",
+  "What's a book, podcast, or video that inspired you?",
+  "How do you handle pressure or stress? Share your tips.",
+  "What does success look like to you?",
+  "Who is a role model you look up to and why?",
+  "What's one habit you're trying to build or break?",
+  "Share an encouraging word for someone who might be struggling.",
+  "What are you most looking forward to this month?",
+  "How has your mentor helped you grow?",
+  "What's something you're proud of accomplishing?",
+  "What does community mean to you?",
+  "Share a favorite quote that motivates you.",
+  "What's one thing you'd like to improve about yourself?",
+  "How do you stay focused on your goals?",
+  "What's a fear you've overcome or are working to overcome?",
+  "Share something that made you smile today.",
+  "What does leadership mean to you?",
+  "How do you show respect to others?",
+  "What's a tough decision you've had to make? How did you handle it?",
+  "What does it mean to be part of this brotherhood?",
+  "Share your hopes for the future.",
+  "What's one way you've grown since joining the program?",
+];
+
+// Get today's prompt based on day of year
+const getDailyPrompt = () => {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now.getTime() - start.getTime();
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+  return dailyPrompts[dayOfYear % dailyPrompts.length];
+};
+
+const dailyPrompt = getDailyPrompt();
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -98,7 +143,7 @@ export function Dashboard() {
 
   const handleCheckIn = () => {
     setCheckedIn(true);
-    navigate('/community');
+    navigate('/community', { state: { checkInPrompt: dailyPrompt } });
   };
 
   // Get 6 relevant images based on interests and goals

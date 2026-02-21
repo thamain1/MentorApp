@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Heart,
   MessageCircle,
@@ -14,7 +14,7 @@ import {
 import { AppShell, Header } from '../layout';
 import { Avatar } from '../ui';
 import { mockPosts, mockCurrentUser, mockMentorProfile, mockMentees } from '../../data/mockData';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // Extended post type with images and category
 interface PostWithImages {
@@ -239,6 +239,7 @@ function formatTimeAgo(dateString: string): string {
 
 export function CommunityFeed() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [posts, setPosts] = useState<PostWithImages[]>(postsWithImages);
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
@@ -248,7 +249,19 @@ export function CommunityFeed() {
   const [imageIndexes, setImageIndexes] = useState<Record<string, number>>({});
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [postCategory, setPostCategory] = useState<string>('lifeskills');
+  const [checkInPrompt, setCheckInPrompt] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if navigated from Daily Check-in
+  useEffect(() => {
+    const state = location.state as { checkInPrompt?: string } | null;
+    if (state?.checkInPrompt) {
+      setCheckInPrompt(state.checkInPrompt);
+      setShowCompose(true);
+      // Clear the state so it doesn't persist on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Filter posts based on selected category
   const filteredPosts = selectedCategory === 'all'
@@ -341,6 +354,7 @@ export function CommunityFeed() {
     setNewPost('');
     setSelectedImages([]);
     setPostCategory('lifeskills');
+    setCheckInPrompt(null);
     setShowCompose(false);
   };
 
@@ -625,12 +639,15 @@ export function CommunityFeed() {
                   setShowCompose(false);
                   setSelectedImages([]);
                   setNewPost('');
+                  setCheckInPrompt(null);
                 }}
                 className="text-iron-600 font-medium"
               >
                 Cancel
               </button>
-              <h3 className="font-semibold text-iron-900">New Post</h3>
+              <h3 className="font-semibold text-iron-900">
+                {checkInPrompt ? 'Daily Check-in' : 'New Post'}
+              </h3>
               <button
                 onClick={handlePost}
                 disabled={!newPost.trim() && selectedImages.length === 0}
@@ -643,6 +660,14 @@ export function CommunityFeed() {
                 Share
               </button>
             </div>
+
+            {/* Daily Check-in Prompt */}
+            {checkInPrompt && (
+              <div className="px-4 py-3 bg-gradient-to-r from-flame-50 to-amber-50 border-b border-flame-100">
+                <p className="text-sm font-medium text-flame-700">Today's Prompt:</p>
+                <p className="text-flame-900 font-semibold">{checkInPrompt}</p>
+              </div>
+            )}
 
             {/* Compose Area */}
             <div className="flex-1 overflow-y-auto">
@@ -657,7 +682,7 @@ export function CommunityFeed() {
                   <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
-                    placeholder="Share a win, encouragement, or update..."
+                    placeholder={checkInPrompt ? "Share your response..." : "Share a win, encouragement, or update..."}
                     className="flex-1 text-[16px] placeholder:text-iron-400 border-0 focus:ring-0 resize-none min-h-[80px]"
                     autoFocus
                   />

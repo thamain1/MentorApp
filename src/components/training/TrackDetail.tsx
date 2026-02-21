@@ -124,10 +124,13 @@ export function TrackDetail() {
 
                     {/* Action */}
                     {isNext && (
-                      <Button size="sm">Start</Button>
+                      <Button size="sm" onClick={() => navigate(`/training/${trackId}/${module.id}`)}>Start</Button>
                     )}
                     {isCompleted && (
-                      <button className="text-sm text-iron-500 hover:text-iron-700">
+                      <button
+                        className="text-sm text-iron-500 hover:text-iron-700"
+                        onClick={() => navigate(`/training/${trackId}/${module.id}`)}
+                      >
                         Review
                       </button>
                     )}
@@ -141,7 +144,15 @@ export function TrackDetail() {
         {/* Continue Button */}
         {trackProgress < 100 && (
           <div className="pb-4">
-            <Button className="w-full">
+            <Button
+              className="w-full"
+              onClick={() => {
+                const nextModule = track.modules[track.completedModules];
+                if (nextModule) {
+                  navigate(`/training/${trackId}/${nextModule.id}`);
+                }
+              }}
+            >
               <Play className="w-4 h-4 mr-2" />
               Continue Training
             </Button>

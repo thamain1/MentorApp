@@ -946,3 +946,469 @@ export const mockMenteeSessions: SessionWithParticipant[] = [
     userRole: 'mentee',
   },
 ];
+
+// =====================
+// MENTOR BROWSE DATA
+// =====================
+
+export interface MentorProfile extends Profile {
+  yearsExperience: number;
+  specialties: string[];
+  availability: string;
+  matchCount: number;
+  rating?: number;
+}
+
+export const mockAvailableMentors: MentorProfile[] = [
+  {
+    ...mockMentorProfile,
+    yearsExperience: 10,
+    specialties: ['Career Development', 'Technology', 'Leadership'],
+    availability: 'Weekday evenings',
+    matchCount: 5,
+    rating: 4.9,
+  },
+  {
+    id: 'mentor-2-id',
+    user_id: 'mentor-2-auth-id',
+    first_name: 'James',
+    last_name: 'Thompson',
+    age: 28,
+    bio: 'Youth pastor and basketball coach. Love seeing young men grow in character and confidence. My approach focuses on building authentic relationships.',
+    interests: ['Sports', 'Faith & Spirituality', 'Music', 'Volunteering'],
+    goals: ['Personal Growth', 'Communication'],
+    location: 'Chicago, IL',
+    avatar_url: null,
+    guidelines_accepted_at: '2023-08-15T10:00:00Z',
+    created_at: '2023-08-15T10:00:00Z',
+    updated_at: '2024-01-10T09:00:00Z',
+    yearsExperience: 5,
+    specialties: ['Confidence Building', 'Sports', 'Faith'],
+    availability: 'Weekends',
+    matchCount: 8,
+    rating: 4.8,
+  },
+  {
+    id: 'mentor-3-id',
+    user_id: 'mentor-3-auth-id',
+    first_name: 'Michael',
+    last_name: 'Chen',
+    age: 35,
+    bio: 'Financial advisor and former college athlete. Passionate about teaching young men financial literacy and discipline.',
+    interests: ['Fitness', 'Financial Literacy', 'Sports', 'Reading'],
+    goals: ['Financial Literacy', 'Health & Wellness'],
+    location: 'Chicago, IL',
+    avatar_url: null,
+    guidelines_accepted_at: '2023-05-01T10:00:00Z',
+    created_at: '2023-05-01T10:00:00Z',
+    updated_at: '2024-02-01T09:00:00Z',
+    yearsExperience: 8,
+    specialties: ['Financial Literacy', 'Academic Success', 'Fitness'],
+    availability: 'Flexible',
+    matchCount: 12,
+    rating: 4.7,
+  },
+  {
+    id: 'mentor-4-id',
+    user_id: 'mentor-4-auth-id',
+    first_name: 'Robert',
+    last_name: 'Martinez',
+    age: 42,
+    bio: 'Small business owner and community leader. Here to help young men develop entrepreneurial mindsets and leadership skills.',
+    interests: ['Entrepreneurship', 'Leadership', 'Cooking', 'Travel'],
+    goals: ['Leadership Skills', 'Career Development'],
+    location: 'Chicago, IL',
+    avatar_url: null,
+    guidelines_accepted_at: '2023-03-01T10:00:00Z',
+    created_at: '2023-03-01T10:00:00Z',
+    updated_at: '2024-01-15T09:00:00Z',
+    yearsExperience: 15,
+    specialties: ['Entrepreneurship', 'Leadership', 'Communication'],
+    availability: 'Weekday mornings',
+    matchCount: 20,
+    rating: 5.0,
+  },
+];
+
+// =====================
+// MATCH REQUEST DATA
+// =====================
+
+export type MatchRequestStatus = 'pending' | 'accepted' | 'declined';
+
+export interface MatchRequest {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  mentor: MentorProfile;
+  status: MatchRequestStatus;
+  message: string;
+  createdAt: string;
+  respondedAt?: string;
+}
+
+export const mockMatchRequests: MatchRequest[] = [
+  {
+    id: 'request-1',
+    mentorId: 'mentor-2-id',
+    menteeId: 'current-user-id',
+    mentor: mockAvailableMentors[1],
+    status: 'pending',
+    message: 'Hi James! I saw that you coach basketball and work with youth. I\'m interested in building my confidence and would love to connect.',
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+  },
+];
+
+// =====================
+// GROUPS DATA
+// =====================
+
+export interface Group {
+  id: string;
+  name: string;
+  description: string;
+  type: 'interest' | 'location' | 'program';
+  memberCount: number;
+  imageUrl?: string;
+  isJoined: boolean;
+  nextEvent?: {
+    title: string;
+    date: string;
+  };
+}
+
+export const mockGroups: Group[] = [
+  {
+    id: 'group-1',
+    name: 'Chicago Tech Mentors',
+    description: 'Connect with mentors and mentees interested in technology careers. Share resources, opportunities, and support.',
+    type: 'interest',
+    memberCount: 45,
+    isJoined: true,
+    nextEvent: {
+      title: 'Coding Workshop',
+      date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7).toISOString(),
+    },
+  },
+  {
+    id: 'group-2',
+    name: 'North Side Chapter',
+    description: 'Local chapter for mentors and mentees on Chicago\'s North Side. Monthly meetups and community events.',
+    type: 'location',
+    memberCount: 32,
+    isJoined: true,
+  },
+  {
+    id: 'group-3',
+    name: 'College Prep',
+    description: 'For mentees preparing for college applications, SATs, and the transition to higher education.',
+    type: 'program',
+    memberCount: 28,
+    isJoined: false,
+    nextEvent: {
+      title: 'Essay Writing Workshop',
+      date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14).toISOString(),
+    },
+  },
+  {
+    id: 'group-4',
+    name: 'Sports & Fitness',
+    description: 'Athletes and fitness enthusiasts. Organize pickup games, workouts, and discuss sports as a path to discipline.',
+    type: 'interest',
+    memberCount: 56,
+    isJoined: false,
+  },
+  {
+    id: 'group-5',
+    name: 'Future Entrepreneurs',
+    description: 'Business-minded mentees and mentors sharing ideas, resources, and experiences in entrepreneurship.',
+    type: 'interest',
+    memberCount: 23,
+    isJoined: false,
+  },
+];
+
+// =====================
+// MODULE CONTENT DATA
+// =====================
+
+export interface ModuleContent {
+  id: string;
+  trackId: string;
+  title: string;
+  description: string;
+  duration: number;
+  type: 'video' | 'reading' | 'interactive' | 'quiz';
+  content: {
+    sections: {
+      title: string;
+      body: string;
+    }[];
+    keyTakeaways: string[];
+    reflection?: string;
+  };
+  isCompleted: boolean;
+}
+
+export const mockModuleContent: Record<string, ModuleContent> = {
+  'module-1-1': {
+    id: 'module-1-1',
+    trackId: 'track-1',
+    title: 'Introduction to Mentoring',
+    description: 'Understanding the mentor-mentee relationship and your role.',
+    duration: 15,
+    type: 'reading',
+    content: {
+      sections: [
+        {
+          title: 'What is Mentoring?',
+          body: 'Mentoring is a developmental relationship where an experienced person (mentor) guides and supports a less experienced person (mentee) in their personal and professional growth. Unlike teaching or coaching, mentoring focuses on holistic development and building a lasting relationship.',
+        },
+        {
+          title: 'The Role of a Mentor',
+          body: 'As a mentor, you serve as a guide, role model, and trusted advisor. Your job is not to solve all problems, but to help your mentee develop the skills and confidence to navigate challenges themselves. You bring your experience, wisdom, and genuine care to the relationship.',
+        },
+        {
+          title: 'Building the Foundation',
+          body: 'Successful mentoring relationships are built on trust, respect, and open communication. Take time to understand your mentee\'s goals, challenges, and background. Be patient—trust takes time to develop.',
+        },
+      ],
+      keyTakeaways: [
+        'Mentoring is about guidance, not solving problems',
+        'Trust is the foundation of the relationship',
+        'Focus on holistic development, not just skills',
+        'Be patient and consistent',
+      ],
+      reflection: 'Think about mentors in your own life. What made them effective? How did they make you feel supported?',
+    },
+    isCompleted: true,
+  },
+  'module-1-2': {
+    id: 'module-1-2',
+    trackId: 'track-1',
+    title: 'Building Trust',
+    description: 'Techniques for establishing rapport and building a trusting relationship.',
+    duration: 20,
+    type: 'reading',
+    content: {
+      sections: [
+        {
+          title: 'Why Trust Matters',
+          body: 'Trust is the currency of mentoring. Without it, your mentee won\'t feel safe sharing challenges, asking for help, or being vulnerable about their struggles. Building trust requires intentional effort and consistency.',
+        },
+        {
+          title: 'Showing Up Consistently',
+          body: 'One of the simplest ways to build trust is being reliable. Show up on time, follow through on commitments, and be present during your sessions. Your mentee needs to know they can count on you.',
+        },
+        {
+          title: 'Active Listening',
+          body: 'Listen more than you speak. When your mentee talks, give them your full attention. Put away distractions, make eye contact, and reflect back what you hear to show you understand.',
+        },
+        {
+          title: 'Confidentiality',
+          body: 'What\'s shared in mentoring stays in mentoring (unless there\'s a safety concern). Make this clear to your mentee so they feel safe opening up.',
+        },
+      ],
+      keyTakeaways: [
+        'Trust is earned through consistency and reliability',
+        'Listen actively and without judgment',
+        'Maintain confidentiality',
+        'Be authentic—don\'t pretend to have all the answers',
+      ],
+      reflection: 'What actions can you take in your first few sessions to demonstrate that you\'re trustworthy?',
+    },
+    isCompleted: true,
+  },
+  'module-1-3': {
+    id: 'module-1-3',
+    trackId: 'track-1',
+    title: 'Active Listening Skills',
+    description: 'How to truly hear and understand your mentee.',
+    duration: 25,
+    type: 'interactive',
+    content: {
+      sections: [
+        {
+          title: 'Beyond Hearing',
+          body: 'Active listening is more than just hearing words. It involves paying attention to tone, body language, and what\'s left unsaid. It means being fully present and engaged.',
+        },
+        {
+          title: 'The HEAR Method',
+          body: 'H - Halt: Stop what you\'re doing and give full attention.\nE - Engage: Make eye contact and show you\'re listening.\nA - Anticipate: Stay curious about what they\'ll say next.\nR - Replay: Summarize what you heard to confirm understanding.',
+        },
+        {
+          title: 'Asking Good Questions',
+          body: 'Open-ended questions encourage deeper sharing. Instead of "Did school go well?" try "What was the best part of your week?" or "What\'s been on your mind lately?"',
+        },
+      ],
+      keyTakeaways: [
+        'Active listening requires full presence',
+        'Use the HEAR method as a framework',
+        'Ask open-ended questions',
+        'Reflect back what you hear',
+      ],
+      reflection: 'Practice the HEAR method in your next conversation. What did you notice differently?',
+    },
+    isCompleted: false,
+  },
+};
+
+// =====================
+// FACILITATION TOOLKIT
+// =====================
+
+export interface ToolkitResource {
+  id: string;
+  title: string;
+  description: string;
+  type: 'guide' | 'template' | 'activity' | 'video';
+  category: string;
+  downloadUrl?: string;
+  content?: string;
+}
+
+export const mockToolkitResources: ToolkitResource[] = [
+  {
+    id: 'toolkit-1',
+    title: 'Icebreaker Activities',
+    description: 'Collection of icebreaker games and questions to start group sessions.',
+    type: 'activity',
+    category: 'Group Sessions',
+    content: '1. Two Truths and a Lie\n2. Would You Rather (appropriate version)\n3. Share your highs and lows of the week\n4. If you could have any superpower...',
+  },
+  {
+    id: 'toolkit-2',
+    title: 'Session Planning Template',
+    description: 'Template for planning effective one-on-one mentoring sessions.',
+    type: 'template',
+    category: 'Session Planning',
+    content: 'Session Plan Template:\n\n1. Check-in (5 min): How are they doing?\n2. Review (10 min): Follow up on last session\n3. Main Topic (30 min): Today\'s focus\n4. Action Items (10 min): What will they work on?\n5. Close (5 min): Encourage and confirm next meeting',
+  },
+  {
+    id: 'toolkit-3',
+    title: 'Goal Setting Workshop Guide',
+    description: 'Step-by-step guide for running a goal-setting workshop with mentees.',
+    type: 'guide',
+    category: 'Workshops',
+  },
+  {
+    id: 'toolkit-4',
+    title: 'Difficult Conversations Guide',
+    description: 'How to navigate challenging topics with sensitivity and care.',
+    type: 'guide',
+    category: 'Communication',
+  },
+  {
+    id: 'toolkit-5',
+    title: 'Progress Report Template',
+    description: 'Template for documenting mentee progress and growth areas.',
+    type: 'template',
+    category: 'Documentation',
+  },
+];
+
+// =====================
+// ADMIN DATA
+// =====================
+
+export interface AdminStats {
+  totalMentors: number;
+  totalMentees: number;
+  activeMatches: number;
+  pendingMatches: number;
+  sessionsThisMonth: number;
+  averageSessionsPerMatch: number;
+}
+
+export const mockAdminStats: AdminStats = {
+  totalMentors: 24,
+  totalMentees: 48,
+  activeMatches: 35,
+  pendingMatches: 8,
+  sessionsThisMonth: 142,
+  averageSessionsPerMatch: 3.2,
+};
+
+export interface PendingMatch {
+  id: string;
+  mentor: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'avatar_url'>;
+  mentee: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'avatar_url' | 'age'>;
+  requestedAt: string;
+  menteeMessage?: string;
+}
+
+export const mockPendingMatches: PendingMatch[] = [
+  {
+    id: 'pending-1',
+    mentor: {
+      id: 'mentor-2-id',
+      first_name: 'James',
+      last_name: 'Thompson',
+      avatar_url: null,
+    },
+    mentee: {
+      id: 'mentee-new-1',
+      first_name: 'Kevin',
+      last_name: 'Wilson',
+      avatar_url: null,
+      age: 14,
+    },
+    requestedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1).toISOString(),
+    menteeMessage: 'I want to get better at basketball and school.',
+  },
+  {
+    id: 'pending-2',
+    mentor: {
+      id: 'mentor-3-id',
+      first_name: 'Michael',
+      last_name: 'Chen',
+      avatar_url: null,
+    },
+    mentee: {
+      id: 'mentee-new-2',
+      first_name: 'Andre',
+      last_name: 'Jackson',
+      avatar_url: null,
+      age: 16,
+    },
+    requestedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+    menteeMessage: 'Looking for help with college planning and finances.',
+  },
+  {
+    id: 'pending-3',
+    mentor: {
+      id: 'mentor-1-id',
+      first_name: 'David',
+      last_name: 'Williams',
+      avatar_url: null,
+    },
+    mentee: {
+      id: 'mentee-new-3',
+      first_name: 'Isaiah',
+      last_name: 'Brown',
+      avatar_url: null,
+      age: 15,
+    },
+    requestedAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+  },
+];
+
+export interface FlaggedItem {
+  id: string;
+  type: 'message' | 'session' | 'report';
+  description: string;
+  reportedBy: string;
+  reportedAt: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+export const mockFlaggedItems: FlaggedItem[] = [
+  {
+    id: 'flag-1',
+    type: 'report',
+    description: 'Mentee reported feeling uncomfortable during last session',
+    reportedBy: 'System',
+    reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+    severity: 'medium',
+  },
+];

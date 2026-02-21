@@ -21,23 +21,29 @@ Building meaningful mentorship relationships that help young men develop charact
 iron-sharpens-iron/
 ├── src/
 │   ├── components/
-│   │   ├── ui/              # Button, Input, Card, Avatar, Badge
+│   │   ├── ui/              # Button, Input, Card, Avatar, Badge, Textarea
 │   │   ├── layout/          # AppShell, BottomNav, Header
 │   │   ├── onboarding/      # Welcome, RoleSelect, AgeVerification, ProfileSetup, Guidelines
 │   │   ├── home/            # Dashboard
-│   │   ├── matching/        # [TODO] Find mentor, profiles, match requests
-│   │   ├── sessions/        # [TODO] Session scheduling, detail, calendar
-│   │   ├── messages/        # [TODO] Chat interface
-│   │   ├── community/       # [TODO] Feed, groups
-│   │   ├── training/        # [TODO] Hub, tracks, modules
-│   │   ├── goals/           # [TODO] Goal tracking
-│   │   ├── admin/           # [TODO] Dashboard, match management
+│   │   ├── matching/        # FindMentor, MentorProfile, MatchRequests
+│   │   ├── sessions/        # SessionsList, SessionDetail, SessionNotesModal
+│   │   ├── messages/        # MessagesList, Chat
+│   │   ├── community/       # CommunityFeed
+│   │   ├── groups/          # GroupDirectory, GroupDetail
+│   │   ├── training/        # TrainingHub, TrackDetail, ModuleDetail, Toolkit
+│   │   ├── goals/           # GoalsList, AddGoalModal
+│   │   ├── notifications/   # NotificationsList
+│   │   ├── profile/         # ProfilePage
+│   │   ├── admin/           # AdminDashboard
 │   │   └── safety/          # [TODO] Report, guidelines
 │   ├── pages/               # Route-level components
+│   ├── data/                # Mock data (mockData.ts)
 │   ├── hooks/               # Custom React hooks
 │   ├── lib/                 # Supabase client, utilities
 │   ├── services/            # Business logic
 │   └── types/               # TypeScript types, database types
+├── docs/
+│   └── WIREFRAMES.md        # UI/UX wireframes documentation
 ├── supabase/
 │   └── migrations/          # SQL migrations
 └── public/                  # Static assets
@@ -68,33 +74,54 @@ iron-sharpens-iron/
 - Goals progress tracking
 - Quick navigation tiles
 
-### Matching (TODO)
-- Browse available mentors (mentee view)
-- View mentor/mentee profiles
-- Request/accept matches (admin approval required)
+### Matching (Implemented - UI with mock data)
+- Browse available mentors with search and specialty filters (`/mentors`)
+- View detailed mentor profiles with stats and specialties (`/mentors/:mentorId`)
+- Request to match with message modal
+- View pending and past match requests (`/match-requests`)
 
-### Sessions (TODO)
-- Schedule sessions with Google Calendar sync
-- Session logging and notes
-- Session history
+### Sessions (Implemented - UI with mock data)
+- Sessions list with mentor/mentee role toggle (`/sessions`)
+- Session detail with scheduling, notes, cancel/complete actions (`/sessions/:matchId`)
+- Session notes modal with guided prompts
+- "Needs attention" section for sessions requiring notes
 
-### Messaging (TODO)
-- In-app chat between matched pairs
-- Message history
+### Messaging (Implemented - UI with mock data)
+- Conversations list with unread indicators (`/messages`)
+- Chat interface with message bubbles (`/messages/:matchId`)
+- Date dividers and relative timestamps
+- Safety report option in menu
 
-### Community (TODO)
-- Community feed for shared wins/encouragement
-- Group directory
+### Community (Implemented - UI with mock data)
+- Community feed with posts, likes, sharing (`/community`)
+- Group directory with filters by type (`/groups`)
+- Group detail with join/leave, events, activity (`/groups/:groupId`)
 
-### Training (TODO)
-- Training tracks for mentor development
-- Module completion tracking
-- Facilitation toolkit
+### Training (Implemented - UI with mock data)
+- Training hub with overall progress (`/training`)
+- Track detail with module list (`/training/:trackId`)
+- Module detail with content sections, takeaways, reflection (`/training/:trackId/:moduleId`)
+- Facilitation toolkit with searchable resources (`/toolkit`)
 
-### Admin (TODO)
-- Match overview dashboard
-- Pending match approval
-- Safety reports review
+### Goals (Implemented - UI with mock data)
+- Goals list with progress tracking (`/goals`)
+- Add goal modal with title, description, target date
+- Mark goals complete, edit, delete
+
+### Notifications (Implemented - UI with mock data)
+- Notification center with type-based icons (`/notifications`)
+- Read/unread states
+- Mark all read functionality
+
+### Profile (Implemented - UI with mock data)
+- User profile with avatar, bio, interests (`/profile`)
+- Stats card (matches, sessions, streak, badges)
+- Settings menu (edit profile, notifications, help, sign out)
+
+### Admin (Implemented - UI with mock data)
+- Admin dashboard with stats overview (`/admin`)
+- Pending match approval workflow
+- Safety flagged items review
 
 ## Safety Considerations (Critical)
 Because users include minors (ages 12-19):
@@ -142,25 +169,62 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 ## Current Status
 - [x] Project scaffolding
 - [x] Tailwind CSS setup
-- [x] UI component library (Button, Input, Card, Avatar, Badge)
+- [x] UI component library (Button, Input, Card, Avatar, Badge, Textarea)
 - [x] Layout components (AppShell, BottomNav, Header)
 - [x] Onboarding flow (5 screens)
 - [x] Home dashboard with mock data
 - [x] Routing setup
+- [x] Messages list and chat interface
+- [x] Sessions list and detail (mentor/mentee views)
+- [x] Session notes with guided prompts
+- [x] Goals tracking with add/edit/complete
+- [x] Training hub, tracks, and modules
+- [x] Facilitation toolkit
+- [x] Community feed with posts/likes
+- [x] Group directory and detail
+- [x] Find mentor and mentor profiles
+- [x] Match request flow
+- [x] Notifications center
+- [x] Profile page with stats
+- [x] Admin dashboard (stats, match approval, safety)
+- [x] Mock data for all features
+- [x] Wireframes documentation
 - [ ] Supabase project creation
 - [ ] Database migrations
 - [ ] Auth implementation
-- [ ] Matching flow
-- [ ] Session scheduling
-- [ ] Messaging
-- [ ] Community feed
-- [ ] Training modules
-- [ ] Admin dashboard
+- [ ] Connect UI to Supabase backend
+- [ ] Google Calendar integration
+
+## All Routes
+| Route | Component | Description |
+|-------|-----------|-------------|
+| `/` | OnboardingPage | Welcome and onboarding flow |
+| `/home` | HomePage | Dashboard with quick actions |
+| `/messages` | MessagesPage | Conversation list |
+| `/messages/:matchId` | ChatPage | Chat with match |
+| `/sessions` | SessionsListPage | All sessions overview |
+| `/sessions/:matchId` | SessionsPage | Session detail for match |
+| `/goals` | GoalsPage | Goal tracking |
+| `/training` | TrainingPage | Training hub |
+| `/training/:trackId` | TrackDetailPage | Training track modules |
+| `/training/:trackId/:moduleId` | ModuleDetailPage | Module content |
+| `/toolkit` | ToolkitPage | Facilitation resources |
+| `/community` | CommunityPage | Community feed |
+| `/groups` | GroupsPage | Group directory |
+| `/groups/:groupId` | GroupDetailPage | Group detail |
+| `/mentors` | FindMentorPage | Browse mentors |
+| `/mentors/:mentorId` | MentorProfilePage | Mentor profile |
+| `/match-requests` | MatchRequestsPage | View match requests |
+| `/profile` | ProfilePage | User profile |
+| `/notifications` | NotificationsPage | Notification center |
+| `/admin` | AdminPage | Admin dashboard |
 
 ## Next Steps
 1. Create Supabase project
 2. Run database migrations
 3. Implement auth flow (sign up, sign in)
 4. Connect onboarding to Supabase
-5. Build matching/browse mentors screen
-6. Implement session scheduling with Google Calendar
+5. Replace mock data with Supabase queries
+6. Implement Google Calendar integration for sessions
+7. Add real-time messaging with Supabase Realtime
+8. Implement push notifications

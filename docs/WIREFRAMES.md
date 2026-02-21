@@ -21,6 +21,14 @@
 - `/goals` - Goals tracking
 - `/notifications` - Notification center
 - `/training/:trackId` - Training track detail
+- `/training/:trackId/:moduleId` - Module detail
+- `/toolkit` - Facilitation toolkit
+- `/mentors` - Find a mentor (browse)
+- `/mentors/:mentorId` - Mentor profile detail
+- `/match-requests` - View pending match requests
+- `/groups` - Group directory
+- `/groups/:groupId` - Group detail
+- `/admin` - Admin dashboard
 
 ---
 
@@ -733,6 +741,583 @@
 
 ---
 
+## 12. Find a Mentor (`/mentors`)
+
+```
+┌─────────────────────────────────────┐
+│ ← Find a Mentor                     │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 🔍 Search by name, specialty... │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌───────────────────────────────────┐
+│ │[All][Career][Leadership][Tech]... │
+│ └───────────────────────────────────┘
+│     (horizontal scroll filters)     │
+│                                     │
+│ 4 mentors available                 │
+│                                     │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) David Williams    ⭐4.9│ │
+│ │                                 │ │
+│ │ Software engineer with 10      │ │
+│ │ years of experience...         │ │
+│ │                                 │ │
+│ │ [Career] [Technology] [Leader] │ │
+│ │                                 │ │
+│ │ 📍 Chicago  🕐 Weekday evenings>│ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) James Thompson   ⭐4.8│ │
+│ │                                 │ │
+│ │ Youth pastor and basketball    │ │
+│ │ coach. Love seeing young...    │ │
+│ │                                 │ │
+│ │ [Confidence] [Sports] [Faith]  │ │
+│ │                                 │ │
+│ │ 📍 Chicago      🕐 Weekends   >│ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) Michael Chen     ⭐4.7│ │
+│ │                                 │ │
+│ │ Financial advisor and former   │ │
+│ │ college athlete...             │ │
+│ │                                 │ │
+│ │ [Finance] [Academic] [Fitness] │ │
+│ │                                 │ │
+│ │ 📍 Chicago        🕐 Flexible >│ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Key Elements:**
+- Search input with icon
+- Horizontal scrolling specialty filter pills
+- Results count
+- Mentor cards with rating, bio preview, specialties
+- Location and availability indicators
+
+---
+
+## 13. Mentor Profile (`/mentors/:mentorId`)
+
+```
+┌─────────────────────────────────────┐
+│ ← Mentor Profile                    │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │        (Large Avatar)           │ │
+│ │                                 │ │
+│ │       David Williams            │ │
+│ │         ⭐ 4.9 rating           │ │
+│ │       📍 Chicago, IL            │ │
+│ │                                 │ │
+│ │ Software engineer with 10      │ │
+│ │ years of experience. Passionate│ │
+│ │ about helping young men...     │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────┐ ┌─────┐ ┌─────────┐        │
+│ │ 10  │ │  5  │ │ Weekday │        │
+│ │Years│ │Ment-│ │ evenings│        │
+│ │Exp. │ │ees  │ │Available│        │
+│ └─────┘ └─────┘ └─────────┘        │
+│                                     │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ SPECIALTIES                     │ │
+│ │                                 │ │
+│ │ [Career Development]           │ │
+│ │ [Technology] [Leadership]      │ │
+│ │      (orange badges)           │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ INTERESTS                       │ │
+│ │                                 │ │
+│ │ ♥ Technology  ♥ Fitness        │ │
+│ │ ♥ Entrepreneurship  ♥ Faith    │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ FOCUS AREAS                     │ │
+│ │                                 │ │
+│ │ [Leadership Skills]            │ │
+│ │ [Career Development]           │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ [💬 Request to Match]               │
+│     (full width button)             │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Request Match Modal:**
+```
+┌─────────────────────────────────────┐
+│ Request Match                  [✕]  │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) David Williams         │ │
+│ │          Mentor                 │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ Introduce yourself (optional)       │
+│ ┌─────────────────────────────────┐ │
+│ │ Tell the mentor a bit about    │ │
+│ │ yourself and why you'd like    │ │
+│ │ to connect...                   │ │
+│ │                                 │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ (small) Your request will be        │
+│ reviewed by the mentor and program  │
+│ admin before being approved.        │
+│                                     │
+│ [Cancel]          [Send Request]    │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Request Sent State:**
+```
+┌─────────────────────────────────────┐
+│ ┌─────────────────────────────────┐ │
+│ │ ✓ Request Sent! (green bg)     │ │
+│ │                                 │ │
+│ │ Waiting for David to respond   │ │
+│ └─────────────────────────────────┘ │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 14. Match Requests (`/match-requests`)
+
+```
+┌─────────────────────────────────────┐
+│ ← Match Requests                    │
+├─────────────────────────────────────┤
+│                                     │
+│ PENDING REQUESTS (1)                │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) James Thompson         │ │
+│ │          🕐 Pending             │ │
+│ │          2 days ago           > │ │
+│ │                                 │ │
+│ │ "Hi James! I saw that you      │ │
+│ │  coach basketball and work..." │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ PAST REQUESTS                       │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) David Williams         │ │
+│ │          ✓ Accepted             │ │
+│ │          3 weeks ago          > │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Empty State:**
+```
+┌─────────────────────────────────────┐
+│         [📥 inbox icon]            │
+│                                     │
+│      No pending requests            │
+│                                     │
+│   Find a mentor to send your        │
+│   first request                     │
+│                                     │
+│      [Browse Mentors]               │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 15. Group Directory (`/groups`)
+
+```
+┌─────────────────────────────────────┐
+│ Groups                    [🔔]      │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 🔍 Search groups...             │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌───────────────────────────────────┐
+│ │[All][Joined][Interest][Location]..│
+│ └───────────────────────────────────┘
+│                                     │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ [🔖]  Chicago Tech Mentors     │ │
+│ │ (blue)                 [Joined]│ │
+│ │                                 │ │
+│ │ Connect with mentors and       │ │
+│ │ mentees interested in tech...  │ │
+│ │                                 │ │
+│ │ 👥 45 members  📅 Coding Wkshp>│ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [📍]  North Side Chapter       │ │
+│ │ (green)                [Joined]│ │
+│ │                                 │ │
+│ │ Local chapter for mentors and  │ │
+│ │ mentees on Chicago's North...  │ │
+│ │                                 │ │
+│ │ 👥 32 members                 >│ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [👥]  College Prep             │ │
+│ │ (orange)              [Program]│ │
+│ │                                 │ │
+│ │ For mentees preparing for      │ │
+│ │ college applications, SATs...  │ │
+│ │                                 │ │
+│ │ 👥 28 members  📅 Essay Wkshp >│ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Group Type Icons:**
+| Type | Icon | Color |
+|------|------|-------|
+| Interest | 🔖 | Blue |
+| Location | 📍 | Green |
+| Program | 👥 | Orange |
+
+---
+
+## 16. Group Detail (`/groups/:groupId`)
+
+```
+┌─────────────────────────────────────┐
+│ ← Chicago Tech Mentors              │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │        [👥 icon in circle]      │ │
+│ │          (blue bg)              │ │
+│ │                                 │ │
+│ │      Chicago Tech Mentors       │ │
+│ │       [Interest Group]          │ │
+│ │                                 │ │
+│ │ Connect with mentors and        │ │
+│ │ mentees interested in tech      │ │
+│ │ careers. Share resources...     │ │
+│ │                                 │ │
+│ │        👥 45 members            │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────┬───────────────┐ │
+│ │ [Leave Group]   │ [🔔]          │ │
+│ │                 │  (toggle)     │ │
+│ └─────────────────┴───────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ ▌📅 UPCOMING EVENT              │ │
+│ │ ▌                               │ │
+│ │ ▌Coding Workshop                │ │
+│ │ ▌Feb 28, 2025                 > │ │
+│ └─────────────────────────────────┘ │
+│     (orange left border)            │
+│                                     │
+├─────────────────────────────────────┤
+│ RECENT ACTIVITY          [View All] │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) Jordan Davis           │ │
+│ │ Just got accepted to my top...  │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ (Avatar) David Williams         │ │
+│ │ Reminder: Group session this... │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ [💬] Group Discussion         > │ │
+│ │      Chat with other members    │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 17. Module Detail (`/training/:trackId/:moduleId`)
+
+```
+┌─────────────────────────────────────┐
+│ ← Mentor Foundations                │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [📖]  [Reading]    [Completed] │ │
+│ │ (blue)                          │ │
+│ │                                 │ │
+│ │ Introduction to Mentoring       │ │
+│ │ Understanding the mentor-mentee │ │
+│ │ relationship and your role.     │ │
+│ │                                 │ │
+│ │ 🕐 15 min    Module 1 of 5     │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ ┌─────────────────────────────────┐ │
+│ │ What is Mentoring?              │ │
+│ │                                 │ │
+│ │ Mentoring is a developmental    │ │
+│ │ relationship where an           │ │
+│ │ experienced person (mentor)     │ │
+│ │ guides and supports a less      │ │
+│ │ experienced person (mentee)...  │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ The Role of a Mentor            │ │
+│ │                                 │ │
+│ │ As a mentor, you serve as a     │ │
+│ │ guide, role model, and trusted  │ │
+│ │ advisor. Your job is not to     │ │
+│ │ solve all problems...           │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 💡 KEY TAKEAWAYS (orange bg)    │ │
+│ │                                 │ │
+│ │ ✓ Mentoring is about guidance   │ │
+│ │ ✓ Trust is the foundation       │ │
+│ │ ✓ Focus on holistic development │ │
+│ │ ✓ Be patient and consistent     │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ REFLECTION (blue bg)            │ │
+│ │                                 │ │
+│ │ Think about mentors in your own │ │
+│ │ life. What made them effective? │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ │[← Previous]      [Next Module →]│ │
+│ │  (or [✓ Mark as Complete])      │ │
+└─────────────────────────────────────┘
+```
+
+**Module Types:**
+| Type | Icon | Color |
+|------|------|-------|
+| Reading | 📖 | Blue |
+| Video | 🎬 | Red |
+| Interactive | 💡 | Amber |
+| Quiz | ❓ | Purple |
+
+---
+
+## 18. Facilitation Toolkit (`/toolkit`)
+
+```
+┌─────────────────────────────────────┐
+│ ← Facilitation Toolkit              │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 📂 MENTOR RESOURCES (orange bg) │ │
+│ │                                 │ │
+│ │ Templates, guides, and          │ │
+│ │ activities to help you          │ │
+│ │ facilitate effective sessions.  │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 🔍 Search resources...          │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌───────────────────────────────────┐
+│ │[All][Guides][Templates][Activities│
+│ └───────────────────────────────────┘
+│                                     │
+├─────────────────────────────────────┤
+│ GROUP SESSIONS                      │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [💡] Icebreaker Activities    > │ │
+│ │ (amber)                         │ │
+│ │ Collection of icebreaker games  │ │
+│ │ and questions to start...       │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ SESSION PLANNING                    │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [📄] Session Planning Template> │ │
+│ │ (green)                         │ │
+│ │ Template for planning effective │ │
+│ │ one-on-one mentoring sessions.  │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ WORKSHOPS                           │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [📖] Goal Setting Workshop    > │ │
+│ │ (blue)                          │ │
+│ │ Step-by-step guide for running  │ │
+│ │ a goal-setting workshop...      │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Expanded Resource:**
+```
+┌─────────────────────────────────────┐
+│ [💡] Icebreaker Activities        ∨ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 1. Two Truths and a Lie         │ │
+│ │ 2. Would You Rather             │ │
+│ │ 3. Share your highs and lows    │ │
+│ │ 4. If you could have any...     │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ [📥 Download PDF]                   │
+└─────────────────────────────────────┘
+```
+
+---
+
+## 19. Admin Dashboard (`/admin`)
+
+```
+┌─────────────────────────────────────┐
+│ ← Admin Dashboard                   │
+├─────────────────────────────────────┤
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 🛡️ ADMIN PANEL (dark bg)        │ │
+│ │                                 │ │
+│ │ Manage matches, users, and      │ │
+│ │ safety                          │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────┬─────────┬─────────────┐ │
+│ │Overview │ Matches │ Safety      │ │
+│ │(active) │   (3)   │   (1)       │ │
+│ └─────────┴─────────┴─────────────┘ │
+│                                     │
+├─────────────────────────────────────┤
+│ OVERVIEW TAB:                       │
+│                                     │
+│ ┌─────────┐ ┌─────────┐            │
+│ │   24    │ │   48    │            │
+│ │ Mentors │ │ Mentees │            │
+│ └─────────┘ └─────────┘            │
+│ ┌─────────┐ ┌─────────┐            │
+│ │   35    │ │    8    │            │
+│ │ Active  │ │ Pending │            │
+│ │ Matches │ │         │            │
+│ └─────────┘ └─────────┘            │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ THIS MONTH                      │ │
+│ │                                 │ │
+│ │ 📅 Total Sessions         142  │ │
+│ │ 📊 Avg per Match          3.2  │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ 🕐 Pending Match Requests     > │ │
+│ │    8 awaiting review            │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Matches Tab:**
+```
+┌─────────────────────────────────────┐
+│ PENDING APPROVAL (3)                │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [Pending Review]        1d ago  │ │
+│ │                                 │ │
+│ │ (Avatars) Kevin Wilson          │ │
+│ │           wants to match with   │ │
+│ │           James Thompson        │ │
+│ │                                 │ │
+│ │ "I want to get better at        │ │
+│ │  basketball and school."        │ │
+│ │                                 │ │
+│ │ [✗ Decline]    [✓ Approve]     │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ [Pending Review]        2d ago  │ │
+│ │                                 │ │
+│ │ (Avatars) Andre Jackson         │ │
+│ │           wants to match with   │ │
+│ │           Michael Chen          │ │
+│ │                                 │ │
+│ │ [✗ Decline]    [✓ Approve]     │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Safety Tab:**
+```
+┌─────────────────────────────────────┐
+│ FLAGGED ITEMS (1)                   │
+│                                     │
+│ ┌─────────────────────────────────┐ │
+│ │ ▌[⚠️] [Medium] [Report]         │ │
+│ │ ▌    (amber left border)        │ │
+│ │ ▌                               │ │
+│ │ ▌Mentee reported feeling        │ │
+│ │ ▌uncomfortable during last      │ │
+│ │ ▌session                        │ │
+│ │ ▌                               │ │
+│ │ ▌Reported 5 hours ago  [Review] │ │
+│ └─────────────────────────────────┘ │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**All Clear State:**
+```
+┌─────────────────────────────────────┐
+│         [🛡️ shield icon]           │
+│           (green)                   │
+│                                     │
+│          All clear!                 │
+│                                     │
+│   No safety concerns to review      │
+└─────────────────────────────────────┘
+```
+
+---
+
 ## User Flows
 
 ### Flow 1: Mentee Session Journey
@@ -762,7 +1347,45 @@ Dashboard → Goals Card → Goals List → Add Goal Modal
 ```
 Dashboard → Training Tile → Training Hub → Track Card
                                               ↓
-                           Track Detail → Module → Start/Review
+                           Track Detail → Module Detail → Complete
+                                              ↓
+                                       Next Module or Back to Track
+```
+
+### Flow 5: Find and Request Mentor
+```
+Dashboard → Find Mentor link → Find Mentor (browse/search)
+                                     ↓
+                              Mentor Profile → Request Match Modal
+                                     ↓
+                              Match Requests → Wait for approval
+```
+
+### Flow 6: Group Engagement
+```
+Community → Groups link → Group Directory (browse/filter)
+                               ↓
+                         Group Detail → Join Group
+                               ↓
+                         View Events / Group Discussion
+```
+
+### Flow 7: Mentor Training to Facilitation
+```
+Training Hub → Track Detail → Complete Modules
+                   ↓
+             Facilitation Toolkit → Access guides/templates
+                   ↓
+             Lead Group Sessions
+```
+
+### Flow 8: Admin Match Management
+```
+Admin Dashboard → Matches Tab → Review Pending
+                      ↓
+              Approve/Decline → Match becomes active
+                      ↓
+              Safety Tab → Review flagged items
 ```
 
 ---
@@ -805,5 +1428,33 @@ Dashboard → Training Tile → Training Hub → Track Card
 
 ---
 
+---
+
+## Screen Summary
+
+| # | Screen | Route | Status |
+|---|--------|-------|--------|
+| 1 | Dashboard | `/home` | Implemented |
+| 2 | Messages List | `/messages` | Implemented |
+| 3 | Chat | `/messages/:matchId` | Implemented |
+| 4 | Sessions List | `/sessions` | Implemented |
+| 5 | Session Detail | `/sessions/:matchId` | Implemented |
+| 6 | Goals | `/goals` | Implemented |
+| 7 | Training Hub | `/training` | Implemented |
+| 8 | Track Detail | `/training/:trackId` | Implemented |
+| 9 | Community Feed | `/community` | Implemented |
+| 10 | Profile | `/profile` | Implemented |
+| 11 | Notifications | `/notifications` | Implemented |
+| 12 | Find a Mentor | `/mentors` | Implemented |
+| 13 | Mentor Profile | `/mentors/:mentorId` | Implemented |
+| 14 | Match Requests | `/match-requests` | Implemented |
+| 15 | Group Directory | `/groups` | Implemented |
+| 16 | Group Detail | `/groups/:groupId` | Implemented |
+| 17 | Module Detail | `/training/:trackId/:moduleId` | Implemented |
+| 18 | Facilitation Toolkit | `/toolkit` | Implemented |
+| 19 | Admin Dashboard | `/admin` | Implemented |
+
+---
+
 *Last updated: February 2025*
-*Built with React + TypeScript + Tailwind CSS*
+*Built with React 19 + TypeScript + Vite + Tailwind CSS v4*

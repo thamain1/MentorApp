@@ -378,8 +378,9 @@ export function SessionDetail() {
       {/* Schedule Modal */}
       {showScheduleModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-          <div className="w-full max-w-md bg-white rounded-t-2xl p-6 safe-bottom animate-slide-up">
-            <div className="flex items-center justify-between mb-6">
+          <div className="w-full max-w-md bg-white rounded-t-2xl animate-slide-up max-h-[85vh] flex flex-col mb-16">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-iron-100">
               <h2 className="text-lg font-semibold text-iron-900">Schedule Session</h2>
               <button
                 onClick={() => setShowScheduleModal(false)}
@@ -389,7 +390,8 @@ export function SessionDetail() {
               </button>
             </div>
 
-            <div className="space-y-4">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-4">
               <div className="flex items-center gap-3 p-3 bg-iron-50 rounded-xl">
                 <Avatar src={participant.avatar_url} name={participantName} size="md" />
                 <div>
@@ -417,28 +419,29 @@ export function SessionDetail() {
                 onChange={(e) => setSessionNotes(e.target.value)}
                 rows={3}
               />
+            </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowScheduleModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={() => {
-                    // In real app, this would create session in Supabase
-                    setShowScheduleModal(false);
-                    setSelectedDate('');
-                    setSelectedTime('');
-                    setSessionNotes('');
-                  }}
-                >
-                  Schedule
-                </Button>
-              </div>
+            {/* Fixed Footer with Buttons */}
+            <div className="flex gap-3 p-6 pt-4 border-t border-iron-100 bg-white">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowScheduleModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => {
+                  // In real app, this would create session in Supabase
+                  setShowScheduleModal(false);
+                  setSelectedDate('');
+                  setSelectedTime('');
+                  setSessionNotes('');
+                }}
+              >
+                Schedule
+              </Button>
             </div>
           </div>
         </div>

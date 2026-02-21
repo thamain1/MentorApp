@@ -533,16 +533,15 @@ export function CommunityFeed() {
                 {/* Text-only Post Content */}
                 {!hasImages && (
                   <div
-                    className="relative px-4 py-4 min-h-[100px] flex items-center cursor-pointer select-none"
+                    className="relative px-4 py-4 bg-gradient-to-br from-iron-50 to-white cursor-pointer select-none"
                     onDoubleClick={() => handleDoubleTap(post.id, post.hasLiked)}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-iron-50 to-white" />
-                    <p className="relative text-iron-800 text-[15px] leading-relaxed whitespace-pre-wrap z-10">
+                    <p className="text-iron-800 text-[15px] leading-relaxed whitespace-pre-wrap">
                       {post.content}
                     </p>
                     {showHeartAnimation && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                        <Heart className="w-24 h-24 text-white fill-white drop-shadow-lg animate-ping" />
+                        <Heart className="w-24 h-24 text-red-500 fill-red-500 drop-shadow-lg animate-ping" />
                       </div>
                     )}
                   </div>

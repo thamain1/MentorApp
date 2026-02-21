@@ -47,8 +47,9 @@ export function SessionNotesModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-      <div className="w-full max-w-md bg-white rounded-t-2xl p-6 safe-bottom animate-slide-up max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+      <div className="w-full max-w-md bg-white rounded-t-2xl animate-slide-up max-h-[85vh] flex flex-col mb-16">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 pb-4 border-b border-iron-100">
           <div>
             <h2 className="text-lg font-semibold text-iron-900">Session Notes</h2>
             <p className="text-sm text-iron-500">
@@ -63,34 +64,38 @@ export function SessionNotesModal({
           </button>
         </div>
 
-        {/* Prompt Questions */}
-        <div className="mb-4 p-3 bg-iron-50 rounded-xl">
-          <div className="flex items-center gap-2 mb-2">
-            <FileText className="w-4 h-4 text-iron-500" />
-            <p className="text-sm font-medium text-iron-700">Consider reflecting on:</p>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 pt-4">
+          {/* Prompt Questions */}
+          <div className="mb-4 p-3 bg-iron-50 rounded-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="w-4 h-4 text-iron-500" />
+              <p className="text-sm font-medium text-iron-700">Consider reflecting on:</p>
+            </div>
+            <ul className="text-sm text-iron-600 space-y-1 pl-6">
+              {promptQuestions.map((question, index) => (
+                <li key={index} className="list-disc">{question}</li>
+              ))}
+            </ul>
           </div>
-          <ul className="text-sm text-iron-600 space-y-1 pl-6">
-            {promptQuestions.map((question, index) => (
-              <li key={index} className="list-disc">{question}</li>
-            ))}
-          </ul>
+
+          <Textarea
+            label={userRole === 'mentor' ? 'Mentor Notes' : 'Your Notes'}
+            placeholder="Write your notes here..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={6}
+          />
+
+          <p className="text-xs text-iron-400 mt-2">
+            {userRole === 'mentor'
+              ? 'These notes are visible to program administrators and help track mentee progress.'
+              : 'These notes help you remember what you learned and track your growth.'}
+          </p>
         </div>
 
-        <Textarea
-          label={userRole === 'mentor' ? 'Mentor Notes' : 'Your Notes'}
-          placeholder="Write your notes here..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={6}
-        />
-
-        <p className="text-xs text-iron-400 mt-2 mb-4">
-          {userRole === 'mentor'
-            ? 'These notes are visible to program administrators and help track mentee progress.'
-            : 'These notes help you remember what you learned and track your growth.'}
-        </p>
-
-        <div className="flex gap-3">
+        {/* Fixed Footer with Buttons */}
+        <div className="flex gap-3 p-6 pt-4 border-t border-iron-100 bg-white">
           <Button
             variant="outline"
             className="flex-1"

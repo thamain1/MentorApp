@@ -8,27 +8,27 @@ import { Header } from '../layout';
 import { Card, Avatar, Badge, Button } from '../ui';
 import { mockCurrentUser } from '../../data/mockData';
 
-// Image mapping for interests and goals
+// Image mapping for interests and goals - using verified Unsplash URLs
 const interestImages: Record<string, string> = {
   // Sports & Fitness
   'basketball': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&q=80',
   'football': 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400&q=80',
   'fitness': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-  'sports': 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&q=80',
+  'sports': 'https://images.unsplash.com/photo-1461896836934-28e4c42c9482?w=400&q=80',
   'running': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&q=80',
   'health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80',
 
   // Education & Career
-  'education': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=80',
-  'college': 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&q=80',
+  'education': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80',
+  'college': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=80',
   'career': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',
   'coding': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80',
   'technology': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80',
   'reading': 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80',
-  'academic': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=80',
+  'academic': 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&q=80',
 
   // Business & Finance
-  'entrepreneur': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
+  'entrepreneur': 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80',
   'business': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80',
   'finance': 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&q=80',
   'leadership': 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=400&q=80',
@@ -169,7 +169,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div className="px-4 pb-6 -mt-4">
+      <div className="px-4 pb-6 pt-4">
         {/* Greeting */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-iron-900">

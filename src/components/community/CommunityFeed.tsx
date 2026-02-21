@@ -42,13 +42,13 @@ interface PostWithImages {
 
 // Group categories for the story-style filter
 const groupCategories = [
-  { id: 'all', name: 'All', abbrev: 'ALL', color: 'from-violet-500 to-purple-600' },
-  { id: 'lifeskills', name: 'Life Skills', abbrev: 'LS', color: 'from-emerald-500 to-teal-600' },
-  { id: 'education', name: 'Education', abbrev: 'ED', color: 'from-blue-500 to-indigo-600' },
+  { id: 'all', name: 'All', abbrev: 'ALL', color: 'from-brand-500 to-coral-500' },
+  { id: 'lifeskills', name: 'Life Skills', abbrev: 'LS', color: 'from-teal-500 to-teal-600' },
+  { id: 'education', name: 'Education', abbrev: 'ED', color: 'from-brand-400 to-brand-600' },
   { id: 'entrepreneur', name: 'Entrepreneur', abbrev: 'ENT', color: 'from-amber-500 to-orange-600' },
   { id: 'construction', name: 'Construction', abbrev: 'CON', color: 'from-slate-500 to-zinc-600' },
-  { id: 'health', name: 'Health', abbrev: 'HTH', color: 'from-rose-500 to-pink-600' },
-  { id: 'faith', name: 'Faith', abbrev: 'FTH', color: 'from-purple-500 to-violet-600' },
+  { id: 'health', name: 'Health', abbrev: 'HTH', color: 'from-coral-400 to-coral-600' },
+  { id: 'faith', name: 'Faith', abbrev: 'FTH', color: 'from-brand-500 to-brand-700' },
 ];
 
 // Posts with the new format
@@ -393,7 +393,7 @@ export function CommunityFeed() {
                 >
                   <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
                     isSelected
-                      ? `bg-gradient-to-br ${category.color} ring-2 ring-offset-2 ring-violet-400`
+                      ? `bg-gradient-to-br ${category.color} ring-2 ring-offset-2 ring-brand-400`
                       : 'bg-iron-100 hover:bg-iron-200'
                   }`}>
                     <span className={`text-xs font-bold ${
@@ -403,7 +403,7 @@ export function CommunityFeed() {
                     </span>
                   </div>
                   <span className={`text-xs max-w-[56px] truncate ${
-                    isSelected ? 'text-violet-600 font-medium' : 'text-iron-500'
+                    isSelected ? 'text-brand-500 font-medium' : 'text-iron-500'
                   }`}>
                     {category.name}
                   </span>
@@ -427,7 +427,7 @@ export function CommunityFeed() {
                 {/* Post Header */}
                 <div className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-[2px] rounded-full bg-gradient-to-tr from-purple-500 via-violet-500 to-pink-500">
+                    <div className="p-[2px] rounded-full bg-gradient-to-tr from-brand-500 via-brand-400 to-coral-500">
                       <div className="bg-white p-[1px] rounded-full">
                         <Avatar
                           src={post.author.avatar_url}
@@ -518,7 +518,7 @@ export function CommunityFeed() {
                         <Heart
                           className={`w-5 h-5 ${
                             post.hasLiked
-                              ? 'text-red-500 fill-red-500'
+                              ? 'text-coral-500 fill-coral-500'
                               : 'text-iron-600'
                           }`}
                         />
@@ -588,8 +588,8 @@ export function CommunityFeed() {
                 disabled={!newPost.trim() && selectedImages.length === 0}
                 className={`font-semibold ${
                   newPost.trim() || selectedImages.length > 0
-                    ? 'text-violet-600'
-                    : 'text-violet-300'
+                    ? 'text-brand-500'
+                    : 'text-brand-300'
                 }`}
               >
                 Share
@@ -598,9 +598,9 @@ export function CommunityFeed() {
 
             {/* Daily Check-in Prompt */}
             {checkInPrompt && (
-              <div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100">
-                <p className="text-sm font-medium text-violet-700">Today's Prompt:</p>
-                <p className="text-violet-900 font-semibold">{checkInPrompt}</p>
+              <div className="px-4 py-3 bg-gradient-to-r from-brand-50 to-teal-50 border-b border-brand-100">
+                <p className="text-sm font-medium text-brand-600">Today's Prompt:</p>
+                <p className="text-brand-800 font-semibold">{checkInPrompt}</p>
               </div>
             )}
 
@@ -664,7 +664,7 @@ export function CommunityFeed() {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 text-violet-600 hover:text-violet-700 transition-colors"
+                className="flex items-center gap-2 text-brand-500 hover:text-brand-600 transition-colors"
               >
                 <Image className="w-6 h-6" />
                 <span className="text-sm font-medium">Add Photos</span>

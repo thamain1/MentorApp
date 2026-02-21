@@ -30,7 +30,7 @@ export function BottomNav() {
                 onClick={handleCreateClick}
                 className="flex flex-col items-center gap-0.5 px-3 py-1"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg shadow-purple-500/30 -mt-5">
+                <div className="w-12 h-12 bg-gradient-to-br from-brand-500 to-coral-500 rounded-full flex items-center justify-center shadow-lg shadow-brand-500/30 -mt-5">
                   <Icon className="w-6 h-6 text-white" strokeWidth={2.5} />
                 </div>
                 <span className="text-[10px] font-medium text-iron-500">{label}</span>
@@ -45,7 +45,7 @@ export function BottomNav() {
               to={path!}
               className={cn(
                 'flex flex-col items-center gap-0.5 px-3 py-2 transition-colors',
-                isActive ? 'text-violet-600' : 'text-iron-400 hover:text-iron-600'
+                isActive ? 'text-brand-500' : 'text-iron-400 hover:text-iron-600'
               )}
             >
               <Icon

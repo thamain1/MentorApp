@@ -231,7 +231,7 @@ export function Dashboard() {
 
         {/* Daily Check-in */}
         {!checkedIn && (
-          <Card className="mb-4 bg-gradient-to-br from-flame-500 to-flame-600 border-none text-white">
+          <Card className="mb-4 bg-gradient-to-br from-brand-500 to-coral-500 border-none text-white">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <Sparkles className="w-5 h-5" />
@@ -242,7 +242,7 @@ export function Dashboard() {
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="bg-white text-flame-600 hover:bg-white/90"
+                  className="bg-white text-brand-600 hover:bg-white/90"
                   onClick={handleCheckIn}
                 >
                   Check In
@@ -286,10 +286,10 @@ export function Dashboard() {
         {/* Upcoming Session */}
         {mockMatch?.nextSession && (
           <Link to={`/sessions/${mockMatch.id}`}>
-            <Card className="mb-4 hover:border-flame-200 transition-colors">
+            <Card className="mb-4 hover:border-brand-200 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-flame-100 rounded-xl flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-flame-600" />
+                <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
+                  <Clock className="w-6 h-6 text-brand-600" />
                 </div>
                 <div className="flex-1">
                   <h4 className="font-medium text-iron-900">Next Session</h4>
@@ -313,7 +313,7 @@ export function Dashboard() {
         <Card className="mb-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-iron-900">Your Goals</h3>
-            <Link to="/goals" className="text-sm text-flame-500 font-medium">
+            <Link to="/goals" className="text-sm text-brand-500 font-medium">
               View All
             </Link>
           </div>
@@ -326,7 +326,7 @@ export function Dashboard() {
                 </div>
                 <div className="h-2 bg-iron-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-flame-500 rounded-full transition-all"
+                    className="h-full bg-teal-500 rounded-full transition-all"
                     style={{ width: `${goal.progress}%` }}
                   />
                 </div>
@@ -344,36 +344,36 @@ export function Dashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
           <Link to="/sessions">
-            <Card className="hover:border-flame-200 transition-colors">
-              <div className="w-10 h-10 bg-flame-100 rounded-xl flex items-center justify-center mb-3">
-                <Calendar className="w-5 h-5 text-flame-600" />
+            <Card className="hover:border-brand-200 transition-colors">
+              <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center mb-3">
+                <Calendar className="w-5 h-5 text-brand-600" />
               </div>
               <h4 className="font-medium text-iron-900 text-sm">Sessions</h4>
               <p className="text-xs text-iron-500">View all sessions</p>
             </Card>
           </Link>
           <Link to="/training">
-            <Card className="hover:border-flame-200 transition-colors">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
-                <TrendingUp className="w-5 h-5 text-blue-600" />
+            <Card className="hover:border-teal-200 transition-colors">
+              <div className="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center mb-3">
+                <TrendingUp className="w-5 h-5 text-teal-600" />
               </div>
               <h4 className="font-medium text-iron-900 text-sm">Training</h4>
               <p className="text-xs text-iron-500">Continue learning</p>
             </Card>
           </Link>
           <Link to="/community">
-            <Card className="hover:border-flame-200 transition-colors">
-              <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mb-3">
-                <MessageCircle className="w-5 h-5 text-green-600" />
+            <Card className="hover:border-brand-200 transition-colors">
+              <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center mb-3">
+                <MessageCircle className="w-5 h-5 text-brand-600" />
               </div>
               <h4 className="font-medium text-iron-900 text-sm">Community</h4>
               <p className="text-xs text-iron-500">Join the conversation</p>
             </Card>
           </Link>
           <Link to="/goals">
-            <Card className="hover:border-flame-200 transition-colors">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
-                <Target className="w-5 h-5 text-purple-600" />
+            <Card className="hover:border-coral-200 transition-colors">
+              <div className="w-10 h-10 bg-coral-100 rounded-xl flex items-center justify-center mb-3">
+                <Target className="w-5 h-5 text-coral-600" />
               </div>
               <h4 className="font-medium text-iron-900 text-sm">Goals</h4>
               <p className="text-xs text-iron-500">Track your progress</p>

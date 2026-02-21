@@ -1,3 +1,13 @@
 export { OnboardingPage } from './Onboarding';
 export { HomePage } from './Home';
 export { PlaceholderPage } from './Placeholder';
+export { MessagesPage } from './Messages';
+export { ChatPage } from './ChatPage';
+export { SessionsPage } from './Sessions';
+export { SessionsListPage } from './SessionsList';
+export { GoalsPage } from './Goals';
+export { TrainingPage } from './Training';
+export { TrackDetailPage } from './TrackDetailPage';
+export { CommunityPage } from './Community';
+export { ProfilePage } from './Profile';
+export { NotificationsPage } from './Notifications';

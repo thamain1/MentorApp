@@ -14,11 +14,11 @@ const mockUser = {
 };
 
 const mockMatch = {
-  id: '1',
-  mentorName: 'David Johnson',
+  id: 'match-1',
+  mentorName: 'David Williams',
   mentorAvatar: null,
-  nextSession: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-  matchedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 2 weeks ago
+  nextSession: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+  matchedAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000), // 3 weeks ago
 };
 
 const mockGoals = [
@@ -161,6 +161,15 @@ export function Dashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">
+          <Link to="/sessions">
+            <Card className="hover:border-flame-200 transition-colors">
+              <div className="w-10 h-10 bg-flame-100 rounded-xl flex items-center justify-center mb-3">
+                <Calendar className="w-5 h-5 text-flame-600" />
+              </div>
+              <h4 className="font-medium text-iron-900 text-sm">Sessions</h4>
+              <p className="text-xs text-iron-500">View all sessions</p>
+            </Card>
+          </Link>
           <Link to="/training">
             <Card className="hover:border-flame-200 transition-colors">
               <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
@@ -177,6 +186,15 @@ export function Dashboard() {
               </div>
               <h4 className="font-medium text-iron-900 text-sm">Community</h4>
               <p className="text-xs text-iron-500">Join the conversation</p>
+            </Card>
+          </Link>
+          <Link to="/goals">
+            <Card className="hover:border-flame-200 transition-colors">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+                <Target className="w-5 h-5 text-purple-600" />
+              </div>
+              <h4 className="font-medium text-iron-900 text-sm">Goals</h4>
+              <p className="text-xs text-iron-500">Track your progress</p>
             </Card>
           </Link>
         </div>

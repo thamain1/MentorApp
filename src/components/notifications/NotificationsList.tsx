@@ -24,7 +24,7 @@ const notificationIcons: Record<string, typeof Bell> = {
 const notificationColors: Record<string, string> = {
   message: 'bg-blue-100 text-blue-600',
   session: 'bg-green-100 text-green-600',
-  goal: 'bg-flame-100 text-flame-600',
+  goal: 'bg-violet-100 text-violet-600',
   community: 'bg-pink-100 text-pink-600',
   system: 'bg-iron-100 text-iron-600',
 };
@@ -66,7 +66,7 @@ export function NotificationsList() {
           <div className="flex justify-end mb-4">
             <button
               onClick={handleMarkAllRead}
-              className="flex items-center gap-1.5 text-sm text-flame-600 font-medium"
+              className="flex items-center gap-1.5 text-sm text-violet-600 font-medium"
             >
               <CheckCheck className="w-4 h-4" />
               Mark all read
@@ -100,7 +100,7 @@ export function NotificationsList() {
                   onClick={() => handleNotificationClick(notification)}
                   className={`w-full text-left p-4 rounded-xl border transition-colors ${
                     isUnread
-                      ? 'bg-flame-50/50 border-flame-100'
+                      ? 'bg-violet-50/50 border-violet-100'
                       : 'bg-white border-iron-100 hover:bg-iron-50'
                   }`}
                 >
@@ -117,7 +117,7 @@ export function NotificationsList() {
                           {notification.title}
                         </h4>
                         {isUnread && (
-                          <span className="w-2 h-2 bg-flame-500 rounded-full flex-shrink-0 mt-2" />
+                          <span className="w-2 h-2 bg-violet-500 rounded-full flex-shrink-0 mt-2" />
                         )}
                       </div>
                       {notification.body && (

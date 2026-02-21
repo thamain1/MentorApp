@@ -5,7 +5,6 @@ import {
   Send,
   Bookmark,
   MoreHorizontal,
-  Plus,
   Image,
   X,
   ChevronLeft,
@@ -13,10 +12,10 @@ import {
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar } from '../ui';
-import { mockPosts, mockCurrentUser, mockMentorProfile, mockMentees } from '../../data/mockData';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { mockCurrentUser, mockMentorProfile, mockMentees } from '../../data/mockData';
+import { useLocation } from 'react-router-dom';
 
-// Extended post type with images and category
+// Extended post type with images, category, role, and comments
 interface PostWithImages {
   id: string;
   group_id: string | null;
@@ -29,29 +28,58 @@ interface PostWithImages {
     first_name: string;
     last_name: string;
     avatar_url: string | null;
+    role?: string;
   };
   likes: number;
+  comments: number;
   hasLiked: boolean;
   images?: string[];
+  topComment?: {
+    author: string;
+    text: string;
+  };
 }
 
-// Group categories for stories section
+// Group categories for the story-style filter
 const groupCategories = [
-  { id: 'all', abbr: 'ALL', name: 'All Posts', color: 'from-iron-400 to-iron-600', hasNew: false },
-  { id: 'education', abbr: 'ED', name: 'Education', color: 'from-blue-400 to-blue-600', hasNew: true },
-  { id: 'lifeskills', abbr: 'LS', name: 'Life Skills', color: 'from-teal-400 to-teal-600', hasNew: true },
-  { id: 'entrepreneur', abbr: 'EN', name: 'Entrepreneur', color: 'from-amber-400 to-amber-600', hasNew: true },
-  { id: 'construction', abbr: 'CO', name: 'Construction', color: 'from-orange-400 to-orange-600', hasNew: false },
-  { id: 'health', abbr: 'HE', name: 'Health', color: 'from-green-400 to-green-600', hasNew: true },
-  { id: 'faith', abbr: 'FA', name: 'Faith', color: 'from-purple-400 to-purple-600', hasNew: true },
-  { id: 'finance', abbr: '$', name: 'Finance', color: 'from-emerald-400 to-emerald-600', hasNew: false },
-  { id: 'mentors', abbr: 'MT', name: 'Mentors', color: 'from-flame-400 to-flame-600', hasNew: true },
+  { id: 'all', name: 'All', abbrev: 'ALL', color: 'from-violet-500 to-purple-600' },
+  { id: 'lifeskills', name: 'Life Skills', abbrev: 'LS', color: 'from-emerald-500 to-teal-600' },
+  { id: 'education', name: 'Education', abbrev: 'ED', color: 'from-blue-500 to-indigo-600' },
+  { id: 'entrepreneur', name: 'Entrepreneur', abbrev: 'ENT', color: 'from-amber-500 to-orange-600' },
+  { id: 'construction', name: 'Construction', abbrev: 'CON', color: 'from-slate-500 to-zinc-600' },
+  { id: 'health', name: 'Health', abbrev: 'HTH', color: 'from-rose-500 to-pink-600' },
+  { id: 'faith', name: 'Faith', abbrev: 'FTH', color: 'from-purple-500 to-violet-600' },
 ];
 
-// Add some posts with images and categories
+// Posts with the new format
 const postsWithImages: PostWithImages[] = [
   {
-    id: 'post-img-1',
+    id: 'post-1',
+    group_id: null,
+    category: 'education',
+    user_id: mockMentorProfile.user_id,
+    content: 'Just completed my first hackathon! Here are 5 tips for young developers looking to participate in their first coding competition 🚀',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    author: {
+      id: mockMentorProfile.id,
+      first_name: 'Alex',
+      last_name: 'Martinez',
+      avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+      role: 'Software Engineer',
+    },
+    likes: 124,
+    comments: 18,
+    hasLiked: true,
+    images: [
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=640&q=80',
+    ],
+    topComment: {
+      author: 'jessica_codes',
+      text: 'This is so inspiring! Thanks for sharing 🙌',
+    },
+  },
+  {
+    id: 'post-2',
     group_id: null,
     category: 'mentors',
     user_id: mockMentorProfile.user_id,
@@ -62,169 +90,144 @@ const postsWithImages: PostWithImages[] = [
       first_name: mockMentorProfile.first_name,
       last_name: mockMentorProfile.last_name,
       avatar_url: mockMentorProfile.avatar_url,
+      role: 'Lead Mentor',
     },
-    likes: 47,
-    hasLiked: true,
+    likes: 89,
+    comments: 12,
+    hasLiked: false,
     images: [
       'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=640&q=80',
     ],
-  },
-  {
-    id: 'post-img-2',
-    group_id: null,
-    category: 'education',
-    user_id: mockMentees[2].user_id,
-    content: 'Just finished my college application essays! Couldn\'t have done it without my mentor\'s guidance. Next stop: university! 🎓📚',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-    author: {
-      id: mockMentees[2].id,
-      first_name: mockMentees[2].first_name,
-      last_name: mockMentees[2].last_name,
-      avatar_url: mockMentees[2].avatar_url,
+    topComment: {
+      author: 'marcus_j',
+      text: 'Best session yet! Learned so much 📚',
     },
-    likes: 89,
-    hasLiked: false,
-    images: [
-      'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=640&q=80',
-      'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=640&q=80',
-    ],
   },
   {
-    id: 'post-img-3',
-    group_id: null,
-    category: 'lifeskills',
-    user_id: mockCurrentUser.user_id,
-    content: 'Volunteered at the community center today with my mentor. Making a difference feels amazing!',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    author: {
-      id: mockCurrentUser.id,
-      first_name: mockCurrentUser.first_name,
-      last_name: mockCurrentUser.last_name,
-      avatar_url: mockCurrentUser.avatar_url,
-    },
-    likes: 34,
-    hasLiked: false,
-    images: [
-      'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=640&q=80',
-    ],
-  },
-  {
-    id: 'post-health-1',
-    group_id: null,
-    category: 'health',
-    user_id: mockMentorProfile.user_id,
-    content: 'Morning workout complete! Remember kings, taking care of your body is taking care of your mind. Who else got their workout in today?',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
-    author: {
-      id: mockMentorProfile.id,
-      first_name: mockMentorProfile.first_name,
-      last_name: mockMentorProfile.last_name,
-      avatar_url: mockMentorProfile.avatar_url,
-    },
-    likes: 62,
-    hasLiked: false,
-    images: [
-      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=640&q=80',
-    ],
-  },
-  {
-    id: 'post-entrepreneur-1',
+    id: 'post-3',
     group_id: null,
     category: 'entrepreneur',
     user_id: mockMentees[1].user_id,
-    content: 'Started my first small business this week - a lawn care service! My mentor helped me write a business plan and set my prices. First client already booked!',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+    content: 'Started my first small business this week - a lawn care service! My mentor helped me write a business plan and set my prices. First client already booked! 🌱',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
     author: {
       id: mockMentees[1].id,
       first_name: mockMentees[1].first_name,
       last_name: mockMentees[1].last_name,
       avatar_url: mockMentees[1].avatar_url,
+      role: 'Aspiring Entrepreneur',
     },
-    likes: 103,
+    likes: 156,
+    comments: 24,
     hasLiked: true,
     images: [
       'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=640&q=80',
     ],
-  },
-  {
-    id: 'post-construction-1',
-    group_id: null,
-    category: 'construction',
-    user_id: mockMentorProfile.user_id,
-    content: 'Took the young men to a job site today. Nothing like hands-on experience to see what a career in the trades looks like. Several expressed interest in apprenticeships!',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    author: {
-      id: mockMentorProfile.id,
-      first_name: mockMentorProfile.first_name,
-      last_name: mockMentorProfile.last_name,
-      avatar_url: mockMentorProfile.avatar_url,
+    topComment: {
+      author: 'coach_williams',
+      text: 'So proud of you! This is what it\'s all about 🙏',
     },
-    likes: 78,
-    hasLiked: false,
-    images: [
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=640&q=80',
-    ],
   },
   {
-    id: 'post-faith-1',
+    id: 'post-4',
     group_id: null,
     category: 'faith',
     user_id: mockCurrentUser.user_id,
     content: 'As iron sharpens iron, so one person sharpens another. Grateful for this community and the men who pour into us daily. 🙏',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(),
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     author: {
       id: mockCurrentUser.id,
       first_name: mockCurrentUser.first_name,
       last_name: mockCurrentUser.last_name,
       avatar_url: mockCurrentUser.avatar_url,
+      role: 'Mentee',
     },
-    likes: 156,
+    likes: 203,
+    comments: 31,
     hasLiked: true,
-  },
-  {
-    id: 'post-finance-1',
-    group_id: null,
-    category: 'finance',
-    user_id: mockMentees[2].user_id,
-    content: 'Opened my first savings account today! My mentor taught me about budgeting and the importance of paying yourself first. Small steps lead to big changes.',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    author: {
-      id: mockMentees[2].id,
-      first_name: mockMentees[2].first_name,
-      last_name: mockMentees[2].last_name,
-      avatar_url: mockMentees[2].avatar_url,
+    topComment: {
+      author: 'david_w',
+      text: 'Amen! This community changed my life 💯',
     },
-    likes: 94,
-    hasLiked: false,
   },
   {
-    id: 'post-lifeskills-2',
+    id: 'post-5',
+    group_id: null,
+    category: 'health',
+    user_id: mockMentorProfile.user_id,
+    content: 'Morning workout complete! Remember kings, taking care of your body is taking care of your mind. Who else got their workout in today? 💪',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(),
+    author: {
+      id: mockMentorProfile.id,
+      first_name: 'Coach',
+      last_name: 'Mike',
+      avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&q=80',
+      role: 'Fitness Coach',
+    },
+    likes: 78,
+    comments: 15,
+    hasLiked: false,
+    images: [
+      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=640&q=80',
+    ],
+    topComment: {
+      author: 'young_king_23',
+      text: 'Just finished mine! 5am gang 🔥',
+    },
+  },
+  {
+    id: 'post-6',
     group_id: null,
     category: 'lifeskills',
+    user_id: mockMentees[0].user_id,
+    content: 'Finally learned how to cook a proper meal for my family tonight! My mentor taught me that taking care of others starts with small acts of service. Thanks for pushing me to learn these skills. 🍳',
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+    author: {
+      id: mockMentees[0].id,
+      first_name: mockMentees[0].first_name,
+      last_name: mockMentees[0].last_name,
+      avatar_url: mockMentees[0].avatar_url,
+      role: 'Mentee',
+    },
+    likes: 92,
+    comments: 8,
+    hasLiked: false,
+    images: [
+      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=640&q=80',
+    ],
+    topComment: {
+      author: 'mentor_james',
+      text: 'So proud of you! This is what growth looks like 👏',
+    },
+  },
+  {
+    id: 'post-7',
+    group_id: null,
+    category: 'construction',
     user_id: mockMentorProfile.user_id,
-    content: 'Today\'s session: Interview skills! Practiced handshakes, eye contact, and answering tough questions. These young men are going to crush their future interviews.',
+    content: 'Big day on the job site! These young men are learning valuable trade skills that will serve them for life. Hard work pays off. 🔨',
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
     author: {
       id: mockMentorProfile.id,
-      first_name: mockMentorProfile.first_name,
-      last_name: mockMentorProfile.last_name,
-      avatar_url: mockMentorProfile.avatar_url,
+      first_name: 'Steve',
+      last_name: 'Johnson',
+      avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
+      role: 'Trades Mentor',
     },
-    likes: 88,
+    likes: 145,
+    comments: 22,
     hasLiked: true,
     images: [
-      'https://images.unsplash.com/photo-1560439514-4e9645039924?w=640&q=80',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=640&q=80',
     ],
+    topComment: {
+      author: 'apprentice_mike',
+      text: 'Learning so much every day on this crew! 💪',
+    },
   },
-  // Convert existing posts with random categories
-  ...mockPosts.map((post, index) => ({
-    ...post,
-    category: ['education', 'lifeskills', 'faith', 'mentors'][index % 4],
-    images: undefined
-  })),
 ];
 
-// Format time like Instagram (2h, 1d, 3w)
+// Format time like "2h ago"
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
@@ -237,8 +240,8 @@ function formatTimeAgo(dateString: string): string {
   return `${Math.floor(seconds / 604800)}w`;
 }
 
+
 export function CommunityFeed() {
-  const navigate = useNavigate();
   const location = useLocation();
   const [posts, setPosts] = useState<PostWithImages[]>(postsWithImages);
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
@@ -247,31 +250,27 @@ export function CommunityFeed() {
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [likeAnimation, setLikeAnimation] = useState<string | null>(null);
   const [imageIndexes, setImageIndexes] = useState<Record<string, number>>({});
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [postCategory, setPostCategory] = useState<string>('lifeskills');
   const [checkInPrompt, setCheckInPrompt] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check if navigated from Daily Check-in
-  useEffect(() => {
-    const state = location.state as { checkInPrompt?: string } | null;
-    if (state?.checkInPrompt) {
-      setCheckInPrompt(state.checkInPrompt);
-      setShowCompose(true);
-      // Clear the state so it doesn't persist on refresh
-      window.history.replaceState({}, document.title);
-    }
-  }, [location.state]);
-
-  // Filter posts based on selected category
+  // Filter posts by selected category
   const filteredPosts = selectedCategory === 'all'
     ? posts
     : posts.filter(post => post.category === selectedCategory);
 
-  // Get category info by id
-  const getCategoryInfo = (categoryId: string) => {
-    return groupCategories.find(g => g.id === categoryId) || groupCategories[0];
-  };
+  // Check if navigated from Daily Check-in or Create button
+  useEffect(() => {
+    const state = location.state as { checkInPrompt?: string; openCompose?: boolean } | null;
+    if (state?.checkInPrompt) {
+      setCheckInPrompt(state.checkInPrompt);
+      setShowCompose(true);
+      window.history.replaceState({}, document.title);
+    } else if (state?.openCompose) {
+      setShowCompose(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleLike = useCallback((postId: string) => {
     setPosts(posts.map(post => {
@@ -317,7 +316,7 @@ export function CommunityFeed() {
         if (event.target?.result) {
           newImages.push(event.target.result as string);
           if (newImages.length === files.length) {
-            setSelectedImages(prev => [...prev, ...newImages].slice(0, 10)); // Max 10 images
+            setSelectedImages(prev => [...prev, ...newImages].slice(0, 10));
           }
         }
       };
@@ -335,7 +334,7 @@ export function CommunityFeed() {
     const newPostObj: PostWithImages = {
       id: `post-new-${Date.now()}`,
       group_id: null,
-      category: postCategory,
+      category: 'mentors',
       user_id: mockCurrentUser.user_id,
       content: newPost,
       created_at: new Date().toISOString(),
@@ -344,8 +343,10 @@ export function CommunityFeed() {
         first_name: mockCurrentUser.first_name,
         last_name: mockCurrentUser.last_name,
         avatar_url: mockCurrentUser.avatar_url,
+        role: 'Mentee',
       },
       likes: 0,
+      comments: 0,
       hasLiked: false,
       images: selectedImages.length > 0 ? selectedImages : undefined,
     };
@@ -353,7 +354,6 @@ export function CommunityFeed() {
     setPosts([newPostObj, ...posts]);
     setNewPost('');
     setSelectedImages([]);
-    setPostCategory('lifeskills');
     setCheckInPrompt(null);
     setShowCompose(false);
   };
@@ -370,41 +370,42 @@ export function CommunityFeed() {
 
   return (
     <AppShell>
-      <Header title="Community" showNotifications />
+      <Header
+        showLogo
+        showSearch
+        showNotifications
+        showProfile
+        notificationCount={3}
+      />
 
-      <div className="bg-white">
-        {/* Groups Section */}
-        <div className="border-b border-iron-100">
+      <div className="bg-iron-50 min-h-screen pb-4">
+        {/* Group Categories Section */}
+        <div className="bg-white border-b border-iron-100">
           <div className="flex gap-3 p-4 overflow-x-auto scrollbar-hide">
-            {groupCategories.map((group) => {
-              const isSelected = selectedCategory === group.id;
+            {groupCategories.map((category) => {
+              const isSelected = selectedCategory === category.id;
+
               return (
                 <button
-                  key={group.id}
-                  onClick={() => setSelectedCategory(group.id)}
-                  onDoubleClick={() => group.id !== 'all' && navigate(`/groups?filter=${group.id}`)}
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
                   className="flex flex-col items-center gap-1.5 flex-shrink-0"
                 >
-                  <div className={`relative p-[3px] rounded-full transition-all ${
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all ${
                     isSelected
-                      ? 'bg-gradient-to-tr from-amber-500 via-flame-500 to-pink-500 scale-105'
-                      : group.hasNew
-                        ? 'bg-gradient-to-tr from-amber-500 via-flame-500 to-pink-500'
-                        : 'bg-iron-200'
+                      ? `bg-gradient-to-br ${category.color} ring-2 ring-offset-2 ring-violet-400`
+                      : 'bg-iron-100 hover:bg-iron-200'
                   }`}>
-                    <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${group.color} flex items-center justify-center border-2 border-white shadow-sm ${
-                      isSelected ? 'shadow-md' : ''
+                    <span className={`text-xs font-bold ${
+                      isSelected ? 'text-white' : 'text-iron-600'
                     }`}>
-                      <span className="text-white font-bold text-sm">{group.abbr}</span>
-                    </div>
-                    {group.hasNew && !isSelected && (
-                      <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-flame-500 rounded-full border-2 border-white" />
-                    )}
+                      {category.abbrev}
+                    </span>
                   </div>
-                  <span className={`text-xs max-w-[64px] truncate font-medium ${
-                    isSelected ? 'text-flame-600' : 'text-iron-600'
+                  <span className={`text-xs max-w-[56px] truncate ${
+                    isSelected ? 'text-violet-600 font-medium' : 'text-iron-500'
                   }`}>
-                    {group.name}
+                    {category.name}
                   </span>
                 </button>
               );
@@ -413,66 +414,65 @@ export function CommunityFeed() {
         </div>
 
         {/* Feed */}
-        <div className="divide-y divide-iron-100">
-          {filteredPosts.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-iron-500 font-medium">No posts in this category yet</p>
-              <p className="text-iron-400 text-sm mt-1">Be the first to share something!</p>
-            </div>
-          ) : filteredPosts.map((post) => {
+        <div className="space-y-4 pt-4 px-4">
+          {filteredPosts.map((post) => {
             const authorName = `${post.author.first_name} ${post.author.last_name}`;
             const isSaved = savedPosts.has(post.id);
             const showHeartAnimation = likeAnimation === post.id;
             const hasImages = post.images && post.images.length > 0;
             const currentImageIndex = imageIndexes[post.id] || 0;
-            const categoryInfo = getCategoryInfo(post.category);
 
             return (
-              <article key={post.id} className="bg-white">
+              <article key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 {/* Post Header */}
                 <div className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-500 via-flame-500 to-pink-500">
+                    <div className="p-[2px] rounded-full bg-gradient-to-tr from-purple-500 via-violet-500 to-pink-500">
                       <div className="bg-white p-[1px] rounded-full">
                         <Avatar
                           src={post.author.avatar_url}
                           name={authorName}
-                          size="sm"
+                          size="md"
                         />
                       </div>
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-sm text-iron-900">
-                          {authorName.toLowerCase().replace(' ', '_')}
-                        </h4>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold bg-gradient-to-br ${categoryInfo.color} text-white`}>
-                          {categoryInfo.abbr}
-                        </span>
-                      </div>
+                      <h4 className="font-semibold text-sm text-iron-900">
+                        {authorName}
+                      </h4>
+                      <p className="text-xs text-iron-500">
+                        {post.author.role} • {formatTimeAgo(post.created_at)}
+                      </p>
                     </div>
                   </div>
-                  <button className="p-2 -mr-2 text-iron-600 hover:text-iron-900">
+                  <button className="p-2 -mr-2 text-iron-400 hover:text-iron-600">
                     <MoreHorizontal className="w-5 h-5" />
                   </button>
+                </div>
+
+                {/* Post Text - Above Image */}
+                <div className="px-4 pb-3">
+                  <p className="text-iron-800 text-[15px] leading-relaxed">
+                    {post.content}
+                  </p>
                 </div>
 
                 {/* Post Image(s) */}
                 {hasImages && (
                   <div
-                    className="relative aspect-square bg-iron-100 cursor-pointer select-none"
+                    className="relative bg-iron-100 cursor-pointer select-none"
                     onDoubleClick={() => handleDoubleTap(post.id, post.hasLiked)}
                   >
                     <img
                       src={post.images![currentImageIndex]}
                       alt="Post image"
-                      className="w-full h-full object-cover"
+                      className="w-full object-cover"
+                      style={{ maxHeight: '400px' }}
                     />
 
                     {/* Image Navigation */}
                     {post.images!.length > 1 && (
                       <>
-                        {/* Prev Button */}
                         {currentImageIndex > 0 && (
                           <button
                             onClick={(e) => {
@@ -484,8 +484,6 @@ export function CommunityFeed() {
                             <ChevronLeft className="w-5 h-5 text-iron-700" />
                           </button>
                         )}
-
-                        {/* Next Button */}
                         {currentImageIndex < post.images!.length - 1 && (
                           <button
                             onClick={(e) => {
@@ -497,31 +495,10 @@ export function CommunityFeed() {
                             <ChevronRight className="w-5 h-5 text-iron-700" />
                           </button>
                         )}
-
-                        {/* Dots Indicator */}
-                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">
-                          {post.images!.map((_, idx) => (
-                            <div
-                              key={idx}
-                              className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                                idx === currentImageIndex
-                                  ? 'bg-blue-500'
-                                  : 'bg-white/60'
-                              }`}
-                            />
-                          ))}
-                        </div>
-
-                        {/* Image Counter */}
-                        <div className="absolute top-4 right-4 px-2 py-1 bg-black/60 rounded-full">
-                          <span className="text-xs text-white font-medium">
-                            {currentImageIndex + 1}/{post.images!.length}
-                          </span>
-                        </div>
                       </>
                     )}
 
-                    {/* Heart animation on double tap */}
+                    {/* Heart animation */}
                     {showHeartAnimation && (
                       <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                         <Heart className="w-24 h-24 text-white fill-white drop-shadow-lg animate-ping" />
@@ -530,102 +507,61 @@ export function CommunityFeed() {
                   </div>
                 )}
 
-                {/* Text-only Post Content */}
-                {!hasImages && (
-                  <div
-                    className="relative px-4 py-4 bg-gradient-to-br from-iron-50 to-white cursor-pointer select-none"
-                    onDoubleClick={() => handleDoubleTap(post.id, post.hasLiked)}
-                  >
-                    <p className="text-iron-800 text-[15px] leading-relaxed whitespace-pre-wrap">
-                      {post.content}
-                    </p>
-                    {showHeartAnimation && (
-                      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                        <Heart className="w-24 h-24 text-red-500 fill-red-500 drop-shadow-lg animate-ping" />
-                      </div>
-                    )}
-                  </div>
-                )}
-
                 {/* Action Bar */}
-                <div className="px-4 py-2">
+                <div className="px-4 py-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleLike(post.id)}
-                        className="p-2 -ml-2 transition-transform active:scale-125"
+                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors"
                       >
                         <Heart
-                          className={`w-6 h-6 transition-colors ${
+                          className={`w-5 h-5 ${
                             post.hasLiked
                               ? 'text-red-500 fill-red-500'
-                              : 'text-iron-900 hover:text-iron-600'
+                              : 'text-iron-600'
                           }`}
                         />
+                        <span className="text-sm text-iron-600">{post.likes}</span>
                       </button>
-                      <button className="p-2 text-iron-900 hover:text-iron-600">
-                        <MessageCircle className="w-6 h-6" />
+                      <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
+                        <MessageCircle className="w-5 h-5 text-iron-600" />
+                        <span className="text-sm text-iron-600">{post.comments}</span>
                       </button>
-                      <button className="p-2 text-iron-900 hover:text-iron-600">
-                        <Send className="w-6 h-6" />
+                      <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
+                        <Send className="w-5 h-5 text-iron-600" />
+                        <span className="text-sm text-iron-600">Share</span>
                       </button>
                     </div>
                     <button
                       onClick={() => handleSave(post.id)}
-                      className="p-2 -mr-2"
+                      className="p-1.5 rounded-lg hover:bg-iron-50 transition-colors"
                     >
                       <Bookmark
-                        className={`w-6 h-6 transition-colors ${
+                        className={`w-5 h-5 ${
                           isSaved
                             ? 'text-iron-900 fill-iron-900'
-                            : 'text-iron-900 hover:text-iron-600'
+                            : 'text-iron-600'
                         }`}
                       />
                     </button>
                   </div>
 
-                  {/* Likes */}
-                  <div className="mt-1">
-                    <p className="font-semibold text-sm text-iron-900">
-                      {post.likes.toLocaleString()} likes
-                    </p>
-                  </div>
-
-                  {/* Caption */}
-                  {(hasImages || post.content) && (
-                    <div className="mt-1">
+                  {/* Comment Preview */}
+                  {post.topComment && (
+                    <div className="mt-3 pt-3 border-t border-iron-100">
                       <p className="text-sm">
-                        <span className="font-semibold text-iron-900">
-                          {authorName.toLowerCase().replace(' ', '_')}
-                        </span>{' '}
-                        <span className="text-iron-700">{post.content}</span>
+                        <span className="font-semibold text-iron-900">{post.topComment.author}</span>{' '}
+                        <span className="text-iron-600">{post.topComment.text}</span>
                       </p>
                     </div>
                   )}
-
-                  {/* View comments link */}
-                  <button className="mt-1 text-sm text-iron-500">
-                    View all comments
-                  </button>
-
-                  {/* Time */}
-                  <p className="mt-1 text-xs text-iron-400 uppercase">
-                    {formatTimeAgo(post.created_at)}
-                  </p>
                 </div>
               </article>
             );
           })}
         </div>
       </div>
-
-      {/* Floating Create Post Button */}
-      <button
-        onClick={() => setShowCompose(true)}
-        className="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-tr from-amber-500 via-flame-500 to-pink-500 rounded-full shadow-lg flex items-center justify-center text-white hover:shadow-xl transition-shadow z-40"
-      >
-        <Plus className="w-7 h-7" />
-      </button>
 
       {/* Compose Modal */}
       {showCompose && (
@@ -652,8 +588,8 @@ export function CommunityFeed() {
                 disabled={!newPost.trim() && selectedImages.length === 0}
                 className={`font-semibold ${
                   newPost.trim() || selectedImages.length > 0
-                    ? 'text-blue-500'
-                    : 'text-blue-300'
+                    ? 'text-violet-600'
+                    : 'text-violet-300'
                 }`}
               >
                 Share
@@ -662,9 +598,9 @@ export function CommunityFeed() {
 
             {/* Daily Check-in Prompt */}
             {checkInPrompt && (
-              <div className="px-4 py-3 bg-gradient-to-r from-flame-50 to-amber-50 border-b border-flame-100">
-                <p className="text-sm font-medium text-flame-700">Today's Prompt:</p>
-                <p className="text-flame-900 font-semibold">{checkInPrompt}</p>
+              <div className="px-4 py-3 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100">
+                <p className="text-sm font-medium text-violet-700">Today's Prompt:</p>
+                <p className="text-violet-900 font-semibold">{checkInPrompt}</p>
               </div>
             )}
 
@@ -681,8 +617,8 @@ export function CommunityFeed() {
                   <textarea
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
-                    placeholder={checkInPrompt ? "Share your response..." : "Share a win, encouragement, or update..."}
-                    className="flex-1 text-[16px] placeholder:text-iron-400 border-0 focus:ring-0 resize-none min-h-[80px]"
+                    placeholder={checkInPrompt ? "Share your response..." : "What's on your mind?"}
+                    className="flex-1 text-[16px] placeholder:text-iron-400 border-0 focus:ring-0 resize-none min-h-[100px]"
                     autoFocus
                   />
                 </div>
@@ -716,27 +652,6 @@ export function CommunityFeed() {
               </div>
             </div>
 
-            {/* Category Selector */}
-            <div className="px-4 py-3 border-t border-iron-100">
-              <p className="text-xs text-iron-500 font-medium mb-2">Post to category:</p>
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                {groupCategories.filter(g => g.id !== 'all').map((category) => (
-                  <button
-                    key={category.id}
-                    onClick={() => setPostCategory(category.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                      postCategory === category.id
-                        ? `bg-gradient-to-br ${category.color} text-white shadow-sm`
-                        : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
-                    }`}
-                  >
-                    <span className="font-bold">{category.abbr}</span>
-                    <span className="hidden sm:inline">{category.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Bottom Toolbar */}
             <div className="flex items-center gap-4 px-4 py-3 border-t border-iron-100 flex-shrink-0">
               <input
@@ -749,7 +664,7 @@ export function CommunityFeed() {
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 text-iron-600 hover:text-iron-900 transition-colors"
+                className="flex items-center gap-2 text-violet-600 hover:text-violet-700 transition-colors"
               >
                 <Image className="w-6 h-6" />
                 <span className="text-sm font-medium">Add Photos</span>

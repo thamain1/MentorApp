@@ -139,14 +139,14 @@ export function Chat() {
                 <div
                   className={`max-w-[80%] px-4 py-2 rounded-2xl ${
                     message.isOwn
-                      ? 'bg-flame-500 text-white rounded-br-md'
+                      ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-br-md'
                       : 'bg-white text-iron-900 border border-iron-100 rounded-bl-md'
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
                   <p
                     className={`text-xs mt-1 ${
-                      message.isOwn ? 'text-flame-100' : 'text-iron-400'
+                      message.isOwn ? 'text-violet-100' : 'text-iron-400'
                     }`}
                   >
                     {formatTime(message.created_at)}
@@ -168,12 +168,12 @@ export function Chat() {
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-3 bg-iron-50 rounded-xl border-0 focus:ring-2 focus:ring-flame-500 focus:bg-white transition-colors"
+            className="flex-1 px-4 py-3 bg-iron-50 rounded-xl border-0 focus:ring-2 focus:ring-violet-500 focus:bg-white transition-colors"
           />
           <button
             onClick={handleSend}
             disabled={!newMessage.trim()}
-            className="p-3 bg-flame-500 text-white rounded-xl hover:bg-flame-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-3 bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-xl hover:from-violet-600 hover:to-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-5 h-5" />
           </button>

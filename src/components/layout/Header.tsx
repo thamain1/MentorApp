@@ -67,7 +67,7 @@ export function Header({
       <div className="flex items-center gap-1">
         {showSearch && (
           <button
-            onClick={() => {}}
+            onClick={() => navigate('/mentors')}
             className="p-2 rounded-xl hover:bg-iron-100 transition-colors"
           >
             <Search className="w-5 h-5 text-iron-600" />

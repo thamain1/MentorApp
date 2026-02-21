@@ -26,8 +26,9 @@ export function AddGoalModal({ isOpen, onClose, onAdd }: AddGoalModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-      <div className="w-full max-w-md bg-white rounded-t-2xl p-6 safe-bottom animate-slide-up">
-        <div className="flex items-center justify-between mb-6">
+      <div className="w-full max-w-md bg-white rounded-t-2xl animate-slide-up max-h-[85vh] flex flex-col mb-16">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 pb-4 border-b border-iron-100">
           <h2 className="text-lg font-semibold text-iron-900">Add New Goal</h2>
           <button
             onClick={onClose}
@@ -37,7 +38,8 @@ export function AddGoalModal({ isOpen, onClose, onAdd }: AddGoalModalProps) {
           </button>
         </div>
 
-        <div className="space-y-4">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-4">
           <Input
             label="Goal Title"
             placeholder="What do you want to achieve?"
@@ -57,23 +59,24 @@ export function AddGoalModal({ isOpen, onClose, onAdd }: AddGoalModalProps) {
             value={targetDate}
             onChange={(e) => setTargetDate(e.target.value)}
           />
+        </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={onClose}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={handleSubmit}
-              disabled={!title.trim()}
-            >
-              Add Goal
-            </Button>
-          </div>
+        {/* Fixed Footer with Buttons */}
+        <div className="flex gap-3 p-6 pt-4 border-t border-iron-100 bg-white">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={handleSubmit}
+            disabled={!title.trim()}
+          >
+            Add Goal
+          </Button>
         </div>
       </div>
     </div>

@@ -170,8 +170,9 @@ export function MentorProfile() {
       {/* Request Modal */}
       {showRequestModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50">
-          <div className="w-full max-w-md bg-white rounded-t-2xl p-6 safe-bottom animate-slide-up">
-            <div className="flex items-center justify-between mb-4">
+          <div className="w-full max-w-md bg-white rounded-t-2xl animate-slide-up max-h-[85vh] flex flex-col mb-16">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-iron-100">
               <h2 className="text-lg font-semibold text-iron-900">Request Match</h2>
               <button
                 onClick={() => setShowRequestModal(false)}
@@ -182,27 +183,31 @@ export function MentorProfile() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3 p-3 bg-iron-50 rounded-xl mb-4">
-              <Avatar name={mentorName} src={mentor.avatar_url} size="md" />
-              <div>
-                <p className="font-medium text-iron-900">{mentorName}</p>
-                <p className="text-sm text-iron-500">Mentor</p>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6 pt-4">
+              <div className="flex items-center gap-3 p-3 bg-iron-50 rounded-xl mb-4">
+                <Avatar name={mentorName} src={mentor.avatar_url} size="md" />
+                <div>
+                  <p className="font-medium text-iron-900">{mentorName}</p>
+                  <p className="text-sm text-iron-500">Mentor</p>
+                </div>
               </div>
+
+              <Textarea
+                label="Introduce yourself (optional)"
+                placeholder="Tell the mentor a bit about yourself and why you'd like to connect..."
+                value={requestMessage}
+                onChange={(e) => setRequestMessage(e.target.value)}
+                rows={4}
+              />
+
+              <p className="text-xs text-iron-500 mt-2">
+                Your request will be reviewed by the mentor and program admin before being approved.
+              </p>
             </div>
 
-            <Textarea
-              label="Introduce yourself (optional)"
-              placeholder="Tell the mentor a bit about yourself and why you'd like to connect..."
-              value={requestMessage}
-              onChange={(e) => setRequestMessage(e.target.value)}
-              rows={4}
-            />
-
-            <p className="text-xs text-iron-500 mt-2 mb-4">
-              Your request will be reviewed by the mentor and program admin before being approved.
-            </p>
-
-            <div className="flex gap-3">
+            {/* Fixed Footer with Buttons */}
+            <div className="flex gap-3 p-6 pt-4 border-t border-iron-100 bg-white">
               <Button
                 variant="outline"
                 className="flex-1"

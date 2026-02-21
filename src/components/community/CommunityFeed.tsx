@@ -566,7 +566,7 @@ export function CommunityFeed() {
       {/* Compose Modal */}
       {showCompose && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
-          <div className="w-full max-w-md bg-white rounded-t-2xl safe-bottom animate-slide-up max-h-[90vh] flex flex-col">
+          <div className="w-full max-w-md bg-white rounded-t-2xl animate-slide-up max-h-[85vh] flex flex-col mb-16">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-iron-100 flex-shrink-0">
               <button

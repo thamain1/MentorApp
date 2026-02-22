@@ -23,52 +23,70 @@ import {
   AdminPage,
 } from './pages';
 import { UserProvider } from './context';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { RoleSwitcher } from './components/dev';
 
-function App() {
-  // TODO: Check auth state and redirect accordingly
-  const isAuthenticated = false;
-  const hasCompletedOnboarding = false;
+function AppRoutes() {
+  const { session, profile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-iron-950">
+        <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const isAuthenticated = !!session;
+  const hasProfile = !!profile;
 
   return (
-    <UserProvider>
-    <BrowserRouter>
-      <Routes>
-        {/* Onboarding */}
-        <Route path="/" element={
-          isAuthenticated && hasCompletedOnboarding
+    <Routes>
+      <Route
+        path="/"
+        element={
+          isAuthenticated && hasProfile
             ? <Navigate to="/home" replace />
             : <OnboardingPage />
-        } />
+        }
+      />
 
-        {/* Main App Routes */}
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/community" element={<CommunityPage />} />
-        <Route path="/messages" element={<MessagesPage />} />
-        <Route path="/messages/:matchId" element={<ChatPage />} />
-        <Route path="/training" element={<TrainingPage />} />
-        <Route path="/training/:trackId" element={<TrackDetailPage />} />
-        <Route path="/training/:trackId/:moduleId" element={<ModuleDetailPage />} />
-        <Route path="/toolkit" element={<ToolkitPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/goals" element={<GoalsPage />} />
-        <Route path="/sessions" element={<SessionsListPage />} />
-        <Route path="/sessions/:matchId" element={<SessionsPage />} />
-        <Route path="/notifications" element={<NotificationsPage />} />
-        <Route path="/mentors" element={<FindMentorPage />} />
-        <Route path="/mentees" element={<FindMenteesPage />} />
-        <Route path="/mentors/:mentorId" element={<MentorProfilePage />} />
-        <Route path="/match-requests" element={<MatchRequestsPage />} />
-        <Route path="/groups" element={<GroupsPage />} />
-        <Route path="/groups/:groupId" element={<GroupDetailPage />} />
-        <Route path="/admin" element={<AdminPage />} />
+      <Route path="/home" element={isAuthenticated && hasProfile ? <HomePage /> : <Navigate to="/" replace />} />
+      <Route path="/community" element={isAuthenticated && hasProfile ? <CommunityPage /> : <Navigate to="/" replace />} />
+      <Route path="/messages" element={isAuthenticated && hasProfile ? <MessagesPage /> : <Navigate to="/" replace />} />
+      <Route path="/messages/:matchId" element={isAuthenticated && hasProfile ? <ChatPage /> : <Navigate to="/" replace />} />
+      <Route path="/training" element={isAuthenticated && hasProfile ? <TrainingPage /> : <Navigate to="/" replace />} />
+      <Route path="/training/:trackId" element={isAuthenticated && hasProfile ? <TrackDetailPage /> : <Navigate to="/" replace />} />
+      <Route path="/training/:trackId/:moduleId" element={isAuthenticated && hasProfile ? <ModuleDetailPage /> : <Navigate to="/" replace />} />
+      <Route path="/toolkit" element={isAuthenticated && hasProfile ? <ToolkitPage /> : <Navigate to="/" replace />} />
+      <Route path="/profile" element={isAuthenticated && hasProfile ? <ProfilePage /> : <Navigate to="/" replace />} />
+      <Route path="/goals" element={isAuthenticated && hasProfile ? <GoalsPage /> : <Navigate to="/" replace />} />
+      <Route path="/sessions" element={isAuthenticated && hasProfile ? <SessionsListPage /> : <Navigate to="/" replace />} />
+      <Route path="/sessions/:matchId" element={isAuthenticated && hasProfile ? <SessionsPage /> : <Navigate to="/" replace />} />
+      <Route path="/notifications" element={isAuthenticated && hasProfile ? <NotificationsPage /> : <Navigate to="/" replace />} />
+      <Route path="/mentors" element={isAuthenticated && hasProfile ? <FindMentorPage /> : <Navigate to="/" replace />} />
+      <Route path="/mentees" element={isAuthenticated && hasProfile ? <FindMenteesPage /> : <Navigate to="/" replace />} />
+      <Route path="/mentors/:mentorId" element={isAuthenticated && hasProfile ? <MentorProfilePage /> : <Navigate to="/" replace />} />
+      <Route path="/match-requests" element={isAuthenticated && hasProfile ? <MatchRequestsPage /> : <Navigate to="/" replace />} />
+      <Route path="/groups" element={isAuthenticated && hasProfile ? <GroupsPage /> : <Navigate to="/" replace />} />
+      <Route path="/groups/:groupId" element={isAuthenticated && hasProfile ? <GroupDetailPage /> : <Navigate to="/" replace />} />
+      <Route path="/admin" element={isAuthenticated && hasProfile ? <AdminPage /> : <Navigate to="/" replace />} />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-      <RoleSwitcher />
-    </BrowserRouter>
-    </UserProvider>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <UserProvider>
+        <BrowserRouter>
+          <AppRoutes />
+          <RoleSwitcher />
+        </BrowserRouter>
+      </UserProvider>
+    </AuthProvider>
   );
 }
 

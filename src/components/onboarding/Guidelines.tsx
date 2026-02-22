@@ -7,6 +7,8 @@ interface GuidelinesProps {
   role: 'mentor' | 'mentee';
   onAccept: () => void;
   onBack: () => void;
+  saving?: boolean;
+  error?: string;
 }
 
 const guidelines = [
@@ -32,7 +34,7 @@ const guidelines = [
   },
 ];
 
-export function Guidelines({ role, onAccept, onBack }: GuidelinesProps) {
+export function Guidelines({ role, onAccept, onBack, saving, error }: GuidelinesProps) {
   const [accepted, setAccepted] = useState(false);
 
   return (
@@ -100,15 +102,21 @@ export function Guidelines({ role, onAccept, onBack }: GuidelinesProps) {
         </span>
       </label>
 
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4">
+          {error}
+        </p>
+      )}
+
       {/* Continue button */}
       <div className="mt-auto">
         <Button
           onClick={onAccept}
           size="lg"
           className="w-full"
-          disabled={!accepted}
+          disabled={!accepted || saving}
         >
-          Accept & Continue
+          {saving ? 'Saving...' : 'Accept & Continue'}
         </Button>
       </div>
     </div>

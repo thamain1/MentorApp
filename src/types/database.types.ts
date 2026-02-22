@@ -1,6 +1,3 @@
-// Database types - will be generated from Supabase once project is created
-// For now, these are placeholder types matching our schema design
-
 export type Json =
   | string
   | number
@@ -15,7 +12,6 @@ export type SessionStatus = 'scheduled' | 'completed' | 'cancelled';
 export type GoalStatus = 'active' | 'completed' | 'abandoned';
 
 export interface Database {
-  PostgrestVersion: '12';
   public: {
     Tables: {
       users: {
@@ -40,6 +36,7 @@ export interface Database {
           status?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -79,6 +76,7 @@ export interface Database {
         Update: {
           id?: string;
           user_id?: string;
+          role?: UserRole;
           first_name?: string;
           last_name?: string;
           age?: number;
@@ -92,6 +90,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       interest_categories: {
         Row: {
@@ -118,6 +117,7 @@ export interface Database {
           active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       focus_areas: {
         Row: {
@@ -144,6 +144,7 @@ export interface Database {
           active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       mentor_specialties_lookup: {
         Row: {
@@ -167,6 +168,7 @@ export interface Database {
           active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       matches: {
         Row: {
@@ -196,6 +198,7 @@ export interface Database {
           matched_at?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       sessions: {
         Row: {
@@ -231,6 +234,7 @@ export interface Database {
           mentor_notes?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       check_ins: {
         Row: {
@@ -254,6 +258,7 @@ export interface Database {
           reflection?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       goals: {
         Row: {
@@ -289,6 +294,7 @@ export interface Database {
           completed_at?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       training_tracks: {
         Row: {
@@ -315,6 +321,7 @@ export interface Database {
           badge_image_url?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       training_modules: {
         Row: {
@@ -344,6 +351,7 @@ export interface Database {
           duration_mins?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       user_training_progress: {
         Row: {
@@ -364,6 +372,7 @@ export interface Database {
           module_id?: string;
           completed_at?: string;
         };
+        Relationships: [];
       };
       groups: {
         Row: {
@@ -387,6 +396,7 @@ export interface Database {
           type?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       posts: {
         Row: {
@@ -410,6 +420,7 @@ export interface Database {
           content?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       messages: {
         Row: {
@@ -436,6 +447,7 @@ export interface Database {
           read_at?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       notifications: {
         Row: {
@@ -468,6 +480,7 @@ export interface Database {
           read_at?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
@@ -481,7 +494,6 @@ export interface Database {
   };
 }
 
-// Convenience types
 export type User = Database['public']['Tables']['users']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Match = Database['public']['Tables']['matches']['Row'];

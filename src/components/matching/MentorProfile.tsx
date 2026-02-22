@@ -61,7 +61,9 @@ export function MentorProfile() {
       <div className="p-4 space-y-4">
         {/* Profile Header */}
         <Card className="p-6 text-center">
-          <Avatar name={mentorName} src={mentor.avatar_url} size="xl" className="mx-auto mb-4" />
+          <div className="inline-block rounded-full ring-4 ring-blue-400 p-0.5 mb-4">
+            <Avatar name={mentorName} src={mentor.avatar_url} size="xl" className="border-2 border-white" />
+          </div>
 
           <h1 className="text-xl font-bold text-iron-900 mb-1">{mentorName}</h1>
 

@@ -28,7 +28,7 @@ export const testUsers: Record<UserRoleType, TestUser> = {
   admin: {
     id: 'test-admin-id',
     user_id: 'test-admin-auth-id',
-    first_name: 'Sarah',
+    first_name: 'Dan',
     last_name: 'Mitchell',
     age: 35,
     bio: 'Program Director overseeing mentorship matches and community safety. Dedicated to building meaningful connections.',

@@ -102,7 +102,7 @@ export function RoleSwitcher() {
                     <div className="flex-1 text-left">
                       <h3 className="font-semibold text-iron-900">{config.label}</h3>
                       <p className="text-sm text-iron-500">
-                        {roleOption === 'admin' && 'Sarah Mitchell - Program Director'}
+                        {roleOption === 'admin' && 'Dan Mitchell - Program Director'}
                         {roleOption === 'mentor' && 'David Williams - Software Engineer'}
                         {roleOption === 'mentee' && 'Marcus Johnson - High School Junior'}
                       </p>

@@ -14,6 +14,7 @@ export { CommunityPage } from './Community';
 export { ProfilePage } from './Profile';
 export { NotificationsPage } from './Notifications';
 export { FindMentorPage } from './FindMentor';
+export { FindMenteesPage } from './FindMentees';
 export { MentorProfilePage } from './MentorProfile';
 export { MatchRequestsPage } from './MatchRequests';
 export { GroupsPage } from './Groups';

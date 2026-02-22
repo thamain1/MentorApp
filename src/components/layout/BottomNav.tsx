@@ -11,11 +11,19 @@ interface NavItem {
   adminOnly?: boolean;
 }
 
-const baseNavItems: NavItem[] = [
+const menteeNavItems: NavItem[] = [
   { path: '/home', icon: Home, label: 'Home' },
   { path: '/community', icon: Users, label: 'Community' },
   { path: null, icon: Plus, label: 'Create', isCreate: true },
   { path: '/mentors', icon: Search, label: 'Mentors' },
+  { path: '/profile', icon: User, label: 'Profile' },
+];
+
+const mentorNavItems: NavItem[] = [
+  { path: '/home', icon: Home, label: 'Home' },
+  { path: '/community', icon: Users, label: 'Community' },
+  { path: null, icon: Plus, label: 'Create', isCreate: true },
+  { path: '/mentees', icon: Search, label: 'Mentees' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
 
@@ -32,8 +40,10 @@ export function BottomNav() {
   const navigate = useNavigate();
   const { role } = useUser();
 
-  // Use admin nav items when user is admin
-  const navItems = role === 'admin' ? adminNavItems : baseNavItems;
+  const navItems =
+    role === 'admin' ? adminNavItems :
+    role === 'mentor' ? mentorNavItems :
+    menteeNavItems;
 
   const handleCreateClick = () => {
     // Navigate to community with compose modal open

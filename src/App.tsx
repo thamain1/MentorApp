@@ -15,6 +15,7 @@ import {
   ProfilePage,
   NotificationsPage,
   FindMentorPage,
+  FindMenteesPage,
   MentorProfilePage,
   MatchRequestsPage,
   GroupsPage,
@@ -55,6 +56,7 @@ function App() {
         <Route path="/sessions/:matchId" element={<SessionsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/mentors" element={<FindMentorPage />} />
+        <Route path="/mentees" element={<FindMenteesPage />} />
         <Route path="/mentors/:mentorId" element={<MentorProfilePage />} />
         <Route path="/match-requests" element={<MatchRequestsPage />} />
         <Route path="/groups" element={<GroupsPage />} />

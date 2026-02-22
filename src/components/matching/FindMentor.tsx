@@ -100,11 +100,12 @@ export function FindMentor() {
 
         {/* Mentor Grid */}
         <div className="grid grid-cols-2 gap-3">
-          {filteredMentors.map((mentor) => (
+          {filteredMentors.map((mentor, index) => (
             <MentorCard
               key={mentor.id}
               mentor={mentor}
               onClick={() => handleMentorClick(mentor)}
+              ringColorIndex={index}
             />
           ))}
         </div>
@@ -123,30 +124,44 @@ export function FindMentor() {
   );
 }
 
+// Ring colors to cycle through - matching the home page style
+const ringColors = [
+  'ring-teal-400',
+  'ring-pink-400',
+  'ring-blue-400',
+  'ring-amber-400',
+  'ring-purple-400',
+  'ring-green-400',
+];
+
 interface MentorCardProps {
   mentor: MentorProfile;
   onClick: () => void;
+  ringColorIndex: number;
 }
 
-function MentorCard({ mentor, onClick }: MentorCardProps) {
+function MentorCard({ mentor, onClick, ringColorIndex }: MentorCardProps) {
   const mentorName = `${mentor.first_name} ${mentor.last_name}`;
   const primarySpecialty = mentor.specialties[0];
   const colors = getSpecialtyColor(primarySpecialty);
+  const ringColor = ringColors[ringColorIndex % ringColors.length];
 
   return (
     <button
       onClick={onClick}
       className="w-full text-left bg-white border border-iron-100 rounded-2xl p-4 hover:border-blue-200 hover:shadow-md transition-all"
     >
-      {/* Profile Image */}
+      {/* Profile Image with colored ring */}
       <div className="flex justify-center mb-3">
         <div className="relative">
-          <Avatar
-            name={mentorName}
-            src={mentor.avatar_url}
-            size="xl"
-            className="w-20 h-20 border-4 border-white shadow-lg"
-          />
+          <div className={`rounded-full ring-4 ${ringColor} p-0.5`}>
+            <Avatar
+              name={mentorName}
+              src={mentor.avatar_url}
+              size="xl"
+              className="w-20 h-20 border-2 border-white shadow-lg"
+            />
+          </div>
           {/* Verified badge */}
           <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white">
             <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">

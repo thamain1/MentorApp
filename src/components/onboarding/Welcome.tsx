@@ -1,4 +1,5 @@
 import { Flame } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui';
 
 interface WelcomeProps {
@@ -6,6 +7,12 @@ interface WelcomeProps {
 }
 
 export function Welcome({ onContinue }: WelcomeProps) {
+  const navigate = useNavigate();
+
+  const handleSignIn = () => {
+    // For testing: sign in goes directly to home with current test role
+    navigate('/home');
+  };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-iron-900 to-iron-950">
       {/* Logo */}
@@ -41,7 +48,10 @@ export function Welcome({ onContinue }: WelcomeProps) {
 
       <p className="text-iron-500 text-sm mt-6">
         Already have an account?{' '}
-        <button className="text-brand-400 font-medium hover:underline">
+        <button
+          onClick={handleSignIn}
+          className="text-brand-400 font-medium hover:underline"
+        >
           Sign In
         </button>
       </p>

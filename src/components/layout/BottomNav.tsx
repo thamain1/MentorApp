@@ -1,8 +1,17 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Search, Plus, Users, User } from 'lucide-react';
+import { Home, Search, Plus, Users, User, Shield } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useUser } from '../../context';
 
-const navItems = [
+interface NavItem {
+  path: string | null;
+  icon: typeof Home;
+  label: string;
+  isCreate?: boolean;
+  adminOnly?: boolean;
+}
+
+const baseNavItems: NavItem[] = [
   { path: '/home', icon: Home, label: 'Home' },
   { path: '/community', icon: Users, label: 'Community' },
   { path: null, icon: Plus, label: 'Create', isCreate: true },
@@ -10,9 +19,21 @@ const navItems = [
   { path: '/profile', icon: User, label: 'Profile' },
 ];
 
+const adminNavItems: NavItem[] = [
+  { path: '/home', icon: Home, label: 'Home' },
+  { path: '/community', icon: Users, label: 'Community' },
+  { path: null, icon: Plus, label: 'Create', isCreate: true },
+  { path: '/admin', icon: Shield, label: 'Admin', adminOnly: true },
+  { path: '/profile', icon: User, label: 'Profile' },
+];
+
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { role } = useUser();
+
+  // Use admin nav items when user is admin
+  const navItems = role === 'admin' ? adminNavItems : baseNavItems;
 
   const handleCreateClick = () => {
     // Navigate to community with compose modal open
@@ -22,7 +43,7 @@ export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-iron-100 safe-bottom z-50">
       <div className="max-w-md mx-auto flex items-center justify-around py-2">
-        {navItems.map(({ path, icon: Icon, label, isCreate }) => {
+        {navItems.map(({ path, icon: Icon, label, isCreate, adminOnly }) => {
           if (isCreate) {
             return (
               <button
@@ -39,13 +60,14 @@ export function BottomNav() {
           }
 
           const isActive = location.pathname.startsWith(path!);
+          const activeColor = adminOnly ? 'text-purple-500' : 'text-brand-500';
           return (
             <Link
               key={path}
               to={path!}
               className={cn(
                 'flex flex-col items-center gap-0.5 px-3 py-2 transition-colors',
-                isActive ? 'text-brand-500' : 'text-iron-400 hover:text-iron-600'
+                isActive ? activeColor : 'text-iron-400 hover:text-iron-600'
               )}
             >
               <Icon

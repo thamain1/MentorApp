@@ -21,6 +21,8 @@ import {
   GroupDetailPage,
   AdminPage,
 } from './pages';
+import { UserProvider } from './context';
+import { RoleSwitcher } from './components/dev';
 
 function App() {
   // TODO: Check auth state and redirect accordingly
@@ -28,6 +30,7 @@ function App() {
   const hasCompletedOnboarding = false;
 
   return (
+    <UserProvider>
     <BrowserRouter>
       <Routes>
         {/* Onboarding */}
@@ -61,7 +64,9 @@ function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <RoleSwitcher />
     </BrowserRouter>
+    </UserProvider>
   );
 }
 

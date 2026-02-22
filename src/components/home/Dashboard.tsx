@@ -1,88 +1,100 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Calendar, MessageCircle, Target, TrendingUp,
-  ChevronRight, Sparkles, Clock
+  ChevronRight, Sparkles, Clock, Users, Shield, Edit3, Check,
+  Camera, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../layout';
 import { Card, Avatar, Badge, Button } from '../ui';
-import { mockCurrentUser } from '../../data/mockData';
+import { useUser } from '../../context';
+import { mockMentees } from '../../data/mockData';
 
-// Image mapping for interests and goals - using verified Unsplash URLs
-const interestImages: Record<string, string> = {
-  // Sports & Fitness
-  'basketball': 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&q=80',
-  'football': 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400&q=80',
-  'fitness': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80',
-  'sports': 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=400&q=80',
-  'running': 'https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=400&q=80',
-  'health': 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&q=80',
+const AFFIRMATION_STORAGE_KEY = 'isi-daily-affirmation';
+const PROFILE_IMAGE_STORAGE_KEY = 'isi-profile-image';
 
-  // Education & Career
-  'education': 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80',
-  'college': 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=80',
-  'career': 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',
-  'coding': 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80',
-  'technology': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80',
-  'reading': 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&q=80',
-  'academic': 'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&q=80',
-
-  // Business & Finance
-  'entrepreneur': 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80',
-  'business': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80',
-  'finance': 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&q=80',
-  'leadership': 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=400&q=80',
-
-  // Creative & Arts
-  'music': 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&q=80',
-  'art': 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?w=400&q=80',
-  'photography': 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=400&q=80',
-  'gaming': 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400&q=80',
-
-  // Life Skills & Personal Development
-  'communication': 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80',
-  'confidence': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80',
-  'life skills': 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&q=80',
-  'personal growth': 'https://images.unsplash.com/photo-1493836512294-502baa1986e2?w=400&q=80',
-  'development': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80',
-
-  // Faith & Community
-  'faith': 'https://images.unsplash.com/photo-1445633883498-7f9922d37a3f?w=400&q=80',
-  'community': 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=400&q=80',
-  'volunteering': 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&q=80',
-
-  // Trades & Construction
-  'construction': 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400&q=80',
-  'trades': 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=400&q=80',
-  'automotive': 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=400&q=80',
-
-  // Default/Mentorship
-  'mentorship': 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80',
-  'growth': 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80',
+// Default affirmations by role
+const defaultAffirmations: Record<string, string> = {
+  mentee: "I AM\nA KING!",
+  mentor: "BUILDING\nKINGS!",
+  admin: "LEADING\nWITH\nPURPOSE!",
 };
 
-// Fallback images if no match found
-const fallbackImages = [
-  'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80',
-  'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&q=80',
-  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80',
-  'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=400&q=80',
-  'https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?w=400&q=80',
-  'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=400&q=80',
+// Mentee profile images
+const menteeImages = [
+  '/images/mentees/gettyimages-1158014305-612x612.jpg',
+  '/images/mentees/gettyimages-1178688517-612x612.jpg',
+  '/images/mentees/gettyimages-1363289825-612x612.jpg',
+  '/images/mentees/gettyimages-1430123251-612x612.jpg',
+  '/images/mentees/gettyimages-2035617814-612x612.jpg',
+  '/images/mentees/gettyimages-972902010-612x612.jpg',
 ];
 
-// Mock data for demonstration
-const mockUser = {
-  firstName: mockCurrentUser.first_name,
-  role: 'mentee' as const,
+// Mentor profile images for bubbles
+const mentorImages = [
+  '/images/mentors/gettyimages-1146909737-612x612.jpg',
+  '/images/mentors/gettyimages-1455343282-612x612.jpg',
+  '/images/mentors/gettyimages-1463782257-612x612.jpg',
+  '/images/mentors/gettyimages-1916997109-612x612.jpg',
+  '/images/mentors/gettyimages-2203419531-612x612.jpg',
+  '/images/mentors/gettyimages-2206642276-612x612.jpg',
+];
+
+// Mock connections for the floating bubbles (using mentor images)
+const getConnectionsForRole = (role: string) => {
+  if (role === 'mentee') {
+    return [
+      { id: '1', name: 'David Williams', image: mentorImages[0] },
+      { id: '2', name: 'James Thompson', image: mentorImages[1] },
+      { id: '3', name: 'Michael Chen', image: mentorImages[2] },
+    ];
+  } else if (role === 'mentor') {
+    return [
+      { id: '1', name: 'Marcus Johnson', image: mentorImages[3] },
+      { id: '2', name: 'Tyler Brown', image: mentorImages[4] },
+      { id: '3', name: 'Jordan Davis', image: mentorImages[5] },
+    ];
+  } else {
+    return [
+      { id: '1', name: 'David Williams', image: mentorImages[0] },
+      { id: '2', name: 'Marcus Johnson', image: mentorImages[1] },
+      { id: '3', name: 'James Thompson', image: mentorImages[2] },
+    ];
+  }
 };
+
+// Get default profile image based on role
+const getDefaultProfileImage = (role: string) => {
+  if (role === 'mentee') {
+    return menteeImages[0];
+  } else if (role === 'mentor') {
+    return mentorImages[0];
+  } else {
+    return mentorImages[1];
+  }
+};
+
+// Image position type
+interface ImagePosition {
+  x: number; // -100 to 100 (percentage offset)
+  y: number; // -100 to 100 (percentage offset)
+}
+
+// Profile image settings type
+interface ProfileImageSettings {
+  image: string;
+  position: ImagePosition;
+}
+
+// Get all available images for selection
+const getAllAvailableImages = () => [...menteeImages, ...mentorImages];
 
 const mockMatch = {
   id: 'match-1',
   mentorName: 'David Williams',
   mentorAvatar: null,
-  nextSession: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-  matchedAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000), // 3 weeks ago
+  nextSession: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+  matchedAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
 };
 
 const mockGoals = [
@@ -90,8 +102,7 @@ const mockGoals = [
   { id: '2', title: 'Read 2 books this month', progress: 50 },
 ];
 
-// Daily prompts - managed by admin/mentor group
-// These rotate based on the day of the year
+// Daily prompts
 const dailyPrompts = [
   "What's one thing you're grateful for today?",
   "What's a challenge you're facing that you'd like prayer or support for?",
@@ -103,30 +114,8 @@ const dailyPrompts = [
   "Share something new you learned recently.",
   "What's one way you can serve someone else today?",
   "What advice would you give to your younger self?",
-  "What's a book, podcast, or video that inspired you?",
-  "How do you handle pressure or stress? Share your tips.",
-  "What does success look like to you?",
-  "Who is a role model you look up to and why?",
-  "What's one habit you're trying to build or break?",
-  "Share an encouraging word for someone who might be struggling.",
-  "What are you most looking forward to this month?",
-  "How has your mentor helped you grow?",
-  "What's something you're proud of accomplishing?",
-  "What does community mean to you?",
-  "Share a favorite quote that motivates you.",
-  "What's one thing you'd like to improve about yourself?",
-  "How do you stay focused on your goals?",
-  "What's a fear you've overcome or are working to overcome?",
-  "Share something that made you smile today.",
-  "What does leadership mean to you?",
-  "How do you show respect to others?",
-  "What's a tough decision you've had to make? How did you handle it?",
-  "What does it mean to be part of this brotherhood?",
-  "Share your hopes for the future.",
-  "What's one way you've grown since joining the program?",
 ];
 
-// Get today's prompt based on day of year
 const getDailyPrompt = () => {
   const now = new Date();
   const start = new Date(now.getFullYear(), 0, 0);
@@ -140,93 +129,418 @@ const dailyPrompt = getDailyPrompt();
 export function Dashboard() {
   const navigate = useNavigate();
   const [checkedIn, setCheckedIn] = useState(false);
+  const { currentUser, role } = useUser();
+  const connections = getConnectionsForRole(role);
+  const fullName = `${currentUser.first_name} ${currentUser.last_name}`;
+
+  // Profile image state
+  const [profileImageSettings, setProfileImageSettings] = useState<ProfileImageSettings>(() => {
+    const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed[role]) {
+          return parsed[role];
+        }
+      } catch {
+        // Fall through to default
+      }
+    }
+    return {
+      image: getDefaultProfileImage(role),
+      position: { x: 0, y: 0 },
+    };
+  });
+  const [isEditingImage, setIsEditingImage] = useState(false);
+  const [tempImageSettings, setTempImageSettings] = useState<ProfileImageSettings>(profileImageSettings);
+
+  // Update profile image when role changes
+  useEffect(() => {
+    const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed[role]) {
+          setProfileImageSettings(parsed[role]);
+          setTempImageSettings(parsed[role]);
+          return;
+        }
+      } catch {
+        // Fall through to default
+      }
+    }
+    const defaultSettings = {
+      image: getDefaultProfileImage(role),
+      position: { x: 0, y: 0 },
+    };
+    setProfileImageSettings(defaultSettings);
+    setTempImageSettings(defaultSettings);
+  }, [role]);
+
+  const handleSaveImageSettings = () => {
+    const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
+    let data: Record<string, ProfileImageSettings> = {};
+    if (stored) {
+      try {
+        data = JSON.parse(stored);
+      } catch {
+        data = {};
+      }
+    }
+    data[role] = tempImageSettings;
+    localStorage.setItem(PROFILE_IMAGE_STORAGE_KEY, JSON.stringify(data));
+    setProfileImageSettings(tempImageSettings);
+    setIsEditingImage(false);
+  };
+
+  const handleCancelImageEdit = () => {
+    setTempImageSettings(profileImageSettings);
+    setIsEditingImage(false);
+  };
+
+  const adjustPosition = (axis: 'x' | 'y', delta: number) => {
+    setTempImageSettings(prev => ({
+      ...prev,
+      position: {
+        ...prev.position,
+        [axis]: Math.max(-50, Math.min(50, prev.position[axis] + delta)),
+      },
+    }));
+  };
+
+  const resetPosition = () => {
+    setTempImageSettings(prev => ({
+      ...prev,
+      position: { x: 0, y: 0 },
+    }));
+  };
+
+  const selectImage = (image: string) => {
+    setTempImageSettings(prev => ({
+      ...prev,
+      image,
+      position: { x: 0, y: 0 }, // Reset position when selecting new image
+    }));
+  };
+
+  const getObjectPosition = (pos: ImagePosition) => {
+    return `${50 + pos.x}% ${50 + pos.y}%`;
+  };
+
+  // Affirmation state
+  const [affirmation, setAffirmation] = useState(() => {
+    const stored = localStorage.getItem(AFFIRMATION_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return parsed[role] || defaultAffirmations[role];
+      } catch {
+        return defaultAffirmations[role];
+      }
+    }
+    return defaultAffirmations[role];
+  });
+  const [isEditingAffirmation, setIsEditingAffirmation] = useState(false);
+  const [editText, setEditText] = useState(affirmation);
+
+  // Update affirmation when role changes
+  useEffect(() => {
+    const stored = localStorage.getItem(AFFIRMATION_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setAffirmation(parsed[role] || defaultAffirmations[role]);
+        setEditText(parsed[role] || defaultAffirmations[role]);
+      } catch {
+        setAffirmation(defaultAffirmations[role]);
+        setEditText(defaultAffirmations[role]);
+      }
+    } else {
+      setAffirmation(defaultAffirmations[role]);
+      setEditText(defaultAffirmations[role]);
+    }
+  }, [role]);
+
+  const handleSaveAffirmation = () => {
+    const stored = localStorage.getItem(AFFIRMATION_STORAGE_KEY);
+    let data: Record<string, string> = {};
+    if (stored) {
+      try {
+        data = JSON.parse(stored);
+      } catch {
+        data = {};
+      }
+    }
+    data[role] = editText;
+    localStorage.setItem(AFFIRMATION_STORAGE_KEY, JSON.stringify(data));
+    setAffirmation(editText);
+    setIsEditingAffirmation(false);
+  };
 
   const handleCheckIn = () => {
     setCheckedIn(true);
     navigate('/community', { state: { checkInPrompt: dailyPrompt } });
   };
 
-  // Get 6 relevant images based on interests and goals
-  const collageImages = useMemo(() => {
-    const allKeywords = [
-      ...mockCurrentUser.interests,
-      ...mockCurrentUser.goals,
-    ].map(k => k.toLowerCase());
-
-    const matchedImages: string[] = [];
-
-    // Try to find matching images for each keyword
-    for (const keyword of allKeywords) {
-      if (matchedImages.length >= 6) break;
-
-      // Check for exact match
-      if (interestImages[keyword] && !matchedImages.includes(interestImages[keyword])) {
-        matchedImages.push(interestImages[keyword]);
-        continue;
-      }
-
-      // Check for partial match
-      for (const [key, url] of Object.entries(interestImages)) {
-        if (matchedImages.length >= 6) break;
-        if ((keyword.includes(key) || key.includes(keyword)) && !matchedImages.includes(url)) {
-          matchedImages.push(url);
-          break;
-        }
-      }
-    }
-
-    // Fill remaining slots with fallback images
-    let fallbackIndex = 0;
-    while (matchedImages.length < 6 && fallbackIndex < fallbackImages.length) {
-      if (!matchedImages.includes(fallbackImages[fallbackIndex])) {
-        matchedImages.push(fallbackImages[fallbackIndex]);
-      }
-      fallbackIndex++;
-    }
-
-    return matchedImages.slice(0, 6);
-  }, []);
-
   return (
     <div className="min-h-screen bg-iron-50">
-      {/* Collage Header */}
-      <div className="relative">
-        <div className="h-40 overflow-hidden">
-          <div className="grid grid-cols-3 grid-rows-2 h-full">
-            {collageImages.map((image, index) => (
-              <div
-                key={index}
-                className="relative overflow-hidden"
-              >
-                <img
-                  src={image}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
-              </div>
-            ))}
-          </div>
-          {/* Bottom fade to background */}
-          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-iron-50 to-transparent" />
-        </div>
-
-        {/* Header overlay */}
-        <div className="absolute top-0 left-0 right-0">
+      {/* Hero Section with Profile Image and Affirmation */}
+      <div className="relative bg-iron-900 overflow-hidden h-96">
+        {/* Header overlay - topmost */}
+        <div className="absolute top-0 left-0 right-0 z-50">
           <Header
             showNotifications
             className="bg-transparent border-none text-white"
           />
         </div>
+
+        {/* Layer 1: Affirmation Text - BACK (background text) */}
+        <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-3">
+          {isEditingAffirmation ? (
+            <div className="p-4 max-w-sm relative z-50">
+              <textarea
+                value={editText}
+                onChange={(e) => setEditText(e.target.value.toUpperCase())}
+                className="w-full bg-iron-800 text-blue-400 text-xl font-black leading-tight p-3 rounded-lg border border-iron-700 focus:border-blue-500 focus:outline-none resize-none"
+                rows={3}
+                placeholder="YOUR MESSAGE"
+                maxLength={50}
+              />
+              <button
+                onClick={handleSaveAffirmation}
+                className="mt-2 flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
+              >
+                <Check className="w-4 h-4" />
+                Save
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="space-y-0 leading-none">
+                {affirmation.split('\n').map((line: string, index: number) => (
+                  <h1
+                    key={index}
+                    className="font-black text-blue-500 leading-[0.85] tracking-tighter"
+                    style={{
+                      fontSize: 'clamp(2.5rem, 12vw, 5rem)',
+                      textShadow: '3px 3px 10px rgba(0,0,0,0.6)',
+                    }}
+                  >
+                    {line}
+                  </h1>
+                ))}
+              </div>
+              <button
+                onClick={() => {
+                  setEditText(affirmation);
+                  setIsEditingAffirmation(true);
+                }}
+                className="mt-3 flex items-center gap-1 text-iron-400 hover:text-blue-400 text-xs transition-colors relative z-[60]"
+              >
+                <Edit3 className="w-3 h-3" />
+                Edit message
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Layer 2: Floating connection bubbles - middle */}
+        <div
+          className="absolute w-12 h-12 rounded-full border-2 border-teal-400 overflow-hidden shadow-lg z-20"
+          style={{ top: '25%', right: '45%' }}
+        >
+          <img
+            src={connections[0]?.image}
+            alt={connections[0]?.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div
+          className="absolute w-10 h-10 rounded-full border-2 border-brand-400 overflow-hidden shadow-lg z-20"
+          style={{ top: '60%', right: '55%' }}
+        >
+          <img
+            src={connections[1]?.image}
+            alt={connections[1]?.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div
+          className="absolute w-11 h-11 rounded-full border-2 border-flame-400 overflow-hidden shadow-lg z-20"
+          style={{ top: '20%', right: '15%' }}
+        >
+          <img
+            src={connections[2]?.image}
+            alt={connections[2]?.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+
+        {/* Layer 3: Main profile image - FRONT (on top of text) */}
+        <div className="absolute right-4 bottom-0 z-30">
+          <div className="relative">
+            <div className="absolute -inset-4 bg-gradient-to-t from-blue-500/30 to-transparent rounded-full blur-xl" />
+            <div className="relative w-44 h-60 rounded-t-full overflow-hidden border-4 border-blue-400/50">
+              <img
+                src={profileImageSettings.image}
+                alt={fullName}
+                className="w-full h-full object-cover"
+                style={{ objectPosition: getObjectPosition(profileImageSettings.position) }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom curve transition */}
+        <div className="absolute bottom-0 left-0 right-0 h-6 bg-iron-50 rounded-t-3xl z-40" />
+
+        {/* Camera button - ON TOP of white curve */}
+        <button
+          onClick={() => {
+            setTempImageSettings(profileImageSettings);
+            setIsEditingImage(true);
+          }}
+          className="absolute bottom-3 right-6 w-9 h-9 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-blue-600 transition-colors z-50"
+        >
+          <Camera className="w-4 h-4" />
+        </button>
+
+        {/* Profile Image Editor Modal */}
+        {isEditingImage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/70"
+              onClick={handleCancelImageEdit}
+            />
+
+            {/* Modal */}
+            <div className="relative bg-iron-900 rounded-2xl w-full max-w-sm overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-iron-800">
+                <h3 className="text-lg font-bold text-white">Edit Profile Image</h3>
+                <button
+                  onClick={handleCancelImageEdit}
+                  className="p-2 text-iron-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Preview */}
+              <div className="p-4">
+                <div className="flex justify-center mb-4">
+                  <div className="relative w-32 h-40 rounded-t-full overflow-hidden border-4 border-brand-400/50">
+                    <img
+                      src={tempImageSettings.image}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                      style={{ objectPosition: getObjectPosition(tempImageSettings.position) }}
+                    />
+                  </div>
+                </div>
+
+                {/* Position Controls */}
+                <div className="mb-4">
+                  <p className="text-sm text-iron-400 mb-2 text-center">Adjust Position</p>
+                  <div className="flex justify-center items-center gap-2">
+                    <div className="grid grid-cols-3 gap-1">
+                      <div />
+                      <button
+                        onClick={() => adjustPosition('y', -10)}
+                        className="w-10 h-10 bg-iron-800 hover:bg-iron-700 rounded-lg flex items-center justify-center text-white transition-colors"
+                      >
+                        <ArrowUp className="w-5 h-5" />
+                      </button>
+                      <div />
+                      <button
+                        onClick={() => adjustPosition('x', -10)}
+                        className="w-10 h-10 bg-iron-800 hover:bg-iron-700 rounded-lg flex items-center justify-center text-white transition-colors"
+                      >
+                        <ArrowLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={resetPosition}
+                        className="w-10 h-10 bg-iron-800 hover:bg-iron-700 rounded-lg flex items-center justify-center text-white transition-colors"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => adjustPosition('x', 10)}
+                        className="w-10 h-10 bg-iron-800 hover:bg-iron-700 rounded-lg flex items-center justify-center text-white transition-colors"
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </button>
+                      <div />
+                      <button
+                        onClick={() => adjustPosition('y', 10)}
+                        className="w-10 h-10 bg-iron-800 hover:bg-iron-700 rounded-lg flex items-center justify-center text-white transition-colors"
+                      >
+                        <ArrowDown className="w-5 h-5" />
+                      </button>
+                      <div />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Image Selection */}
+                <div className="mb-4">
+                  <p className="text-sm text-iron-400 mb-2">Select Image</p>
+                  <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
+                    {getAllAvailableImages().map((img, index) => (
+                      <button
+                        key={index}
+                        onClick={() => selectImage(img)}
+                        className={`relative w-full aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
+                          tempImageSettings.image === img
+                            ? 'border-brand-500'
+                            : 'border-iron-700 hover:border-iron-500'
+                        }`}
+                      >
+                        <img
+                          src={img}
+                          alt={`Option ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {tempImageSettings.image === img && (
+                          <div className="absolute inset-0 bg-brand-500/20 flex items-center justify-center">
+                            <Check className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 p-4 border-t border-iron-800">
+                <button
+                  onClick={handleCancelImageEdit}
+                  className="flex-1 py-2 px-4 bg-iron-800 text-white rounded-lg font-medium hover:bg-iron-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveImageSettings}
+                  className="flex-1 py-2 px-4 bg-brand-500 text-white rounded-lg font-medium hover:bg-brand-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="px-4 pb-6 pt-4">
+      <div className="px-4 pb-6 pt-2">
         {/* Greeting */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-iron-900">
-            Hey, {mockUser.firstName}! 👋
-          </h1>
-          <p className="text-iron-500">Let's make today count.</p>
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-iron-900">
+            Hey, {currentUser.first_name}!
+          </h2>
+          <p className="text-iron-500 text-sm">Let's make today count.</p>
         </div>
 
         {/* Daily Check-in */}
@@ -252,8 +566,8 @@ export function Dashboard() {
           </Card>
         )}
 
-        {/* Match Card */}
-        {mockMatch && (
+        {/* Role-specific Content */}
+        {role === 'mentee' && mockMatch && (
           <Card className="mb-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-iron-900">Your Mentor</h3>
@@ -283,8 +597,64 @@ export function Dashboard() {
           </Card>
         )}
 
-        {/* Upcoming Session */}
-        {mockMatch?.nextSession && (
+        {role === 'mentor' && (
+          <Card className="mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-iron-900">Your Mentees</h3>
+              <Badge variant="success">{mockMentees.length} Active</Badge>
+            </div>
+            <div className="space-y-3">
+              {mockMentees.slice(0, 2).map((mentee) => (
+                <div key={mentee.id} className="flex items-center gap-3">
+                  <Avatar name={`${mentee.first_name} ${mentee.last_name}`} size="md" />
+                  <div className="flex-1">
+                    <h4 className="font-medium text-iron-900">{mentee.first_name} {mentee.last_name}</h4>
+                    <p className="text-sm text-iron-500">Age {mentee.age}</p>
+                  </div>
+                  <Link to={`/messages/match-${mentee.id}`}>
+                    <Button variant="ghost" size="sm">
+                      <MessageCircle className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+            <Link to="/sessions" className="block mt-4">
+              <Button variant="outline" className="w-full">
+                <Users className="w-4 h-4 mr-2" />
+                View All Sessions
+              </Button>
+            </Link>
+          </Card>
+        )}
+
+        {role === 'admin' && (
+          <Card className="mb-4 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-purple-900">Admin Dashboard</h3>
+              <Badge className="bg-purple-500 text-white">Admin</Badge>
+            </div>
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-white rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-purple-600">8</p>
+                <p className="text-xs text-iron-500">Pending Matches</p>
+              </div>
+              <div className="bg-white rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-amber-600">1</p>
+                <p className="text-xs text-iron-500">Flagged Items</p>
+              </div>
+            </div>
+            <Link to="/admin">
+              <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                <Shield className="w-4 h-4 mr-2" />
+                Open Admin Panel
+              </Button>
+            </Link>
+          </Card>
+        )}
+
+        {/* Upcoming Session - Show for mentee and mentor */}
+        {role !== 'admin' && mockMatch?.nextSession && (
           <Link to={`/sessions/${mockMatch.id}`}>
             <Card className="mb-4 hover:border-brand-200 transition-colors">
               <div className="flex items-center gap-3">

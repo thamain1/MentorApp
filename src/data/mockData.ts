@@ -9,8 +9,71 @@ import type {
   TrainingTrack,
   TrainingModule,
   Post,
-  Notification
+  Notification,
+  UserRole as UserRoleType,
 } from '../types';
+
+// Re-export UserRole from types
+export type { UserRole } from '../types';
+
+// =====================
+// TEST USER PROFILES
+// =====================
+
+export interface TestUser extends Profile {
+  role: UserRoleType;
+}
+
+export const testUsers: Record<UserRoleType, TestUser> = {
+  admin: {
+    id: 'test-admin-id',
+    user_id: 'test-admin-auth-id',
+    first_name: 'Sarah',
+    last_name: 'Mitchell',
+    age: 35,
+    bio: 'Program Director overseeing mentorship matches and community safety. Dedicated to building meaningful connections.',
+    interests: ['Leadership', 'Community', 'Education', 'Faith & Spirituality'],
+    goals: ['Program Growth', 'Community Safety', 'Mentor Development'],
+    location: 'Chicago, IL',
+    avatar_url: null,
+    guidelines_accepted_at: '2023-01-01T10:00:00Z',
+    created_at: '2023-01-01T10:00:00Z',
+    updated_at: '2024-02-01T15:30:00Z',
+    role: 'admin',
+  },
+  mentor: {
+    id: 'test-mentor-id',
+    user_id: 'test-mentor-auth-id',
+    first_name: 'David',
+    last_name: 'Williams',
+    age: 32,
+    bio: 'Software engineer with 10 years of experience. Passionate about helping young men discover their potential in tech and life.',
+    interests: ['Technology', 'Fitness', 'Entrepreneurship', 'Faith & Spirituality'],
+    goals: ['Leadership Skills', 'Career Development'],
+    location: 'Chicago, IL',
+    avatar_url: null,
+    guidelines_accepted_at: '2023-06-01T10:00:00Z',
+    created_at: '2023-06-01T10:00:00Z',
+    updated_at: '2024-01-20T12:00:00Z',
+    role: 'mentor',
+  },
+  mentee: {
+    id: 'test-mentee-id',
+    user_id: 'test-mentee-auth-id',
+    first_name: 'Marcus',
+    last_name: 'Johnson',
+    age: 16,
+    bio: 'High school junior interested in technology and music. Looking forward to learning from my mentor!',
+    interests: ['Technology', 'Music', 'Gaming', 'Sports'],
+    goals: ['Academic Success', 'Career Development', 'Leadership Skills'],
+    location: 'Chicago, IL',
+    avatar_url: null,
+    guidelines_accepted_at: '2024-01-15T10:00:00Z',
+    created_at: '2024-01-15T10:00:00Z',
+    updated_at: '2024-02-01T15:30:00Z',
+    role: 'mentee',
+  },
+};
 
 // Extended types for UI
 export interface Conversation {
@@ -75,7 +138,7 @@ export const mockMentorProfile: Profile = {
   interests: ['Technology', 'Fitness', 'Entrepreneurship', 'Faith & Spirituality'],
   goals: ['Leadership Skills', 'Career Development'],
   location: 'Chicago, IL',
-  avatar_url: null,
+  avatar_url: '/images/mentors/gettyimages-1146909737-612x612.jpg',
   guidelines_accepted_at: '2023-06-01T10:00:00Z',
   created_at: '2023-06-01T10:00:00Z',
   updated_at: '2024-01-20T12:00:00Z',
@@ -681,14 +744,11 @@ export const mockUserStats = {
   badgesEarned: 1,
 };
 
-// Role context for switching between mentor/mentee views
-export type UserRole = 'mentor' | 'mentee';
-
 // Extended session type with participant info for list views
 export interface SessionWithParticipant extends Session {
   participant: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'avatar_url'>;
   matchId: string;
-  userRole: UserRole;
+  userRole: UserRoleType;
 }
 
 // Mock mentees for mentor view
@@ -978,7 +1038,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     interests: ['Sports', 'Faith & Spirituality', 'Music', 'Volunteering'],
     goals: ['Personal Growth', 'Communication'],
     location: 'Chicago, IL',
-    avatar_url: null,
+    avatar_url: '/images/mentors/gettyimages-1455343282-612x612.jpg',
     guidelines_accepted_at: '2023-08-15T10:00:00Z',
     created_at: '2023-08-15T10:00:00Z',
     updated_at: '2024-01-10T09:00:00Z',
@@ -998,7 +1058,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     interests: ['Fitness', 'Financial Literacy', 'Sports', 'Reading'],
     goals: ['Financial Literacy', 'Health & Wellness'],
     location: 'Chicago, IL',
-    avatar_url: null,
+    avatar_url: '/images/mentors/gettyimages-1463782257-612x612.jpg',
     guidelines_accepted_at: '2023-05-01T10:00:00Z',
     created_at: '2023-05-01T10:00:00Z',
     updated_at: '2024-02-01T09:00:00Z',
@@ -1018,7 +1078,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     interests: ['Entrepreneurship', 'Leadership', 'Cooking', 'Travel'],
     goals: ['Leadership Skills', 'Career Development'],
     location: 'Chicago, IL',
-    avatar_url: null,
+    avatar_url: '/images/mentors/gettyimages-1916997109-612x612.jpg',
     guidelines_accepted_at: '2023-03-01T10:00:00Z',
     created_at: '2023-03-01T10:00:00Z',
     updated_at: '2024-01-15T09:00:00Z',
@@ -1027,6 +1087,46 @@ export const mockAvailableMentors: MentorProfile[] = [
     availability: 'Weekday mornings',
     matchCount: 20,
     rating: 5.0,
+  },
+  {
+    id: 'mentor-5-id',
+    user_id: 'mentor-5-auth-id',
+    first_name: 'Anthony',
+    last_name: 'Davis',
+    age: 38,
+    bio: 'Corporate executive and life coach. Dedicated to helping young men navigate their career paths and personal development.',
+    interests: ['Business', 'Public Speaking', 'Mentoring', 'Golf'],
+    goals: ['Leadership Skills', 'Communication'],
+    location: 'Chicago, IL',
+    avatar_url: '/images/mentors/gettyimages-2203419531-612x612.jpg',
+    guidelines_accepted_at: '2023-04-01T10:00:00Z',
+    created_at: '2023-04-01T10:00:00Z',
+    updated_at: '2024-01-20T09:00:00Z',
+    yearsExperience: 12,
+    specialties: ['Leadership', 'Career Development', 'Public Speaking'],
+    availability: 'Weekday afternoons',
+    matchCount: 15,
+    rating: 4.9,
+  },
+  {
+    id: 'mentor-6-id',
+    user_id: 'mentor-6-auth-id',
+    first_name: 'Marcus',
+    last_name: 'Johnson',
+    age: 30,
+    bio: 'Professional counselor and youth advocate. Specializing in helping young men build emotional intelligence and resilience.',
+    interests: ['Psychology', 'Community Service', 'Music', 'Fitness'],
+    goals: ['Personal Growth', 'Mental Health'],
+    location: 'Chicago, IL',
+    avatar_url: '/images/mentors/gettyimages-2206642276-612x612.jpg',
+    guidelines_accepted_at: '2023-07-01T10:00:00Z',
+    created_at: '2023-07-01T10:00:00Z',
+    updated_at: '2024-02-01T09:00:00Z',
+    yearsExperience: 6,
+    specialties: ['Emotional Intelligence', 'Life Skills', 'Communication'],
+    availability: 'Flexible',
+    matchCount: 10,
+    rating: 4.8,
   },
 ];
 

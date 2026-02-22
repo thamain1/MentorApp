@@ -1,9 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Star, MapPin, Clock, ChevronRight } from 'lucide-react';
+import { Search, Filter, Star, Clock, Users } from 'lucide-react';
 import { AppShell, Header } from '../layout';
-import { Card, Avatar, Badge, Input } from '../ui';
+import { Card, Avatar, Input } from '../ui';
 import { mockAvailableMentors, type MentorProfile } from '../../data/mockData';
+
+// Specialty colors mapping - using our color scheme
+const specialtyColors: Record<string, { bg: string; text: string }> = {
+  'Leadership': { bg: 'bg-blue-100', text: 'text-blue-600' },
+  'Career': { bg: 'bg-teal-100', text: 'text-teal-600' },
+  'Faith & Spirituality': { bg: 'bg-purple-100', text: 'text-purple-600' },
+  'Education': { bg: 'bg-amber-100', text: 'text-amber-600' },
+  'Life Skills': { bg: 'bg-green-100', text: 'text-green-600' },
+  'Entrepreneurship': { bg: 'bg-rose-100', text: 'text-rose-600' },
+  'Technology': { bg: 'bg-cyan-100', text: 'text-cyan-600' },
+  'Fitness': { bg: 'bg-orange-100', text: 'text-orange-600' },
+  'default': { bg: 'bg-iron-100', text: 'text-iron-600' },
+};
+
+const getSpecialtyColor = (specialty: string) => {
+  return specialtyColors[specialty] || specialtyColors['default'];
+};
 
 export function FindMentor() {
   const navigate = useNavigate();
@@ -55,7 +72,7 @@ export function FindMentor() {
             onClick={() => setSelectedSpecialty(null)}
             className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
               selectedSpecialty === null
-                ? 'bg-brand-500 text-white'
+                ? 'bg-blue-500 text-white'
                 : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
             }`}
           >
@@ -67,7 +84,7 @@ export function FindMentor() {
               onClick={() => setSelectedSpecialty(specialty)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 selectedSpecialty === specialty
-                  ? 'bg-brand-500 text-white'
+                  ? 'bg-blue-500 text-white'
                   : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
               }`}
             >
@@ -81,8 +98,8 @@ export function FindMentor() {
           {filteredMentors.length} mentor{filteredMentors.length !== 1 ? 's' : ''} available
         </p>
 
-        {/* Mentor List */}
-        <div className="space-y-3">
+        {/* Mentor Grid */}
+        <div className="grid grid-cols-2 gap-3">
           {filteredMentors.map((mentor) => (
             <MentorCard
               key={mentor.id}
@@ -113,49 +130,67 @@ interface MentorCardProps {
 
 function MentorCard({ mentor, onClick }: MentorCardProps) {
   const mentorName = `${mentor.first_name} ${mentor.last_name}`;
+  const primarySpecialty = mentor.specialties[0];
+  const colors = getSpecialtyColor(primarySpecialty);
 
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-white border border-iron-100 rounded-xl p-4 hover:border-brand-200 transition-colors"
+      className="w-full text-left bg-white border border-iron-100 rounded-2xl p-4 hover:border-blue-200 hover:shadow-md transition-all"
     >
-      <div className="flex items-start gap-3">
-        <Avatar name={mentorName} src={mentor.avatar_url} size="lg" />
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-semibold text-iron-900 truncate">{mentorName}</h3>
-            {mentor.rating && (
-              <div className="flex items-center gap-0.5 text-amber-500">
-                <Star className="w-3.5 h-3.5 fill-current" />
-                <span className="text-xs font-medium">{mentor.rating}</span>
-              </div>
-            )}
-          </div>
-
-          <p className="text-sm text-iron-600 line-clamp-2 mb-2">{mentor.bio}</p>
-
-          <div className="flex flex-wrap gap-1 mb-2">
-            {mentor.specialties.slice(0, 3).map((specialty) => (
-              <Badge key={specialty} variant="default" className="text-xs">
-                {specialty}
-              </Badge>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4 text-xs text-iron-500">
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5" />
-              <span>{mentor.location}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              <span>{mentor.availability}</span>
-            </div>
+      {/* Profile Image */}
+      <div className="flex justify-center mb-3">
+        <div className="relative">
+          <Avatar
+            name={mentorName}
+            src={mentor.avatar_url}
+            size="xl"
+            className="w-20 h-20 border-4 border-white shadow-lg"
+          />
+          {/* Verified badge */}
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white">
+            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
           </div>
         </div>
+      </div>
 
-        <ChevronRight className="w-5 h-5 text-iron-400 flex-shrink-0" />
+      {/* Name */}
+      <h3 className="font-semibold text-iron-900 text-center mb-1 truncate">
+        {mentorName}
+      </h3>
+
+      {/* Primary Specialty Badge */}
+      <div className="flex justify-center mb-3">
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
+          {primarySpecialty}
+        </span>
+      </div>
+
+      {/* Stats */}
+      <div className="space-y-1.5">
+        {/* Rating */}
+        {mentor.rating && (
+          <div className="flex items-center justify-center gap-1">
+            <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
+            <span className="text-xs text-iron-600">
+              {mentor.rating} rating
+            </span>
+          </div>
+        )}
+
+        {/* Availability */}
+        <div className="flex items-center justify-center gap-1 text-xs text-iron-500">
+          <Clock className="w-3 h-3" />
+          <span>{mentor.availability}</span>
+        </div>
+
+        {/* Matches */}
+        <div className="flex items-center justify-center gap-1 text-xs text-iron-500">
+          <Users className="w-3 h-3" />
+          <span>{mentor.matchCount} matches</span>
+        </div>
       </div>
     </button>
   );

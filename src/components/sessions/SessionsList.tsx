@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -6,24 +5,24 @@ import {
   ChevronRight,
   CheckCircle,
   AlertCircle,
-  Users,
-  User,
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar, Card, Badge } from '../ui';
 import { formatDate, formatTime, formatRelativeTime } from '../../lib/utils';
+import { useUser } from '../../context';
 import {
   mockMentorSessions,
   mockMenteeSessions,
-  type UserRole,
   type SessionWithParticipant,
 } from '../../data/mockData';
+import type { UserRole } from '../../types';
 
 export function SessionsList() {
   const navigate = useNavigate();
-  // Toggle to demonstrate both views - in real app this comes from auth context
-  const [viewAs, setViewAs] = useState<UserRole>('mentee');
+  const { role } = useUser();
 
+  // Map role to session view - admin sees mentor view for now
+  const viewAs: 'mentor' | 'mentee' = role === 'mentee' ? 'mentee' : 'mentor';
   const sessions = viewAs === 'mentor' ? mockMentorSessions : mockMenteeSessions;
 
   // Separate sessions into categories
@@ -70,35 +69,6 @@ export function SessionsList() {
       <Header title="Sessions" showNotifications />
 
       <div className="p-4 space-y-6">
-        {/* Role Toggle - Demo only, would be based on auth in real app */}
-        <Card className="p-3">
-          <p className="text-xs text-iron-500 mb-2">View as:</p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setViewAs('mentee')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                viewAs === 'mentee'
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
-              }`}
-            >
-              <User className="w-4 h-4" />
-              Mentee
-            </button>
-            <button
-              onClick={() => setViewAs('mentor')}
-              className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                viewAs === 'mentor'
-                  ? 'bg-brand-500 text-white'
-                  : 'bg-iron-100 text-iron-600 hover:bg-iron-200'
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              Mentor
-            </button>
-          </div>
-        </Card>
-
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="p-3 text-center">

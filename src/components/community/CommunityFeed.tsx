@@ -14,6 +14,7 @@ import { AppShell, Header } from '../layout';
 import { Avatar } from '../ui';
 import { mockCurrentUser, mockMentorProfile, mockMentees } from '../../data/mockData';
 import { useLocation } from 'react-router-dom';
+import { useUser } from '../../context';
 
 // Extended post type with images, category, role, and comments
 interface PostWithImages {
@@ -243,6 +244,7 @@ function formatTimeAgo(dateString: string): string {
 
 export function CommunityFeed() {
   const location = useLocation();
+  const { currentUser, role } = useUser();
   const [posts, setPosts] = useState<PostWithImages[]>(postsWithImages);
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
@@ -331,19 +333,21 @@ export function CommunityFeed() {
   const handlePost = () => {
     if (!newPost.trim() && selectedImages.length === 0) return;
 
+    const roleLabel = role === 'mentor' ? 'Mentor' : role === 'admin' ? 'Admin' : 'Mentee';
+
     const newPostObj: PostWithImages = {
       id: `post-new-${Date.now()}`,
       group_id: null,
       category: 'mentors',
-      user_id: mockCurrentUser.user_id,
+      user_id: currentUser.user_id,
       content: newPost,
       created_at: new Date().toISOString(),
       author: {
-        id: mockCurrentUser.id,
-        first_name: mockCurrentUser.first_name,
-        last_name: mockCurrentUser.last_name,
-        avatar_url: mockCurrentUser.avatar_url,
-        role: 'Mentee',
+        id: currentUser.id,
+        first_name: currentUser.first_name,
+        last_name: currentUser.last_name,
+        avatar_url: currentUser.avatar_url,
+        role: roleLabel,
       },
       likes: 0,
       comments: 0,
@@ -609,8 +613,8 @@ export function CommunityFeed() {
               <div className="p-4">
                 <div className="flex gap-3">
                   <Avatar
-                    src={mockCurrentUser.avatar_url}
-                    name={`${mockCurrentUser.first_name} ${mockCurrentUser.last_name}`}
+                    src={currentUser.avatar_url}
+                    name={`${currentUser.first_name} ${currentUser.last_name}`}
                     size="md"
                     className="flex-shrink-0"
                   />

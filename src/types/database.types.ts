@@ -15,6 +15,7 @@ export type SessionStatus = 'scheduled' | 'completed' | 'cancelled';
 export type GoalStatus = 'active' | 'completed' | 'abandoned';
 
 export interface Database {
+  PostgrestVersion: '12';
   public: {
     Tables: {
       users: {
@@ -44,6 +45,7 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
+          role: UserRole;
           first_name: string;
           last_name: string;
           age: number;
@@ -60,6 +62,7 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
+          role: UserRole;
           first_name: string;
           last_name?: string;
           age: number;

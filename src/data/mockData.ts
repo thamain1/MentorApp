@@ -117,6 +117,7 @@ export interface PostWithAuthor extends Post {
 export const mockCurrentUser: Profile = {
   id: 'current-user-id',
   user_id: 'current-user-auth-id',
+  role: 'mentee',
   first_name: 'Marcus',
   last_name: 'Johnson',
   age: 16,
@@ -135,6 +136,7 @@ export const mockCurrentUser: Profile = {
 export const mockMentorProfile: Profile = {
   id: 'mentor-1-id',
   user_id: 'mentor-1-auth-id',
+  role: 'mentor',
   first_name: 'David',
   last_name: 'Williams',
   age: 32,
@@ -155,6 +157,7 @@ const mockProfiles: Profile[] = [
   {
     id: 'mentor-2-id',
     user_id: 'mentor-2-auth-id',
+    role: 'mentor' as const,
     first_name: 'James',
     last_name: 'Thompson',
     age: 28,
@@ -171,6 +174,7 @@ const mockProfiles: Profile[] = [
   {
     id: 'mentee-2-id',
     user_id: 'mentee-2-auth-id',
+    role: 'mentee' as const,
     first_name: 'Tyler',
     last_name: 'Brown',
     age: 15,
@@ -187,6 +191,7 @@ const mockProfiles: Profile[] = [
   {
     id: 'mentee-3-id',
     user_id: 'mentee-3-auth-id',
+    role: 'mentee' as const,
     first_name: 'Jordan',
     last_name: 'Davis',
     age: 17,
@@ -765,6 +770,7 @@ export const mockMentees: Profile[] = [
   {
     id: 'mentee-2-id',
     user_id: 'mentee-2-auth-id',
+    role: 'mentee' as const,
     first_name: 'Tyler',
     last_name: 'Brown',
     age: 15,
@@ -781,6 +787,7 @@ export const mockMentees: Profile[] = [
   {
     id: 'mentee-3-id',
     user_id: 'mentee-3-auth-id',
+    role: 'mentee' as const,
     first_name: 'Jordan',
     last_name: 'Davis',
     age: 17,
@@ -1041,6 +1048,7 @@ export const mockAvailableMentors: MentorProfile[] = [
   {
     id: 'mentor-2-id',
     user_id: 'mentor-2-auth-id',
+    role: 'mentor' as const,
     first_name: 'James',
     last_name: 'Thompson',
     age: 28,
@@ -1061,6 +1069,7 @@ export const mockAvailableMentors: MentorProfile[] = [
   {
     id: 'mentor-3-id',
     user_id: 'mentor-3-auth-id',
+    role: 'mentor' as const,
     first_name: 'Michael',
     last_name: 'Chen',
     age: 35,
@@ -1081,6 +1090,7 @@ export const mockAvailableMentors: MentorProfile[] = [
   {
     id: 'mentor-4-id',
     user_id: 'mentor-4-auth-id',
+    role: 'mentor' as const,
     first_name: 'Robert',
     last_name: 'Martinez',
     age: 42,
@@ -1101,6 +1111,7 @@ export const mockAvailableMentors: MentorProfile[] = [
   {
     id: 'mentor-5-id',
     user_id: 'mentor-5-auth-id',
+    role: 'mentor' as const,
     first_name: 'Anthony',
     last_name: 'Davis',
     age: 38,
@@ -1121,6 +1132,7 @@ export const mockAvailableMentors: MentorProfile[] = [
   {
     id: 'mentor-6-id',
     user_id: 'mentor-6-auth-id',
+    role: 'mentor' as const,
     first_name: 'Marcus',
     last_name: 'Johnson',
     age: 30,

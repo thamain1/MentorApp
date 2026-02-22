@@ -50,6 +50,7 @@ export interface Database {
           bio: string | null;
           interests: string[];
           goals: string[];
+          specialties: string[];
           location: string | null;
           avatar_url: string | null;
           guidelines_accepted_at: string | null;
@@ -65,6 +66,7 @@ export interface Database {
           bio?: string | null;
           interests?: string[];
           goals?: string[];
+          specialties?: string[];
           location?: string | null;
           avatar_url?: string | null;
           guidelines_accepted_at?: string | null;
@@ -80,11 +82,87 @@ export interface Database {
           bio?: string | null;
           interests?: string[];
           goals?: string[];
+          specialties?: string[];
           location?: string | null;
           avatar_url?: string | null;
           guidelines_accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      interest_categories: {
+        Row: {
+          id: string;
+          name: string;
+          group_label: string;
+          display_order: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          group_label?: string;
+          display_order?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          group_label?: string;
+          display_order?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+      };
+      focus_areas: {
+        Row: {
+          id: string;
+          name: string;
+          group_label: string;
+          display_order: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          group_label?: string;
+          display_order?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          group_label?: string;
+          display_order?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+      };
+      mentor_specialties_lookup: {
+        Row: {
+          id: string;
+          name: string;
+          display_order: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          display_order?: number;
+          active?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          display_order?: number;
+          active?: boolean;
+          created_at?: string;
         };
       };
       matches: {

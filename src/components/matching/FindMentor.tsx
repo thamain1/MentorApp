@@ -4,22 +4,10 @@ import { Search, Filter, Star, Clock, Users } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Card, Avatar, Input } from '../ui';
 import { mockAvailableMentors, type MentorProfile } from '../../data/mockData';
-
-// Specialty colors mapping - using our color scheme
-const specialtyColors: Record<string, { bg: string; text: string }> = {
-  'Leadership': { bg: 'bg-blue-100', text: 'text-blue-600' },
-  'Career': { bg: 'bg-teal-100', text: 'text-teal-600' },
-  'Faith & Spirituality': { bg: 'bg-purple-100', text: 'text-purple-600' },
-  'Education': { bg: 'bg-amber-100', text: 'text-amber-600' },
-  'Life Skills': { bg: 'bg-green-100', text: 'text-green-600' },
-  'Entrepreneurship': { bg: 'bg-rose-100', text: 'text-rose-600' },
-  'Technology': { bg: 'bg-cyan-100', text: 'text-cyan-600' },
-  'Fitness': { bg: 'bg-orange-100', text: 'text-orange-600' },
-  'default': { bg: 'bg-iron-100', text: 'text-iron-600' },
-};
+import { MENTOR_SPECIALTIES, SPECIALTY_COLORS } from '../../types';
 
 const getSpecialtyColor = (specialty: string) => {
-  return specialtyColors[specialty] || specialtyColors['default'];
+  return SPECIALTY_COLORS[specialty] || SPECIALTY_COLORS['default'];
 };
 
 export function FindMentor() {
@@ -27,10 +15,7 @@ export function FindMentor() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
 
-  // Get unique specialties from all mentors
-  const allSpecialties = Array.from(
-    new Set(mockAvailableMentors.flatMap((m) => m.specialties))
-  ).sort();
+  const allSpecialties = [...MENTOR_SPECIALTIES];
 
   // Filter mentors based on search and specialty
   const filteredMentors = mockAvailableMentors.filter((mentor) => {

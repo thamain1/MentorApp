@@ -2,7 +2,11 @@ import { useState } from 'react';
 import { ArrowLeft, Check } from 'lucide-react';
 import { Button, Input, Textarea } from '../ui';
 import { cn } from '../../lib/utils';
-import { INTEREST_OPTIONS, GOAL_CATEGORIES } from '../../types';
+import {
+  INTEREST_GROUPS,
+  FOCUS_AREA_GROUPS,
+  MENTOR_SPECIALTIES,
+} from '../../types';
 
 interface ProfileSetupProps {
   role: 'mentor' | 'mentee';
@@ -16,63 +20,75 @@ export interface ProfileData {
   bio: string;
   interests: string[];
   goals: string[];
+  specialties: string[];
 }
 
+type Step = 'name' | 'bio' | 'interests' | 'goals' | 'specialties';
+
+const MENTEE_STEPS: Step[] = ['name', 'bio', 'interests', 'goals'];
+const MENTOR_STEPS: Step[] = ['name', 'bio', 'interests', 'goals', 'specialties'];
+
+const MAX_INTERESTS = 8;
+const MAX_GOALS = 5;
+const MAX_SPECIALTIES = 5;
+
 export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
-  const [step, setStep] = useState<'name' | 'bio' | 'interests' | 'goals'>('name');
+  const steps = role === 'mentor' ? MENTOR_STEPS : MENTEE_STEPS;
+  const [step, setStep] = useState<Step>('name');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [bio, setBio] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
   const [goals, setGoals] = useState<string[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
 
-  const toggleInterest = (interest: string) => {
-    setInterests((prev) =>
-      prev.includes(interest)
-        ? prev.filter((i) => i !== interest)
-        : prev.length < 5
-        ? [...prev, interest]
+  const toggleItem = <T extends string>(
+    _list: T[],
+    setList: React.Dispatch<React.SetStateAction<T[]>>,
+    item: T,
+    max: number
+  ) => {
+    setList((prev) =>
+      prev.includes(item)
+        ? prev.filter((i) => i !== item)
+        : prev.length < max
+        ? [...prev, item]
         : prev
     );
   };
 
-  const toggleGoal = (goal: string) => {
-    setGoals((prev) =>
-      prev.includes(goal)
-        ? prev.filter((g) => g !== goal)
-        : prev.length < 3
-        ? [...prev, goal]
-        : prev
-    );
-  };
+  const currentIndex = steps.indexOf(step);
 
   const handleNext = () => {
-    if (step === 'name') setStep('bio');
-    else if (step === 'bio') setStep('interests');
-    else if (step === 'interests') setStep('goals');
-    else {
-      onContinue({ firstName, lastName, bio, interests, goals });
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < steps.length) {
+      setStep(steps[nextIndex]);
+    } else {
+      onContinue({ firstName, lastName, bio, interests, goals, specialties });
     }
   };
 
   const handleBack = () => {
-    if (step === 'name') onBack();
-    else if (step === 'bio') setStep('name');
-    else if (step === 'interests') setStep('bio');
-    else setStep('interests');
+    if (currentIndex === 0) {
+      onBack();
+    } else {
+      setStep(steps[currentIndex - 1]);
+    }
   };
 
   const canContinue = () => {
     if (step === 'name') return firstName.trim().length > 0;
-    if (step === 'bio') return true; // Bio is optional
+    if (step === 'bio') return true;
     if (step === 'interests') return interests.length >= 1;
     if (step === 'goals') return goals.length >= 1;
+    if (step === 'specialties') return specialties.length >= 1;
     return false;
   };
 
+  const isLastStep = currentIndex === steps.length - 1;
+
   return (
     <div className="min-h-screen flex flex-col p-6 bg-white">
-      {/* Back button */}
       <button
         onClick={handleBack}
         className="p-2 -ml-2 rounded-xl hover:bg-iron-100 transition-colors w-fit"
@@ -80,30 +96,22 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
         <ArrowLeft className="w-5 h-5 text-iron-700" />
       </button>
 
-      {/* Progress indicator */}
       <div className="flex gap-2 mt-4 mb-8">
-        {['name', 'bio', 'interests', 'goals'].map((s, i) => (
+        {steps.map((s, i) => (
           <div
             key={s}
             className={cn(
               'h-1 flex-1 rounded-full transition-colors',
-              ['name', 'bio', 'interests', 'goals'].indexOf(step) >= i
-                ? 'bg-brand-500'
-                : 'bg-iron-200'
+              currentIndex >= i ? 'bg-brand-500' : 'bg-iron-200'
             )}
           />
         ))}
       </div>
 
-      {/* Name step */}
       {step === 'name' && (
         <>
-          <h1 className="text-2xl font-bold text-iron-900 mb-2">
-            What's your name?
-          </h1>
-          <p className="text-iron-500 mb-8">
-            Let's get to know you a little better.
-          </p>
+          <h1 className="text-2xl font-bold text-iron-900 mb-2">What's your name?</h1>
+          <p className="text-iron-500 mb-8">Let's get to know you a little better.</p>
           <div className="space-y-4">
             <Input
               label="First name"
@@ -122,12 +130,9 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
         </>
       )}
 
-      {/* Bio step */}
       {step === 'bio' && (
         <>
-          <h1 className="text-2xl font-bold text-iron-900 mb-2">
-            Tell us about yourself
-          </h1>
+          <h1 className="text-2xl font-bold text-iron-900 mb-2">Tell us about yourself</h1>
           <p className="text-iron-500 mb-8">
             {role === 'mentee'
               ? 'Help mentors understand who you are and what drives you.'
@@ -136,7 +141,7 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
           <Textarea
             placeholder={
               role === 'mentee'
-                ? "What are you passionate about? What challenges are you facing? What do you hope to achieve?"
+                ? 'What are you passionate about? What challenges are you facing? What do you hope to achieve?'
                 : "What's your background? Why do you want to mentor? What wisdom can you share?"
             }
             value={bio}
@@ -147,71 +152,136 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
         </>
       )}
 
-      {/* Interests step */}
       {step === 'interests' && (
         <>
-          <h1 className="text-2xl font-bold text-iron-900 mb-2">
-            What are your interests?
-          </h1>
-          <p className="text-iron-500 mb-6">
-            Select up to 5 interests to help us find great matches.
+          <h1 className="text-2xl font-bold text-iron-900 mb-2">What are your interests?</h1>
+          <p className="text-iron-500 mb-1">
+            Select up to {MAX_INTERESTS} things you enjoy.
           </p>
-          <div className="flex flex-wrap gap-2">
-            {INTEREST_OPTIONS.map((interest) => (
-              <button
-                key={interest}
-                onClick={() => toggleInterest(interest)}
-                className={cn(
-                  'px-4 py-2 rounded-full border-2 text-sm font-medium transition-all',
-                  interests.includes(interest)
-                    ? 'border-brand-500 bg-brand-50 text-brand-700'
-                    : 'border-iron-200 text-iron-600 hover:border-iron-300'
-                )}
-              >
-                {interests.includes(interest) && <Check className="w-4 h-4 inline mr-1" />}
-                {interest}
-              </button>
+          <p className="text-iron-400 text-sm mb-6">
+            {interests.length}/{MAX_INTERESTS} selected
+          </p>
+          <div className="space-y-6 overflow-y-auto flex-1">
+            {INTEREST_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold text-iron-400 uppercase tracking-wider mb-3">
+                  {group.label}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {group.interests.map((interest) => {
+                    const selected = interests.includes(interest);
+                    const atMax = interests.length >= MAX_INTERESTS && !selected;
+                    return (
+                      <button
+                        key={interest}
+                        onClick={() => toggleItem(interests, setInterests, interest, MAX_INTERESTS)}
+                        disabled={atMax}
+                        className={cn(
+                          'px-4 py-2 rounded-full border-2 text-sm font-medium transition-all',
+                          selected
+                            ? 'border-brand-500 bg-brand-50 text-brand-700'
+                            : atMax
+                            ? 'border-iron-100 text-iron-300 cursor-not-allowed'
+                            : 'border-iron-200 text-iron-600 hover:border-iron-300'
+                        )}
+                      >
+                        {selected && <Check className="w-4 h-4 inline mr-1" />}
+                        {interest}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
           </div>
-          <p className="text-iron-400 text-sm mt-4">
-            {interests.length}/5 selected
-          </p>
         </>
       )}
 
-      {/* Goals step */}
       {step === 'goals' && (
         <>
           <h1 className="text-2xl font-bold text-iron-900 mb-2">
-            {role === 'mentee' ? 'What do you want to work on?' : 'What can you help with?'}
+            {role === 'mentee' ? 'What do you want to work on?' : 'What areas do you care about?'}
           </h1>
-          <p className="text-iron-500 mb-6">
-            Select up to 3 focus areas.
+          <p className="text-iron-500 mb-1">
+            {role === 'mentee'
+              ? `Select up to ${MAX_GOALS} focus areas for your growth.`
+              : `Select up to ${MAX_GOALS} areas you want to help mentees develop.`}
           </p>
-          <div className="flex flex-wrap gap-2">
-            {GOAL_CATEGORIES.map((goal) => (
-              <button
-                key={goal}
-                onClick={() => toggleGoal(goal)}
-                className={cn(
-                  'px-4 py-2 rounded-full border-2 text-sm font-medium transition-all',
-                  goals.includes(goal)
-                    ? 'border-brand-500 bg-brand-50 text-brand-700'
-                    : 'border-iron-200 text-iron-600 hover:border-iron-300'
-                )}
-              >
-                {goals.includes(goal) && <Check className="w-4 h-4 inline mr-1" />}
-                {goal}
-              </button>
+          <p className="text-iron-400 text-sm mb-6">
+            {goals.length}/{MAX_GOALS} selected
+          </p>
+          <div className="space-y-6 overflow-y-auto flex-1">
+            {FOCUS_AREA_GROUPS.map((group) => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold text-iron-400 uppercase tracking-wider mb-3">
+                  {group.label}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {group.areas.map((area) => {
+                    const selected = goals.includes(area);
+                    const atMax = goals.length >= MAX_GOALS && !selected;
+                    return (
+                      <button
+                        key={area}
+                        onClick={() => toggleItem(goals, setGoals, area, MAX_GOALS)}
+                        disabled={atMax}
+                        className={cn(
+                          'px-4 py-2 rounded-full border-2 text-sm font-medium transition-all',
+                          selected
+                            ? 'border-brand-500 bg-brand-50 text-brand-700'
+                            : atMax
+                            ? 'border-iron-100 text-iron-300 cursor-not-allowed'
+                            : 'border-iron-200 text-iron-600 hover:border-iron-300'
+                        )}
+                      >
+                        {selected && <Check className="w-4 h-4 inline mr-1" />}
+                        {area}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
           </div>
-          <p className="text-iron-400 text-sm mt-4">
-            {goals.length}/3 selected
-          </p>
         </>
       )}
 
-      {/* Continue button */}
+      {step === 'specialties' && (
+        <>
+          <h1 className="text-2xl font-bold text-iron-900 mb-2">What are your specialties?</h1>
+          <p className="text-iron-500 mb-1">
+            Select up to {MAX_SPECIALTIES} areas where you are equipped to guide and mentor others.
+          </p>
+          <p className="text-iron-400 text-sm mb-6">
+            {specialties.length}/{MAX_SPECIALTIES} selected
+          </p>
+          <div className="flex flex-wrap gap-2 overflow-y-auto flex-1">
+            {MENTOR_SPECIALTIES.map((specialty) => {
+              const selected = specialties.includes(specialty);
+              const atMax = specialties.length >= MAX_SPECIALTIES && !selected;
+              return (
+                <button
+                  key={specialty}
+                  onClick={() => toggleItem(specialties, setSpecialties, specialty, MAX_SPECIALTIES)}
+                  disabled={atMax}
+                  className={cn(
+                    'px-4 py-2 rounded-full border-2 text-sm font-medium transition-all',
+                    selected
+                      ? 'border-brand-500 bg-brand-50 text-brand-700'
+                      : atMax
+                      ? 'border-iron-100 text-iron-300 cursor-not-allowed'
+                      : 'border-iron-200 text-iron-600 hover:border-iron-300'
+                  )}
+                >
+                  {selected && <Check className="w-4 h-4 inline mr-1" />}
+                  {specialty}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
       <div className="mt-auto pt-8">
         <Button
           onClick={handleNext}
@@ -219,7 +289,7 @@ export function ProfileSetup({ role, onContinue, onBack }: ProfileSetupProps) {
           className="w-full"
           disabled={!canContinue()}
         >
-          {step === 'goals' ? 'Complete Profile' : 'Continue'}
+          {isLastStep ? 'Complete Profile' : 'Continue'}
         </Button>
       </div>
     </div>

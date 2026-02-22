@@ -13,6 +13,7 @@ import {
 import { AppShell, Header } from '../layout';
 import { Card, Avatar, Badge, Button, Textarea } from '../ui';
 import { mockAvailableMentors, mockMatchRequests } from '../../data/mockData';
+import { SPECIALTY_COLORS } from '../../types';
 
 export function MentorProfile() {
   const { mentorId } = useParams<{ mentorId: string }>();
@@ -108,11 +109,17 @@ export function MentorProfile() {
         <Card>
           <h3 className="font-semibold text-iron-900 mb-3">Specialties</h3>
           <div className="flex flex-wrap gap-2">
-            {mentor.specialties.map((specialty) => (
-              <Badge key={specialty} variant="flame" className="text-sm">
-                {specialty}
-              </Badge>
-            ))}
+            {mentor.specialties.map((specialty) => {
+              const colors = SPECIALTY_COLORS[specialty] || SPECIALTY_COLORS['default'];
+              return (
+                <span
+                  key={specialty}
+                  className={`px-3 py-1.5 text-sm font-medium rounded-full ${colors.bg} ${colors.text}`}
+                >
+                  {specialty}
+                </span>
+              );
+            })}
           </div>
         </Card>
 

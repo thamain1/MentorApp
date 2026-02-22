@@ -15,6 +15,7 @@ import { AppShell, Header } from '../layout';
 import { Avatar, Card, Badge } from '../ui';
 import { useUser } from '../../context';
 import { mockUserStats } from '../../data/mockData';
+import { SPECIALTY_COLORS } from '../../types';
 
 // Mock connections data for the bubbles
 const getConnectionsForRole = (role: string) => {
@@ -176,6 +177,26 @@ export function ProfilePage() {
           </Card>
         )}
 
+        {/* Specialties (mentors only) */}
+        {role === 'mentor' && currentUser.specialties && currentUser.specialties.length > 0 && (
+          <Card className="p-4">
+            <h3 className="text-sm font-medium text-iron-500 mb-3">Specialties</h3>
+            <div className="flex flex-wrap gap-2">
+              {currentUser.specialties.map((specialty) => {
+                const colors = SPECIALTY_COLORS[specialty] || SPECIALTY_COLORS['default'];
+                return (
+                  <span
+                    key={specialty}
+                    className={`px-3 py-1 text-sm font-medium rounded-full ${colors.bg} ${colors.text}`}
+                  >
+                    {specialty}
+                  </span>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
         {/* Interests */}
         {currentUser.interests.length > 0 && (
           <Card className="p-4">
@@ -193,7 +214,7 @@ export function ProfilePage() {
           </Card>
         )}
 
-        {/* Goals Focus Areas */}
+        {/* Focus Areas */}
         {currentUser.goals.length > 0 && (
           <Card className="p-4">
             <h3 className="text-sm font-medium text-iron-500 mb-3">Focus Areas</h3>

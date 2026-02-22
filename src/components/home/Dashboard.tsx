@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import {
   Calendar, MessageCircle, Target, TrendingUp,
   ChevronRight, Sparkles, Clock, Users, Shield, Edit3, Check,
-  Camera, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw
+  Camera, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw, UserPlus
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../layout';
 import { Card, Avatar, Badge, Button } from '../ui';
-import { useUser } from '../../context';
+import { useAuth } from '../../context/AuthContext';
 import { mockMentees } from '../../data/mockData';
 
 const AFFIRMATION_STORAGE_KEY = 'isi-daily-affirmation';
@@ -89,14 +89,6 @@ interface ProfileImageSettings {
 // Get all available images for selection
 const getAllAvailableImages = () => [...menteeImages, ...mentorImages];
 
-const mockMatch = {
-  id: 'match-1',
-  mentorName: 'David Williams',
-  mentorAvatar: null,
-  nextSession: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-  matchedAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000),
-};
-
 const mockGoals = [
   { id: '1', title: 'Improve public speaking', progress: 60 },
   { id: '2', title: 'Read 2 books this month', progress: 50 },
@@ -129,9 +121,12 @@ const dailyPrompt = getDailyPrompt();
 export function Dashboard() {
   const navigate = useNavigate();
   const [checkedIn, setCheckedIn] = useState(false);
-  const { currentUser, role } = useUser();
+  const { profile } = useAuth();
+  const role = profile?.role ?? 'mentee';
+  const firstName = profile?.first_name ?? 'Friend';
+  const lastName = profile?.last_name ?? '';
   const connections = getConnectionsForRole(role);
-  const fullName = `${currentUser.first_name} ${currentUser.last_name}`;
+  const fullName = `${firstName} ${lastName}`.trim();
 
   // Profile image state
   const [profileImageSettings, setProfileImageSettings] = useState<ProfileImageSettings>(() => {
@@ -538,7 +533,7 @@ export function Dashboard() {
         {/* Greeting */}
         <div className="mb-4">
           <h2 className="text-xl font-bold text-iron-900">
-            Hey, {currentUser.first_name}!
+            Hey, {firstName}!
           </h2>
           <p className="text-iron-500 text-sm">Let's make today count.</p>
         </div>
@@ -567,33 +562,23 @@ export function Dashboard() {
         )}
 
         {/* Role-specific Content */}
-        {role === 'mentee' && mockMatch && (
+        {role === 'mentee' && (
           <Card className="mb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-iron-900">Your Mentor</h3>
-              <Badge variant="success">Active</Badge>
-            </div>
-            <div className="flex items-center gap-3 mb-4">
-              <Avatar name={mockMatch.mentorName} size="lg" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center">
+                <UserPlus className="w-5 h-5 text-brand-600" />
+              </div>
               <div>
-                <h4 className="font-medium text-iron-900">{mockMatch.mentorName}</h4>
-                <p className="text-sm text-iron-500">Matched 2 weeks ago</p>
+                <h3 className="font-semibold text-iron-900">Find a Mentor</h3>
+                <p className="text-sm text-iron-500">You haven't been matched yet</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Link to={`/messages/${mockMatch.id}`} className="flex-1">
-                <Button variant="outline" className="w-full">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  Message
-                </Button>
-              </Link>
-              <Link to={`/sessions/${mockMatch.id}`} className="flex-1">
-                <Button className="w-full">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule
-                </Button>
-              </Link>
-            </div>
+            <Link to="/mentors">
+              <Button className="w-full">
+                <Users className="w-4 h-4 mr-2" />
+                Browse Mentors
+              </Button>
+            </Link>
           </Card>
         )}
 
@@ -653,25 +638,17 @@ export function Dashboard() {
           </Card>
         )}
 
-        {/* Upcoming Session - Show for mentee and mentor */}
-        {role !== 'admin' && mockMatch?.nextSession && (
-          <Link to={`/sessions/${mockMatch.id}`}>
+        {/* Upcoming Session placeholder */}
+        {role !== 'admin' && (
+          <Link to="/sessions">
             <Card className="mb-4 hover:border-brand-200 transition-colors">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
                   <Clock className="w-6 h-6 text-brand-600" />
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-medium text-iron-900">Next Session</h4>
-                  <p className="text-sm text-iron-500">
-                    {mockMatch.nextSession.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit',
-                    })}
-                  </p>
+                  <h4 className="font-medium text-iron-900">Sessions</h4>
+                  <p className="text-sm text-iron-500">View and schedule sessions</p>
                 </div>
                 <ChevronRight className="w-5 h-5 text-iron-400" />
               </div>

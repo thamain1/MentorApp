@@ -2,7 +2,7 @@ import { ArrowLeft, Bell, Search, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { Avatar } from '../ui';
-import { mockCurrentUser } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 
 interface HeaderProps {
   title?: string;
@@ -32,7 +32,8 @@ export function Header({
   transparent = false,
 }: HeaderProps) {
   const navigate = useNavigate();
-  const fullName = `${mockCurrentUser.first_name} ${mockCurrentUser.last_name}`;
+  const { profile } = useAuth();
+  const fullName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : '';
 
   return (
     <header
@@ -100,7 +101,7 @@ export function Header({
             className="ml-1"
           >
             <Avatar
-              src={mockCurrentUser.avatar_url}
+              src={profile?.avatar_url ?? undefined}
               name={fullName}
               size="sm"
             />

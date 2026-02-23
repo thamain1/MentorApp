@@ -1,3 +1,4 @@
+import React from 'react';
 import { cn, getInitials } from '../../lib/utils';
 
 interface AvatarProps {
@@ -5,9 +6,10 @@ interface AvatarProps {
   name: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
+export function Avatar({ src, name, size = 'md', className, style }: AvatarProps) {
   const sizes = {
     sm: 'w-8 h-8 text-xs',
     md: 'w-10 h-10 text-sm',
@@ -21,6 +23,7 @@ export function Avatar({ src, name, size = 'md', className }: AvatarProps) {
         src={src}
         alt={name}
         className={cn('rounded-full object-cover', sizes[size], className)}
+        style={style}
       />
     );
   }

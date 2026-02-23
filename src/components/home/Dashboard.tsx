@@ -447,7 +447,7 @@ export function Dashboard() {
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'clamp(6rem, 38vw, 20rem)',
+              fontSize: 'clamp(6rem, 34vw, 20rem)',
               color: 'transparent',
               WebkitTextStroke: '3px #35d6f5',
               textShadow: 'none',
@@ -459,37 +459,18 @@ export function Dashboard() {
           </h1>
 
           {/* Editable sub-message - constrained to left side, away from profile image */}
-          {isEditingAffirmation ? (
-            <div className="max-w-sm relative z-50 mt-1">
-              <textarea
-                value={editText}
-                onChange={(e) => setEditText(e.target.value.toUpperCase())}
-                className="w-full bg-iron-800 text-white text-xl font-black leading-tight p-3 rounded-lg border border-iron-700 focus:border-blue-500 focus:outline-none resize-none"
-                rows={3}
-                placeholder="YOUR MESSAGE"
-                maxLength={50}
-              />
-              <button
-                onClick={handleSaveAffirmation}
-                className="mt-2 flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium"
-              >
-                <Check className="w-4 h-4" />
-                Save
-              </button>
-            </div>
-          ) : (
-            <div style={{ width: '52%' }}>
-              <div className="space-y-0 leading-snug mt-1">
-                {affirmation.split('\n').map((line: string, index: number) => {
-                  const len = line.length;
-                  const fontSize = len <= 10
-                    ? 'clamp(1.4rem, 5.5vw, 2rem)'
-                    : len <= 20
-                    ? 'clamp(1.1rem, 4.5vw, 1.6rem)'
-                    : len <= 35
-                    ? 'clamp(0.9rem, 3.8vw, 1.3rem)'
-                    : 'clamp(0.75rem, 3vw, 1rem)';
-                  return (
+          <div style={{ width: '52%' }}>
+            <div className="space-y-0 leading-snug mt-1">
+              {affirmation.split('\n').map((line: string, index: number) => {
+                const len = line.length;
+                const fontSize = len <= 10
+                  ? 'clamp(1.4rem, 5.5vw, 2rem)'
+                  : len <= 20
+                  ? 'clamp(1.1rem, 4.5vw, 1.6rem)'
+                  : len <= 35
+                  ? 'clamp(0.9rem, 3.8vw, 1.3rem)'
+                  : 'clamp(0.75rem, 3vw, 1rem)';
+                return (
                   <h2
                     key={index}
                     className="font-bold text-white leading-[1.1] tracking-wide uppercase"
@@ -500,21 +481,20 @@ export function Dashboard() {
                   >
                     {line}
                   </h2>
-                  );
-                })}
-              </div>
-              <button
-                onClick={() => {
-                  setEditText(affirmation);
-                  setIsEditingAffirmation(true);
-                }}
-                className="mt-2 flex items-center gap-1 text-iron-400 hover:text-blue-400 text-xs transition-colors relative z-[60]"
-              >
-                <Edit3 className="w-3 h-3" />
-                Edit message
-              </button>
+                );
+              })}
             </div>
-          )}
+            <button
+              onClick={() => {
+                setEditText(affirmation);
+                setIsEditingAffirmation(true);
+              }}
+              className="mt-2 flex items-center gap-1 text-iron-400 hover:text-blue-400 text-xs transition-colors relative z-[60]"
+            >
+              <Edit3 className="w-3 h-3" />
+              Edit message
+            </button>
+          </div>
         </div>
 
         {/* Layer 2: Floating connection bubbles - middle */}
@@ -587,6 +567,55 @@ export function Dashboard() {
         >
           <Camera className="w-4 h-4" />
         </button>
+
+        {/* Affirmation Edit Modal */}
+        {isEditingAffirmation && (
+          <div className="fixed inset-0 z-[100] flex items-end justify-center">
+            <div
+              className="absolute inset-0 bg-black/60"
+              onClick={() => setIsEditingAffirmation(false)}
+            />
+            <div className="relative bg-iron-900 rounded-t-2xl w-full max-w-lg p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-white">Edit Affirmation</h3>
+                <button
+                  onClick={() => setIsEditingAffirmation(false)}
+                  className="p-2 text-iron-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-sm text-iron-400 mb-3">
+                This message appears below "I AM" on your dashboard.
+              </p>
+              <textarea
+                value={editText}
+                onChange={(e) => setEditText(e.target.value.toUpperCase())}
+                className="w-full bg-iron-800 text-white text-xl font-black leading-tight p-3 rounded-lg border border-iron-700 focus:border-blue-500 focus:outline-none resize-none"
+                rows={3}
+                placeholder="YOUR MESSAGE"
+                maxLength={50}
+                autoFocus
+              />
+              <p className="text-xs text-iron-500 mt-1 mb-4">{editText.length}/50</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setIsEditingAffirmation(false)}
+                  className="flex-1 py-3 px-4 bg-iron-800 text-white rounded-xl font-medium hover:bg-iron-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveAffirmation}
+                  className="flex-1 py-3 px-4 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Profile Image Editor Modal */}
         {isEditingImage && (

@@ -12,9 +12,9 @@ import { supabase } from '../../lib/supabase';
 
 const AFFIRMATION_STORAGE_KEY = 'isi-daily-affirmation';
 
-// Default affirmations by role
+// Default affirmation sub-messages by role (shown below the permanent "I AM")
 const defaultAffirmations: Record<string, string> = {
-  mentee: "I AM\nA KING!",
+  mentee: "A KING!",
   mentor: "BUILDING\nKINGS!",
   admin: "LEADING\nWITH\nPURPOSE!",
 };
@@ -441,12 +441,24 @@ export function Dashboard() {
 
         {/* Layer 1: Affirmation Text - BACK (background text) */}
         <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-3">
+          {/* Permanent "I AM" header */}
+          <h1
+            className="font-black text-blue-500 leading-[0.85] tracking-tighter"
+            style={{
+              fontSize: 'clamp(2.5rem, 12vw, 5rem)',
+              textShadow: '3px 3px 10px rgba(0,0,0,0.6)',
+            }}
+          >
+            I AM
+          </h1>
+
+          {/* Editable sub-message */}
           {isEditingAffirmation ? (
-            <div className="p-4 max-w-sm relative z-50">
+            <div className="max-w-sm relative z-50 mt-1">
               <textarea
                 value={editText}
                 onChange={(e) => setEditText(e.target.value.toUpperCase())}
-                className="w-full bg-iron-800 text-blue-400 text-xl font-black leading-tight p-3 rounded-lg border border-iron-700 focus:border-blue-500 focus:outline-none resize-none"
+                className="w-full bg-iron-800 text-white text-xl font-black leading-tight p-3 rounded-lg border border-iron-700 focus:border-blue-500 focus:outline-none resize-none"
                 rows={3}
                 placeholder="YOUR MESSAGE"
                 maxLength={50}
@@ -461,18 +473,18 @@ export function Dashboard() {
             </div>
           ) : (
             <div>
-              <div className="space-y-0 leading-none">
+              <div className="space-y-0 leading-none mt-0">
                 {affirmation.split('\n').map((line: string, index: number) => (
-                  <h1
+                  <h2
                     key={index}
-                    className="font-black text-blue-500 leading-[0.85] tracking-tighter"
+                    className="font-black text-white leading-[0.9] tracking-tight"
                     style={{
-                      fontSize: 'clamp(2.5rem, 12vw, 5rem)',
-                      textShadow: '3px 3px 10px rgba(0,0,0,0.6)',
+                      fontSize: 'clamp(1.25rem, 6vw, 2.5rem)',
+                      textShadow: '2px 2px 8px rgba(0,0,0,0.6)',
                     }}
                   >
                     {line}
-                  </h1>
+                  </h2>
                 ))}
               </div>
               <button
@@ -480,7 +492,7 @@ export function Dashboard() {
                   setEditText(affirmation);
                   setIsEditingAffirmation(true);
                 }}
-                className="mt-3 flex items-center gap-1 text-iron-400 hover:text-blue-400 text-xs transition-colors relative z-[60]"
+                className="mt-2 flex items-center gap-1 text-iron-400 hover:text-blue-400 text-xs transition-colors relative z-[60]"
               >
                 <Edit3 className="w-3 h-3" />
                 Edit message

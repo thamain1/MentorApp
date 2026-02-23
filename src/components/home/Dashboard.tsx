@@ -446,7 +446,7 @@ export function Dashboard() {
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: '52vw',
+              fontSize: '44vw',
               color: 'transparent',
               WebkitTextStroke: '2px #35d6f5',
               letterSpacing: '-0.02em',

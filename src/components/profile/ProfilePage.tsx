@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Camera,
@@ -13,14 +14,13 @@ import {
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar, Card, Badge } from '../ui';
-import { useUser } from '../../context';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { mockUserStats } from '../../data/mockData';
 import { SPECIALTY_COLORS } from '../../types';
 
-// Mock connections data for the bubbles
 const getConnectionsForRole = (role: string) => {
   if (role === 'mentee') {
-    // Mentee sees their mentor and some friends
     return [
       { id: 'mentor-1', name: 'David Williams', type: 'mentor' },
       { id: 'friend-1', name: 'Tyler Brown', type: 'friend' },
@@ -29,7 +29,6 @@ const getConnectionsForRole = (role: string) => {
       { id: 'friend-3', name: 'Kevin Wilson', type: 'friend' },
     ];
   } else if (role === 'mentor') {
-    // Mentor sees their mentees
     return [
       { id: 'mentee-1', name: 'Marcus Johnson', type: 'mentee' },
       { id: 'mentee-2', name: 'Tyler Brown', type: 'mentee' },
@@ -38,7 +37,6 @@ const getConnectionsForRole = (role: string) => {
       { id: 'fellow-2', name: 'Michael Chen', type: 'fellow' },
     ];
   } else {
-    // Admin sees mentors and mentees
     return [
       { id: 'mentor-1', name: 'David Williams', type: 'mentor' },
       { id: 'mentor-2', name: 'James Thompson', type: 'mentor' },
@@ -49,7 +47,6 @@ const getConnectionsForRole = (role: string) => {
   }
 };
 
-// Bubble positions for the floating layout (relative positioning)
 const bubblePositions = [
   { top: '8%', left: '12%', size: 'md' },
   { top: '5%', right: '15%', size: 'sm' },
@@ -60,9 +57,50 @@ const bubblePositions = [
 
 export function ProfilePage() {
   const navigate = useNavigate();
-  const { currentUser, role } = useUser();
-  const fullName = `${currentUser.first_name} ${currentUser.last_name}`;
+  const { profile, user, refreshProfile, signOut } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const role = profile?.role ?? 'mentee';
+  const fullName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : '';
   const connections = getConnectionsForRole(role);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(path);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      await refreshProfile();
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   const settingsItems = [
     {
@@ -83,7 +121,7 @@ export function ProfilePage() {
     {
       icon: LogOut,
       label: 'Sign Out',
-      onClick: () => navigate('/'),
+      onClick: handleSignOut,
       danger: true,
     },
   ];
@@ -92,9 +130,7 @@ export function ProfilePage() {
     <AppShell>
       <Header title="Profile" showNotifications className="bg-iron-900 border-iron-800 text-white" />
 
-      {/* Profile Header with Bubble Layout */}
       <div className="relative bg-iron-900 pt-4 pb-8">
-        {/* Floating connection bubbles */}
         {connections.slice(0, 5).map((connection, index) => {
           const pos = bubblePositions[index];
           const sizeClasses = pos.size === 'md' ? 'w-14 h-14' : 'w-11 h-11';
@@ -108,11 +144,7 @@ export function ProfilePage() {
             <div
               key={connection.id}
               className={`absolute ${sizeClasses} rounded-full border-2 ${borderColor} overflow-hidden shadow-lg`}
-              style={{
-                top: pos.top,
-                left: pos.left,
-                right: pos.right,
-              }}
+              style={{ top: pos.top, left: pos.left, right: pos.right }}
             >
               <Avatar
                 name={connection.name}
@@ -123,66 +155,68 @@ export function ProfilePage() {
           );
         })}
 
-        {/* Center profile bubble */}
         <div className="flex flex-col items-center relative z-10 pt-8">
           <div className="relative mb-4">
-            {/* Outer glow ring */}
             <div className="absolute -inset-2 bg-gradient-to-br from-brand-400 to-flame-500 rounded-full opacity-30 blur-md" />
-            {/* Main avatar with border */}
             <div className="relative p-1 bg-gradient-to-br from-brand-400 to-flame-500 rounded-full">
               <div className="p-1 bg-iron-900 rounded-full">
                 <Avatar
-                  src={currentUser.avatar_url}
+                  src={profile?.avatar_url ?? undefined}
                   name={fullName}
                   size="xl"
                   className="w-24 h-24"
                 />
               </div>
             </div>
-            {/* Camera button */}
-            <button className="absolute bottom-1 right-1 w-8 h-8 bg-brand-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-iron-900">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarUpload}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="absolute bottom-1 right-1 w-8 h-8 bg-brand-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-iron-900 disabled:opacity-60"
+            >
               <Camera className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Name and role */}
           <h2 className="text-xl font-bold text-white mb-2">{fullName}</h2>
           <Badge
             variant={role === 'admin' ? 'default' : 'flame'}
-            className={role === 'admin' ? 'bg-purple-500 text-white' : ''}
+            className={role === 'admin' ? 'bg-blue-500 text-white' : ''}
           >
             {role.charAt(0).toUpperCase() + role.slice(1)}
           </Badge>
 
-          {currentUser.location && (
-            <p className="text-sm text-iron-400 mt-2">{currentUser.location}</p>
+          {profile?.location && (
+            <p className="text-sm text-iron-400 mt-2">{profile.location}</p>
           )}
 
-          {/* Tagline */}
           <p className="text-iron-300 text-sm mt-4 text-center max-w-xs px-4">
             Connect with mentors and friends in your journey.
           </p>
         </div>
 
-        {/* Bottom curve transition */}
         <div className="absolute bottom-0 left-0 right-0 h-6 bg-iron-50 rounded-t-3xl" />
       </div>
 
       <div className="p-4 space-y-6 bg-iron-50">
-        {/* Bio */}
-        {currentUser.bio && (
+        {profile?.bio && (
           <Card className="p-4">
             <h3 className="text-sm font-medium text-iron-500 mb-2">About</h3>
-            <p className="text-iron-700">{currentUser.bio}</p>
+            <p className="text-iron-700">{profile.bio}</p>
           </Card>
         )}
 
-        {/* Specialties (mentors only) */}
-        {role === 'mentor' && currentUser.specialties && currentUser.specialties.length > 0 && (
+        {role === 'mentor' && profile?.specialties && profile.specialties.length > 0 && (
           <Card className="p-4">
             <h3 className="text-sm font-medium text-iron-500 mb-3">Specialties</h3>
             <div className="flex flex-wrap gap-2">
-              {currentUser.specialties.map((specialty) => {
+              {profile.specialties.map((specialty) => {
                 const colors = SPECIALTY_COLORS[specialty] || SPECIALTY_COLORS['default'];
                 return (
                   <span
@@ -197,12 +231,11 @@ export function ProfilePage() {
           </Card>
         )}
 
-        {/* Interests */}
-        {currentUser.interests.length > 0 && (
+        {profile?.interests && profile.interests.length > 0 && (
           <Card className="p-4">
             <h3 className="text-sm font-medium text-iron-500 mb-3">Interests</h3>
             <div className="flex flex-wrap gap-2">
-              {currentUser.interests.map((interest) => (
+              {profile.interests.map((interest) => (
                 <span
                   key={interest}
                   className="px-3 py-1 bg-iron-100 text-iron-700 text-sm rounded-full"
@@ -214,12 +247,11 @@ export function ProfilePage() {
           </Card>
         )}
 
-        {/* Focus Areas */}
-        {currentUser.goals.length > 0 && (
+        {profile?.goals && profile.goals.length > 0 && (
           <Card className="p-4">
             <h3 className="text-sm font-medium text-iron-500 mb-3">Focus Areas</h3>
             <div className="flex flex-wrap gap-2">
-              {currentUser.goals.map((goal) => (
+              {profile.goals.map((goal) => (
                 <span
                   key={goal}
                   className="px-3 py-1 bg-brand-100 text-brand-700 text-sm rounded-full"
@@ -231,7 +263,6 @@ export function ProfilePage() {
           </Card>
         )}
 
-        {/* Stats Card */}
         <Card className="p-4">
           <h3 className="text-sm font-medium text-iron-500 mb-4">Your Stats</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -266,8 +297,8 @@ export function ProfilePage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                <Award className="w-5 h-5 text-purple-600" />
+              <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center">
+                <Award className="w-5 h-5 text-sky-600" />
               </div>
               <div>
                 <p className="text-lg font-bold text-iron-900">{mockUserStats.badgesEarned}</p>
@@ -277,7 +308,6 @@ export function ProfilePage() {
           </div>
         </Card>
 
-        {/* Settings */}
         <Card className="divide-y divide-iron-100">
           {settingsItems.map((item) => (
             <button
@@ -296,7 +326,6 @@ export function ProfilePage() {
           ))}
         </Card>
 
-        {/* App Version */}
         <p className="text-center text-xs text-iron-400 pb-4">
           Iron Sharpens Iron v1.0.0
         </p>

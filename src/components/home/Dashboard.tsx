@@ -443,10 +443,11 @@ export function Dashboard() {
         <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-3">
           {/* Permanent "I AM" header */}
           <h1
-            className="font-black text-blue-500 leading-[0.85] tracking-tighter"
+            className="font-black text-blue-500 leading-[0.85] tracking-tighter w-full"
             style={{
-              fontSize: 'clamp(2.5rem, 12vw, 5rem)',
+              fontSize: 'clamp(5rem, 22vw, 9rem)',
               textShadow: '3px 3px 10px rgba(0,0,0,0.6)',
+              letterSpacing: '-0.02em',
             }}
           >
             I AM

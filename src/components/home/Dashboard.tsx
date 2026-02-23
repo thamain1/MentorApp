@@ -439,19 +439,20 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - large background text, top of hero, behind everything */}
-        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none flex items-flex-start justify-center" style={{ paddingTop: '0.25rem' }}>
+        {/* Layer 1: "I AM" - full-width background text at top of hero */}
+        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none overflow-hidden">
           <h1
-            className="leading-none select-none"
+            className="leading-none select-none w-full text-center"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'clamp(8rem, 38vw, 20rem)',
+              fontSize: '52vw',
               color: 'transparent',
-              WebkitTextStroke: '3px #35d6f5',
+              WebkitTextStroke: '2px #35d6f5',
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
-              lineHeight: 1,
+              lineHeight: 0.85,
+              marginTop: '-0.05em',
             }}
           >
             I AM

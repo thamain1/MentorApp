@@ -29,6 +29,8 @@ interface PostWithImages {
     first_name: string;
     last_name: string;
     avatar_url: string | null;
+    avatar_position_x?: number;
+    avatar_position_y?: number;
     role?: string;
   };
   likes: number;
@@ -438,6 +440,7 @@ export function CommunityFeed() {
                           src={post.author.avatar_url}
                           name={authorName}
                           size="md"
+                          style={{ objectPosition: `${50 + (post.author.avatar_position_x ?? 0)}% ${50 + (post.author.avatar_position_y ?? 0)}%` }}
                         />
                       </div>
                     </div>
@@ -618,6 +621,7 @@ export function CommunityFeed() {
                     name={`${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim()}
                     size="md"
                     className="flex-shrink-0"
+                    style={{ objectPosition: `${50 + (profile?.avatar_position_x ?? 0)}% ${50 + (profile?.avatar_position_y ?? 0)}%` }}
                   />
                   <textarea
                     value={newPost}

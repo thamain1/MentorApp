@@ -104,6 +104,7 @@ export function Header({
               src={profile?.avatar_url ?? undefined}
               name={fullName}
               size="sm"
+              style={{ objectPosition: `${50 + (profile?.avatar_position_x ?? 0)}% ${50 + (profile?.avatar_position_y ?? 0)}%` }}
             />
           </button>
         )}

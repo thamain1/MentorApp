@@ -430,7 +430,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-iron-50">
       {/* Hero Section with Profile Image and Affirmation */}
-      <div className="relative bg-iron-900 overflow-hidden h-96">
+      <div className="relative overflow-hidden h-96" style={{ backgroundColor: '#562F65' }}>
         {/* Header overlay - topmost */}
         <div className="absolute top-0 left-0 right-0 z-50">
           <Header
@@ -443,10 +443,13 @@ export function Dashboard() {
         <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-3">
           {/* Permanent "I AM" header - spans full width, centered */}
           <h1
-            className="font-black text-blue-500 leading-[0.85] tracking-tighter w-full text-center"
+            className="leading-[0.85] w-full text-center"
             style={{
+              fontFamily: "'Lato', sans-serif",
+              fontWeight: 900,
               fontSize: 'clamp(6rem, 26vw, 11rem)',
-              textShadow: '3px 3px 10px rgba(0,0,0,0.6)',
+              color: '#35d6f5',
+              textShadow: '3px 3px 10px rgba(0,0,0,0.4)',
               letterSpacing: '-0.02em',
             }}
           >
@@ -475,18 +478,28 @@ export function Dashboard() {
           ) : (
             <div style={{ width: '52%' }}>
               <div className="space-y-0 leading-snug mt-1">
-                {affirmation.split('\n').map((line: string, index: number) => (
+                {affirmation.split('\n').map((line: string, index: number) => {
+                  const len = line.length;
+                  const fontSize = len <= 10
+                    ? 'clamp(1.4rem, 5.5vw, 2rem)'
+                    : len <= 20
+                    ? 'clamp(1.1rem, 4.5vw, 1.6rem)'
+                    : len <= 35
+                    ? 'clamp(0.9rem, 3.8vw, 1.3rem)'
+                    : 'clamp(0.75rem, 3vw, 1rem)';
+                  return (
                   <h2
                     key={index}
                     className="font-bold text-white leading-[1.1] tracking-wide uppercase"
                     style={{
-                      fontSize: 'clamp(0.85rem, 3.5vw, 1.25rem)',
+                      fontSize,
                       textShadow: '1px 1px 6px rgba(0,0,0,0.7)',
                     }}
                   >
                     {line}
                   </h2>
-                ))}
+                  );
+                })}
               </div>
               <button
                 onClick={() => {

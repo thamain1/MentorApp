@@ -430,7 +430,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-iron-50">
       {/* Hero Section with Profile Image and Affirmation */}
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', minHeight: 'clamp(22rem, 70vw, 36rem)' }}>
+      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', height: 'clamp(26rem, 75vw, 40rem)' }}>
         {/* Header overlay - topmost */}
         <div className="absolute top-0 left-0 right-0 z-50">
           <Header
@@ -439,27 +439,27 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - background text anchored to top */}
-        <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none" style={{ paddingTop: '3.5rem' }}>
+        {/* Layer 1: "I AM" - large background text, top of hero, behind everything */}
+        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none flex items-flex-start justify-center" style={{ paddingTop: '0.25rem' }}>
           <h1
-            className="leading-none w-full text-center select-none"
+            className="leading-none select-none"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'clamp(7rem, 32vw, 16rem)',
+              fontSize: 'clamp(8rem, 38vw, 20rem)',
               color: 'transparent',
               WebkitTextStroke: '3px #35d6f5',
-              textShadow: 'none',
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
+              lineHeight: 1,
             }}
           >
             I AM
           </h1>
         </div>
 
-        {/* Layer 2: Sub-message overlay - bottom left, beside the profile image */}
-        <div className="absolute bottom-10 left-4 z-20" style={{ maxWidth: '48%' }}>
+        {/* Layer 2: Affirmation text - bottom left, beside the profile image */}
+        <div className="absolute z-20" style={{ bottom: '2.5rem', left: '1rem', maxWidth: '50%' }}>
           <div className="space-y-0 leading-snug">
             {affirmation.split('\n').map((line: string, index: number) => {
               const len = line.length;

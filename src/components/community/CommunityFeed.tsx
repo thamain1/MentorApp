@@ -553,7 +553,7 @@ export function CommunityFeed() {
               const isLoadingComments = commentLoading[post.id] ?? false;
 
               return (
-                <article key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <article key={post.id} className="bg-white rounded-2xl shadow-sm">
                   {/* Post Header */}
                   <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -685,14 +685,21 @@ export function CommunityFeed() {
                             <p className="text-sm text-iron-400 text-center py-2">No comments yet. Be the first!</p>
                           ) : (
                             postComments.map(comment => (
-                              <div key={comment.id} className="flex gap-2">
-                                <Avatar
-                                  src={comment.author.avatar_url}
-                                  name={`${comment.author.first_name} ${comment.author.last_name}`}
-                                  size="xs"
-                                  className="flex-shrink-0 mt-0.5"
-                                  style={{ objectPosition: `${50 + comment.author.avatar_position_x}% ${50 + comment.author.avatar_position_y}%` }}
-                                />
+                              <div key={comment.id} className="flex gap-2 items-start">
+                                <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0 mt-0.5 bg-iron-200">
+                                  {comment.author.avatar_url ? (
+                                    <img
+                                      src={comment.author.avatar_url}
+                                      alt=""
+                                      className="w-full h-full object-cover"
+                                      style={{ objectPosition: `${50 + comment.author.avatar_position_x}% ${50 + comment.author.avatar_position_y}%` }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-brand-100 text-brand-600 text-[10px] font-semibold">
+                                      {comment.author.first_name?.[0] ?? '?'}
+                                    </div>
+                                  )}
+                                </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="bg-iron-50 rounded-2xl px-3 py-2">
                                     <span className="text-xs font-semibold text-iron-900 mr-1">
@@ -710,13 +717,20 @@ export function CommunityFeed() {
 
                       {/* Comment Input */}
                       <div className="flex items-center gap-2 px-4 py-3 border-t border-iron-50" onClick={e => e.stopPropagation()}>
-                        <Avatar
-                          src={profile?.avatar_url ?? undefined}
-                          name={`${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim()}
-                          size="xs"
-                          className="flex-shrink-0"
-                          style={{ objectPosition: `${50 + (profile?.avatar_position_x ?? 0)}% ${50 + (profile?.avatar_position_y ?? 0)}%` }}
-                        />
+                        <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-iron-200">
+                          {profile?.avatar_url ? (
+                            <img
+                              src={profile.avatar_url}
+                              alt=""
+                              className="w-full h-full object-cover"
+                              style={{ objectPosition: `${50 + (profile?.avatar_position_x ?? 0)}% ${50 + (profile?.avatar_position_y ?? 0)}%` }}
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-brand-100 text-brand-600 text-xs font-semibold">
+                              {profile?.first_name?.[0] ?? '?'}
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1 flex items-center gap-2 bg-iron-50 rounded-full px-3 py-1.5">
                           <input
                             type="text"

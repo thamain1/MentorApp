@@ -452,6 +452,7 @@ export function Dashboard() {
               WebkitTextStroke: '3px #35d6f5',
               textShadow: 'none',
               letterSpacing: '-0.02em',
+              whiteSpace: 'nowrap',
             }}
           >
             I AM

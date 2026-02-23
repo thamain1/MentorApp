@@ -473,7 +473,7 @@ export function Dashboard() {
               </button>
             </div>
           ) : (
-            <div>
+            <div className="max-w-[52%]">
               <div className="space-y-0 leading-snug mt-1">
                 {affirmation.split('\n').map((line: string, index: number) => (
                   <h2

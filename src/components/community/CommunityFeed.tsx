@@ -553,7 +553,7 @@ export function CommunityFeed() {
               const isLoadingComments = commentLoading[post.id] ?? false;
 
               return (
-                <article key={post.id} className="bg-white rounded-2xl shadow-sm">
+                <article key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   {/* Post Header */}
                   <div className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -717,20 +717,6 @@ export function CommunityFeed() {
 
                       {/* Comment Input */}
                       <div className="flex items-center gap-2 px-4 py-3 border-t border-iron-50" onClick={e => e.stopPropagation()}>
-                        <div className="w-7 h-7 rounded-full overflow-hidden flex-shrink-0 bg-iron-200">
-                          {profile?.avatar_url ? (
-                            <img
-                              src={profile.avatar_url}
-                              alt=""
-                              className="w-full h-full object-cover"
-                              style={{ objectPosition: `${50 + (profile?.avatar_position_x ?? 0)}% ${50 + (profile?.avatar_position_y ?? 0)}%` }}
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-brand-100 text-brand-600 text-xs font-semibold">
-                              {profile?.first_name?.[0] ?? '?'}
-                            </div>
-                          )}
-                        </div>
                         <div className="flex-1 flex items-center gap-2 bg-iron-50 rounded-full px-3 py-1.5">
                           <input
                             type="text"

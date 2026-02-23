@@ -331,7 +331,6 @@ export function CommunityFeed() {
         showSearch
         showNotifications
         showProfile
-        notificationCount={3}
       />
 
       <div className="bg-iron-50 min-h-screen pb-4">

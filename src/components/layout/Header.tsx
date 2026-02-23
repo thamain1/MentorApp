@@ -26,13 +26,14 @@ export function Header({
   showSearch = false,
   showProfile = false,
   showLogo = false,
-  notificationCount = 3,
+  notificationCount,
   onMenuClick,
   className,
   transparent = false,
 }: HeaderProps) {
   const navigate = useNavigate();
-  const { profile } = useAuth();
+  const { profile, unreadNotificationCount } = useAuth();
+  const displayCount = notificationCount ?? unreadNotificationCount;
   const fullName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : '';
 
   return (
@@ -80,9 +81,9 @@ export function Header({
             className="p-2 rounded-xl hover:bg-iron-100 transition-colors relative"
           >
             <Bell className="w-5 h-5 text-iron-600" />
-            {notificationCount > 0 && (
+            {displayCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 rounded-full flex items-center justify-center">
-                <span className="text-[10px] font-bold text-white">{notificationCount > 9 ? '9+' : notificationCount}</span>
+                <span className="text-[10px] font-bold text-white">{displayCount > 9 ? '9+' : displayCount}</span>
               </span>
             )}
           </button>

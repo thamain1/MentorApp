@@ -43,7 +43,7 @@ const notificationColors: Record<string, string> = {
 
 export function NotificationsList() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUnreadCount } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -80,6 +80,7 @@ export function NotificationsList() {
         ...n,
         read_at: n.read_at || now,
       })));
+      await refreshUnreadCount();
     }
   };
 
@@ -96,6 +97,7 @@ export function NotificationsList() {
             ? { ...n, read_at: now }
             : n
         ));
+        await refreshUnreadCount();
       }
     }
 

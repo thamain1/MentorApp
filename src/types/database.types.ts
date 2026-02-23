@@ -431,6 +431,7 @@ export interface Database {
           group_id: string | null;
           user_id: string;
           content: string;
+          image_urls: string[];
           created_at: string;
         };
         Insert: {
@@ -438,6 +439,7 @@ export interface Database {
           group_id?: string | null;
           user_id: string;
           content: string;
+          image_urls?: string[];
           created_at?: string;
         };
         Update: {
@@ -445,6 +447,7 @@ export interface Database {
           group_id?: string | null;
           user_id?: string;
           content?: string;
+          image_urls?: string[];
           created_at?: string;
         };
         Relationships: [];

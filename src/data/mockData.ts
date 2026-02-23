@@ -603,7 +603,8 @@ export const mockPosts: PostWithAuthor[] = [
     group_id: null,
     user_id: mockProfiles[3].user_id, // Jordan Davis
     content: 'Just got accepted to my top choice college! None of this would have been possible without my mentor helping me with my applications. Grateful for this program! 🎓',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
+    image_urls: [],
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
     author: {
       id: mockProfiles[3].id,
       first_name: mockProfiles[3].first_name,
@@ -618,7 +619,8 @@ export const mockPosts: PostWithAuthor[] = [
     group_id: null,
     user_id: mockMentorProfile.user_id,
     content: 'Reminder: Group session this Saturday at 10 AM. We\'ll be discussing goal-setting strategies. Looking forward to seeing everyone there!',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), // 5 hours ago
+    image_urls: [],
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
     author: {
       id: mockMentorProfile.id,
       first_name: mockMentorProfile.first_name,
@@ -631,9 +633,10 @@ export const mockPosts: PostWithAuthor[] = [
   {
     id: 'post-3',
     group_id: null,
-    user_id: mockProfiles[1].user_id, // James Thompson
+    user_id: mockProfiles[1].user_id,
     content: 'Proud of all the young men who participated in our community service project last weekend. You all showed great leadership and teamwork!',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
+    image_urls: [],
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     author: {
       id: mockProfiles[1].id,
       first_name: mockProfiles[1].first_name,
@@ -646,9 +649,10 @@ export const mockPosts: PostWithAuthor[] = [
   {
     id: 'post-4',
     group_id: null,
-    user_id: mockProfiles[2].user_id, // Tyler Brown
+    user_id: mockProfiles[2].user_id,
     content: 'Finally completed my first digital art piece! Thanks to everyone who encouraged me to keep practicing. Progress takes time but it\'s worth it.',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(), // 30 hours ago
+    image_urls: [],
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 30).toISOString(),
     author: {
       id: mockProfiles[2].id,
       first_name: mockProfiles[2].first_name,
@@ -663,7 +667,8 @@ export const mockPosts: PostWithAuthor[] = [
     group_id: null,
     user_id: mockCurrentUser.user_id,
     content: 'Had a great session with my mentor today. We worked through some tough debugging problems and I learned so much!',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
+    image_urls: [],
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
     author: {
       id: mockCurrentUser.id,
       first_name: mockCurrentUser.first_name,
@@ -678,7 +683,8 @@ export const mockPosts: PostWithAuthor[] = [
     group_id: null,
     user_id: mockMentorProfile.user_id,
     content: 'Quote of the day: "Iron sharpens iron, and one man sharpens another." Keep pushing each other to grow!',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(), // 3 days ago
+    image_urls: [],
+    created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
     author: {
       id: mockMentorProfile.id,
       first_name: mockMentorProfile.first_name,

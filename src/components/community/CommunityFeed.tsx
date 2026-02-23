@@ -14,10 +14,10 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 
-// Post type with author info and like data
 interface PostWithAuthor {
   id: string;
   content: string;
+  image_urls: string[];
   created_at: string;
   user_id: string;
   group_id: string | null;
@@ -32,6 +32,11 @@ interface PostWithAuthor {
   };
   like_count: number;
   liked_by_me: boolean;
+}
+
+interface SelectedImage {
+  file: File;
+  preview: string;
 }
 
 // Group categories for the story-style filter
@@ -72,7 +77,7 @@ export function CommunityFeed() {
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
   const [newPost, setNewPost] = useState('');
-  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [likeAnimation, setLikeAnimation] = useState<string | null>(null);
   const [checkInPrompt, setCheckInPrompt] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -82,10 +87,9 @@ export function CommunityFeed() {
     if (!user) return;
     setLoading(true);
 
-    // 1. Fetch posts
     const { data: rawPosts, error } = await supabase
       .from('posts')
-      .select('id, group_id, user_id, content, created_at')
+      .select('id, group_id, user_id, content, image_urls, created_at')
       .order('created_at', { ascending: false })
       .limit(20);
 
@@ -143,6 +147,7 @@ export function CommunityFeed() {
         return {
           id: post.id,
           content: post.content,
+          image_urls: (post as { image_urls?: string[] }).image_urls ?? [],
           created_at: post.created_at,
           user_id: post.user_id,
           group_id: post.group_id ?? null,
@@ -245,29 +250,38 @@ export function CommunityFeed() {
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-
-    const newImages: string[] = [];
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          newImages.push(event.target.result as string);
-          if (newImages.length === files.length) {
-            setSelectedImages(prev => [...prev, ...newImages].slice(0, 10));
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    const fileArray = Array.from(files);
+    const newImages: SelectedImage[] = fileArray.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setSelectedImages(prev => [...prev, ...newImages].slice(0, 10));
+    e.target.value = '';
   };
 
   const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setSelectedImages(prev => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const handlePost = async () => {
     if (!newPost.trim() && selectedImages.length === 0) return;
     if (!user || !profile) return;
+
+    const uploadedUrls: string[] = [];
+    for (const img of selectedImages) {
+      const ext = img.file.name.split('.').pop() ?? 'jpg';
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('post-images')
+        .upload(path, img.file, { contentType: img.file.type });
+      if (!uploadError) {
+        const { data: urlData } = supabase.storage.from('post-images').getPublicUrl(path);
+        uploadedUrls.push(urlData.publicUrl);
+      }
+    }
 
     const { data: inserted, error } = await supabase
       .from('posts')
@@ -275,14 +289,16 @@ export function CommunityFeed() {
         user_id: user.id,
         content: newPost.trim(),
         group_id: null,
+        image_urls: uploadedUrls,
       })
-      .select('id, group_id, user_id, content, created_at')
+      .select('id, group_id, user_id, content, image_urls, created_at')
       .single();
 
     if (!error && inserted) {
       const newPostObj: PostWithAuthor = {
         id: inserted.id,
         content: inserted.content,
+        image_urls: (inserted as { image_urls?: string[] }).image_urls ?? [],
         created_at: inserted.created_at,
         user_id: inserted.user_id,
         group_id: inserted.group_id ?? null,
@@ -301,6 +317,7 @@ export function CommunityFeed() {
       setPosts(prev => [newPostObj, ...prev]);
     }
 
+    selectedImages.forEach(img => URL.revokeObjectURL(img.preview));
     setNewPost('');
     setSelectedImages([]);
     setCheckInPrompt(null);
@@ -423,6 +440,29 @@ export function CommunityFeed() {
                     </p>
                   </div>
 
+                  {post.image_urls.length > 0 && (
+                    <div className={`grid gap-0.5 ${
+                      post.image_urls.length === 1 ? 'grid-cols-1' :
+                      post.image_urls.length === 2 ? 'grid-cols-2' :
+                      'grid-cols-3'
+                    }`}>
+                      {post.image_urls.map((url, i) => (
+                        <div
+                          key={i}
+                          className={`overflow-hidden bg-iron-100 ${
+                            post.image_urls.length === 1 ? 'aspect-[4/3]' : 'aspect-square'
+                          }`}
+                        >
+                          <img
+                            src={url}
+                            alt={`Post image ${i + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Action Bar */}
                   <div className="px-4 py-3">
                     <div className="flex items-center justify-between">
@@ -538,7 +578,6 @@ export function CommunityFeed() {
                   />
                 </div>
 
-                {/* Selected Images Preview */}
                 {selectedImages.length > 0 && (
                   <div className="mt-4">
                     <div className={`grid gap-2 ${
@@ -546,10 +585,10 @@ export function CommunityFeed() {
                       selectedImages.length === 2 ? 'grid-cols-2' :
                       'grid-cols-3'
                     }`}>
-                      {selectedImages.map((image, index) => (
+                      {selectedImages.map((img, index) => (
                         <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-iron-100">
                           <img
-                            src={image}
+                            src={img.preview}
                             alt={`Selected ${index + 1}`}
                             className="w-full h-full object-cover"
                           />

@@ -448,8 +448,9 @@ export function Dashboard() {
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
               fontSize: 'clamp(6rem, 26vw, 11rem)',
-              color: '#35d6f5',
-              textShadow: '3px 3px 10px rgba(0,0,0,0.4)',
+              color: 'transparent',
+              WebkitTextStroke: '3px #35d6f5',
+              textShadow: 'none',
               letterSpacing: '-0.02em',
             }}
           >

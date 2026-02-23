@@ -147,7 +147,7 @@ export function Dashboard() {
   const [tempImageSettings, setTempImageSettings] = useState<ProfileImageSettings>(localImageSettings);
 
   const displayImage = profile?.avatar_url ?? localImageSettings.image;
-  const displayPosition = profile?.avatar_url ? '50% 50%' : getObjectPosition(localImageSettings.position);
+  const displayPosition = getObjectPosition(localImageSettings.position);
 
   useEffect(() => {
     const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
@@ -407,12 +407,8 @@ export function Dashboard() {
         {/* Camera button - ON TOP of white curve */}
         <button
           onClick={() => {
-            if (user) {
-              fileInputRef.current?.click();
-            } else {
-              setTempImageSettings(localImageSettings);
-              setIsEditingImage(true);
-            }
+            setTempImageSettings(localImageSettings);
+            setIsEditingImage(true);
           }}
           disabled={uploading}
           className="absolute bottom-3 right-6 w-9 h-9 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-blue-600 transition-colors z-50 disabled:opacity-60"
@@ -434,12 +430,23 @@ export function Dashboard() {
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-iron-800">
                 <h3 className="text-lg font-bold text-white">Edit Profile Image</h3>
-                <button
-                  onClick={handleCancelImageEdit}
-                  className="p-2 text-iron-400 hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {user && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-iron-700 hover:bg-iron-600 text-white text-xs font-medium rounded-lg transition-colors"
+                    >
+                      <Camera className="w-3.5 h-3.5" />
+                      Upload
+                    </button>
+                  )}
+                  <button
+                    onClick={handleCancelImageEdit}
+                    className="p-2 text-iron-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Preview */}

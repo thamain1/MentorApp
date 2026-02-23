@@ -26,7 +26,7 @@ interface TrackWithProgress extends TrainingTrack {
 
 export function TrainingHub() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [tracks, setTracks] = useState<TrackWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,10 +36,13 @@ export function TrainingHub() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch all tracks
+        const userRole = profile?.role ?? 'mentee';
+
+        // Fetch tracks visible to this user's role
         const { data: tracksData, error: tracksError } = await supabase
           .from('training_tracks')
           .select('*')
+          .in('target_role', [userRole, 'all'])
           .order('display_order');
 
         if (tracksError) throw tracksError;
@@ -88,7 +91,7 @@ export function TrainingHub() {
     };
 
     fetchData();
-  }, [user]);
+  }, [user, profile]);
 
   // Calculate overall progress
   const totalModules = tracks.reduce((sum, track) => sum + track.totalModules, 0);

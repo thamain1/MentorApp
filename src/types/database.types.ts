@@ -297,6 +297,7 @@ export interface Database {
           description: string | null;
           display_order: number;
           badge_image_url: string | null;
+          target_role: string;
           created_at: string;
         };
         Insert: {
@@ -305,6 +306,7 @@ export interface Database {
           description?: string | null;
           display_order?: number;
           badge_image_url?: string | null;
+          target_role?: string;
           created_at?: string;
         };
         Update: {
@@ -313,6 +315,7 @@ export interface Database {
           description?: string | null;
           display_order?: number;
           badge_image_url?: string | null;
+          target_role?: string;
           created_at?: string;
         };
         Relationships: [];

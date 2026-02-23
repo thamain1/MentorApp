@@ -7,12 +7,30 @@ import {
   MoreHorizontal,
   Image,
   X,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar } from '../ui';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+
+interface PostComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  author: {
+    first_name: string;
+    last_name: string;
+    avatar_url: string | null;
+    avatar_position_x: number;
+    avatar_position_y: number;
+    role: string;
+  };
+}
 
 interface PostWithAuthor {
   id: string;
@@ -32,6 +50,7 @@ interface PostWithAuthor {
   };
   like_count: number;
   liked_by_me: boolean;
+  comment_count: number;
 }
 
 interface SelectedImage {
@@ -39,7 +58,6 @@ interface SelectedImage {
   preview: string;
 }
 
-// Group categories for the story-style filter
 const groupCategories = [
   { id: 'all', name: 'All', abbrev: 'ALL', color: 'from-brand-500 to-coral-500' },
   { id: 'lifeskills', name: 'Life Skills', abbrev: 'LS', color: 'from-teal-500 to-teal-600' },
@@ -50,7 +68,6 @@ const groupCategories = [
   { id: 'faith', name: 'Faith', abbrev: 'FTH', color: 'from-brand-500 to-brand-700' },
 ];
 
-// Format time like "2h ago"
 function formatTimeAgo(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
@@ -83,6 +100,12 @@ export function CommunityFeed() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [comments, setComments] = useState<Record<string, PostComment[]>>({});
+  const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const [commentLoading, setCommentLoading] = useState<Record<string, boolean>>({});
+  const [submittingComment, setSubmittingComment] = useState<Record<string, boolean>>({});
+
   const fetchPosts = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -101,7 +124,6 @@ export function CommunityFeed() {
     const postIds = rawPosts.map(p => p.id);
     const userIds = [...new Set(rawPosts.map(p => p.user_id))];
 
-    // 2. Fetch profiles for all post authors (profiles.user_id = posts.user_id)
     const { data: authorProfiles } = await supabase
       .from('profiles')
       .select('id, user_id, first_name, last_name, avatar_url, avatar_position_x, avatar_position_y, role')
@@ -123,13 +145,11 @@ export function CommunityFeed() {
       avatar_position_y: p.avatar_position_y ?? 0,
     }));
 
-    // 3. Fetch all likes for these posts
     const { data: allLikes } = await supabase
       .from('post_likes')
       .select('post_id, user_id')
       .in('post_id', postIds);
 
-    // Count likes per post
     const likeCountMap = new Map<string, number>();
     const myLikedSet = new Set<string>();
     (allLikes ?? []).forEach(like => {
@@ -139,7 +159,16 @@ export function CommunityFeed() {
       }
     });
 
-    // 4. Assemble PostWithAuthor objects
+    const { data: allComments } = await (supabase
+      .from('post_comments')
+      .select('post_id')
+      .in('post_id', postIds) as unknown as Promise<{ data: { post_id: string }[] | null }>);
+
+    const commentCountMap = new Map<string, number>();
+    (allComments ?? []).forEach(c => {
+      commentCountMap.set(c.post_id, (commentCountMap.get(c.post_id) ?? 0) + 1);
+    });
+
     const assembled: PostWithAuthor[] = rawPosts
       .map(post => {
         const authorProfile = profileByUserId.get(post.user_id);
@@ -162,6 +191,7 @@ export function CommunityFeed() {
           },
           like_count: likeCountMap.get(post.id) ?? 0,
           liked_by_me: myLikedSet.has(post.id),
+          comment_count: commentCountMap.get(post.id) ?? 0,
         };
       })
       .filter((p): p is PostWithAuthor => p !== null);
@@ -174,12 +204,8 @@ export function CommunityFeed() {
     fetchPosts();
   }, [fetchPosts]);
 
-  // Filter posts by selected category (group_id-based filtering is not available without group data;
-  // category filtering is kept as UI state but since posts table has no category column,
-  // all posts show under 'all'. The filter UI is preserved as-is.)
   const filteredPosts = posts;
 
-  // Check if navigated from Daily Check-in or Create button
   useEffect(() => {
     const state = location.state as { checkInPrompt?: string; openCompose?: boolean } | null;
     if (state?.checkInPrompt) {
@@ -200,7 +226,6 @@ export function CommunityFeed() {
     if (!post) return;
 
     if (post.liked_by_me) {
-      // Unlike: DELETE from post_likes
       const { error } = await supabase
         .from('post_likes')
         .delete()
@@ -215,7 +240,6 @@ export function CommunityFeed() {
         ));
       }
     } else {
-      // Like: INSERT into post_likes
       const { error } = await supabase
         .from('post_likes')
         .insert({ post_id: postId, user_id: user.id });
@@ -247,6 +271,128 @@ export function CommunityFeed() {
       return newSet;
     });
   };
+
+  const fetchComments = useCallback(async (postId: string) => {
+    setCommentLoading(prev => ({ ...prev, [postId]: true }));
+
+    type RawComment = { id: string; post_id: string; user_id: string; content: string; created_at: string };
+    const { data: rawComments } = await (supabase
+      .from('post_comments')
+      .select('id, post_id, user_id, content, created_at')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true }) as unknown as Promise<{ data: RawComment[] | null }>);
+
+    if (!rawComments || rawComments.length === 0) {
+      setComments(prev => ({ ...prev, [postId]: [] }));
+      setCommentLoading(prev => ({ ...prev, [postId]: false }));
+      return;
+    }
+
+    const userIds = [...new Set(rawComments.map(c => c.user_id))];
+    const { data: authorProfiles } = await supabase
+      .from('profiles')
+      .select('user_id, first_name, last_name, avatar_url, avatar_position_x, avatar_position_y, role')
+      .in('user_id', userIds);
+
+    const profileByUserId = new Map<string, {
+      user_id: string;
+      first_name: string;
+      last_name: string;
+      avatar_url: string | null;
+      avatar_position_x: number;
+      avatar_position_y: number;
+      role: string;
+    }>();
+    (authorProfiles ?? []).forEach(p => profileByUserId.set(p.user_id, {
+      ...p,
+      avatar_position_x: p.avatar_position_x ?? 0,
+      avatar_position_y: p.avatar_position_y ?? 0,
+    }));
+
+    const assembled: PostComment[] = rawComments
+      .map(c => {
+        const author = profileByUserId.get(c.user_id);
+        if (!author) return null;
+        return {
+          id: c.id,
+          post_id: c.post_id,
+          user_id: c.user_id,
+          content: c.content,
+          created_at: c.created_at,
+          author: {
+            first_name: author.first_name,
+            last_name: author.last_name,
+            avatar_url: author.avatar_url,
+            avatar_position_x: author.avatar_position_x,
+            avatar_position_y: author.avatar_position_y,
+            role: roleLabel(author.role),
+          },
+        };
+      })
+      .filter((c): c is PostComment => c !== null);
+
+    setComments(prev => ({ ...prev, [postId]: assembled }));
+    setCommentLoading(prev => ({ ...prev, [postId]: false }));
+  }, []);
+
+  const toggleComments = useCallback((postId: string) => {
+    setExpandedComments(prev => {
+      const next = new Set(prev);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+        if (!comments[postId]) {
+          fetchComments(postId);
+        }
+      }
+      return next;
+    });
+  }, [comments, fetchComments]);
+
+  const handleSubmitComment = useCallback(async (postId: string) => {
+    const content = (commentInputs[postId] ?? '').trim();
+    if (!content || !user || !profile) return;
+
+    setSubmittingComment(prev => ({ ...prev, [postId]: true }));
+
+    type InsertedComment = { id: string; post_id: string; user_id: string; content: string; created_at: string };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const { data: inserted, error } = await db
+      .from('post_comments')
+      .insert({ post_id: postId, user_id: user.id, content })
+      .select('id, post_id, user_id, content, created_at')
+      .single() as { data: InsertedComment | null; error: unknown };
+
+    if (!error && inserted) {
+      const newComment: PostComment = {
+        id: inserted.id,
+        post_id: inserted.post_id,
+        user_id: inserted.user_id,
+        content: inserted.content,
+        created_at: inserted.created_at,
+        author: {
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          avatar_url: profile.avatar_url ?? null,
+          avatar_position_x: profile.avatar_position_x ?? 0,
+          avatar_position_y: profile.avatar_position_y ?? 0,
+          role: roleLabel(profile.role),
+        },
+      };
+      setComments(prev => ({
+        ...prev,
+        [postId]: [...(prev[postId] ?? []), newComment],
+      }));
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, comment_count: p.comment_count + 1 } : p
+      ));
+      setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+    }
+
+    setSubmittingComment(prev => ({ ...prev, [postId]: false }));
+  }, [commentInputs, user, profile]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -314,6 +460,7 @@ export function CommunityFeed() {
         },
         like_count: 0,
         liked_by_me: false,
+        comment_count: 0,
       };
       setPosts(prev => [newPostObj, ...prev]);
     }
@@ -394,12 +541,14 @@ export function CommunityFeed() {
             ))}
           </div>
         ) : (
-          /* Feed */
           <div className="space-y-4 pt-4 px-4">
             {filteredPosts.map((post) => {
               const authorName = `${post.author.first_name} ${post.author.last_name}`;
               const isSaved = savedPosts.has(post.id);
               const showHeartAnimation = likeAnimation === post.id;
+              const isCommentsExpanded = expandedComments.has(post.id);
+              const postComments = comments[post.id] ?? [];
+              const isLoadingComments = commentLoading[post.id] ?? false;
 
               return (
                 <article key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
@@ -480,9 +629,18 @@ export function CommunityFeed() {
                           />
                           <span className="text-sm text-iron-600">{post.like_count}</span>
                         </button>
-                        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
-                          <MessageCircle className="w-5 h-5 text-iron-600" />
-                          <span className="text-sm text-iron-600">0</span>
+                        <button
+                          onClick={() => toggleComments(post.id)}
+                          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors"
+                        >
+                          <MessageCircle className={`w-5 h-5 ${isCommentsExpanded ? 'text-brand-500' : 'text-iron-600'}`} />
+                          <span className={`text-sm ${isCommentsExpanded ? 'text-brand-500' : 'text-iron-600'}`}>
+                            {post.comment_count}
+                          </span>
+                          {isCommentsExpanded
+                            ? <ChevronUp className="w-3.5 h-3.5 text-iron-400" />
+                            : <ChevronDown className="w-3.5 h-3.5 text-iron-400" />
+                          }
                         </button>
                         <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
                           <Send className="w-5 h-5 text-iron-600" />
@@ -504,7 +662,89 @@ export function CommunityFeed() {
                     </div>
                   </div>
 
-                  {/* Heart animation overlay (shown on double-tap, no image to tap so kept hidden) */}
+                  {/* Comments Section */}
+                  {isCommentsExpanded && (
+                    <div className="border-t border-iron-100">
+                      {isLoadingComments ? (
+                        <div className="px-4 py-3 space-y-3">
+                          {[1, 2].map(i => (
+                            <div key={i} className="flex gap-2 animate-pulse">
+                              <div className="w-7 h-7 rounded-full bg-iron-200 flex-shrink-0" />
+                              <div className="flex-1 space-y-1">
+                                <div className="h-3 bg-iron-200 rounded w-1/4" />
+                                <div className="h-3 bg-iron-100 rounded w-3/4" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="px-4 pt-3 pb-1 space-y-3 max-h-64 overflow-y-auto">
+                          {postComments.length === 0 ? (
+                            <p className="text-sm text-iron-400 text-center py-2">No comments yet. Be the first!</p>
+                          ) : (
+                            postComments.map(comment => (
+                              <div key={comment.id} className="flex gap-2">
+                                <Avatar
+                                  src={comment.author.avatar_url}
+                                  name={`${comment.author.first_name} ${comment.author.last_name}`}
+                                  size="xs"
+                                  className="flex-shrink-0 mt-0.5"
+                                  style={{ objectPosition: `${50 + comment.author.avatar_position_x}% ${50 + comment.author.avatar_position_y}%` }}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="bg-iron-50 rounded-2xl px-3 py-2">
+                                    <span className="text-xs font-semibold text-iron-900 mr-1">
+                                      {comment.author.first_name} {comment.author.last_name}
+                                    </span>
+                                    <span className="text-sm text-iron-700">{comment.content}</span>
+                                  </div>
+                                  <p className="text-xs text-iron-400 mt-0.5 pl-3">{formatTimeAgo(comment.created_at)}</p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+
+                      {/* Comment Input */}
+                      <div className="flex items-center gap-2 px-4 py-3 border-t border-iron-50">
+                        <Avatar
+                          src={profile?.avatar_url ?? undefined}
+                          name={`${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim()}
+                          size="xs"
+                          className="flex-shrink-0"
+                          style={{ objectPosition: `${50 + (profile?.avatar_position_x ?? 0)}% ${50 + (profile?.avatar_position_y ?? 0)}%` }}
+                        />
+                        <div className="flex-1 flex items-center gap-2 bg-iron-50 rounded-full px-3 py-1.5">
+                          <input
+                            type="text"
+                            value={commentInputs[post.id] ?? ''}
+                            onChange={e => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSubmitComment(post.id);
+                              }
+                            }}
+                            placeholder="Add a comment..."
+                            className="flex-1 bg-transparent text-sm text-iron-800 placeholder:text-iron-400 outline-none"
+                          />
+                          <button
+                            onClick={() => handleSubmitComment(post.id)}
+                            disabled={!(commentInputs[post.id] ?? '').trim() || submittingComment[post.id]}
+                            className={`flex-shrink-0 transition-colors ${
+                              (commentInputs[post.id] ?? '').trim()
+                                ? 'text-brand-500 hover:text-brand-600'
+                                : 'text-iron-300'
+                            }`}
+                          >
+                            <Send className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {showHeartAnimation && (
                     <div className="flex items-center justify-center py-2 pointer-events-none">
                       <Heart className="w-12 h-12 text-coral-500 fill-coral-500 animate-ping" />
@@ -521,7 +761,6 @@ export function CommunityFeed() {
       {showCompose && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
           <div className="w-full max-w-md bg-white rounded-t-2xl animate-slide-up max-h-[85vh] flex flex-col mb-16">
-            {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-iron-100 flex-shrink-0">
               <button
                 onClick={() => {
@@ -550,7 +789,6 @@ export function CommunityFeed() {
               </button>
             </div>
 
-            {/* Daily Check-in Prompt */}
             {checkInPrompt && (
               <div className="px-4 py-3 bg-gradient-to-r from-brand-50 to-teal-50 border-b border-brand-100">
                 <p className="text-sm font-medium text-brand-600">Today's Prompt:</p>
@@ -558,7 +796,6 @@ export function CommunityFeed() {
               </div>
             )}
 
-            {/* Compose Area */}
             <div className="flex-1 overflow-y-auto">
               <div className="p-4">
                 <div className="flex gap-3">
@@ -606,7 +843,6 @@ export function CommunityFeed() {
               </div>
             </div>
 
-            {/* Bottom Toolbar */}
             <div className="flex items-center gap-4 px-4 py-3 border-t border-iron-100 flex-shrink-0">
               <input
                 ref={fileInputRef}

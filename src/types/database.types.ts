@@ -52,6 +52,8 @@ export interface Database {
           specialties: string[];
           location: string | null;
           avatar_url: string | null;
+          avatar_position_x: number;
+          avatar_position_y: number;
           guidelines_accepted_at: string | null;
           created_at: string;
           updated_at: string;
@@ -69,6 +71,8 @@ export interface Database {
           specialties?: string[];
           location?: string | null;
           avatar_url?: string | null;
+          avatar_position_x?: number;
+          avatar_position_y?: number;
           guidelines_accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
@@ -86,6 +90,8 @@ export interface Database {
           specialties?: string[];
           location?: string | null;
           avatar_url?: string | null;
+          avatar_position_x?: number;
+          avatar_position_y?: number;
           guidelines_accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;

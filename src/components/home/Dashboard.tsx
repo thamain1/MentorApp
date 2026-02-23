@@ -12,7 +12,6 @@ import { supabase } from '../../lib/supabase';
 import { mockMentees } from '../../data/mockData';
 
 const AFFIRMATION_STORAGE_KEY = 'isi-daily-affirmation';
-const PROFILE_IMAGE_STORAGE_KEY = 'isi-profile-image';
 
 // Default affirmations by role
 const defaultAffirmations: Record<string, string> = {
@@ -132,39 +131,29 @@ export function Dashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
-  // Fallback local image settings when no Supabase avatar
-  const [localImageSettings, setLocalImageSettings] = useState<ProfileImageSettings>(() => {
-    const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed[role]) return parsed[role];
-      } catch { /* fall through */ }
-    }
-    return { image: getDefaultProfileImage(role), position: { x: 0, y: 0 } };
-  });
-  const [isEditingImage, setIsEditingImage] = useState(false);
-  const [tempImageSettings, setTempImageSettings] = useState<ProfileImageSettings>(localImageSettings);
+  const currentSettings: ProfileImageSettings = {
+    image: profile?.avatar_url ?? getDefaultProfileImage(role),
+    position: {
+      x: profile?.avatar_position_x ?? 0,
+      y: profile?.avatar_position_y ?? 0,
+    },
+  };
 
-  const displayImage = profile?.avatar_url ?? localImageSettings.image;
-  const displayPosition = getObjectPosition(localImageSettings.position);
+  const [isEditingImage, setIsEditingImage] = useState(false);
+  const [tempImageSettings, setTempImageSettings] = useState<ProfileImageSettings>(currentSettings);
 
   useEffect(() => {
-    const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed[role]) {
-          setLocalImageSettings(parsed[role]);
-          setTempImageSettings(parsed[role]);
-          return;
-        }
-      } catch { /* fall through */ }
-    }
-    const defaultSettings = { image: getDefaultProfileImage(role), position: { x: 0, y: 0 } };
-    setLocalImageSettings(defaultSettings);
-    setTempImageSettings(defaultSettings);
-  }, [role]);
+    setTempImageSettings({
+      image: profile?.avatar_url ?? getDefaultProfileImage(role),
+      position: {
+        x: profile?.avatar_position_x ?? 0,
+        y: profile?.avatar_position_y ?? 0,
+      },
+    });
+  }, [profile, role]);
+
+  const displayImage = currentSettings.image;
+  const displayPosition = getObjectPosition(currentSettings.position);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -189,20 +178,24 @@ export function Dashboard() {
     }
   };
 
-  const handleSaveImageSettings = () => {
-    const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
-    let data: Record<string, ProfileImageSettings> = {};
-    if (stored) {
-      try { data = JSON.parse(stored); } catch { data = {}; }
+  const handleSaveImageSettings = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        avatar_url: tempImageSettings.image,
+        avatar_position_x: tempImageSettings.position.x,
+        avatar_position_y: tempImageSettings.position.y,
+      })
+      .eq('user_id', user.id);
+    if (!error) {
+      await refreshProfile();
     }
-    data[role] = tempImageSettings;
-    localStorage.setItem(PROFILE_IMAGE_STORAGE_KEY, JSON.stringify(data));
-    setLocalImageSettings(tempImageSettings);
     setIsEditingImage(false);
   };
 
   const handleCancelImageEdit = () => {
-    setTempImageSettings(localImageSettings);
+    setTempImageSettings(currentSettings);
     setIsEditingImage(false);
   };
 
@@ -407,7 +400,7 @@ export function Dashboard() {
         {/* Camera button - ON TOP of white curve */}
         <button
           onClick={() => {
-            setTempImageSettings(localImageSettings);
+            setTempImageSettings(currentSettings);
             setIsEditingImage(true);
           }}
           disabled={uploading}

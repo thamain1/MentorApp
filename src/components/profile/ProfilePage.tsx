@@ -55,28 +55,8 @@ const bubblePositions = [
   { top: '65%', left: '15%', size: 'sm' },
 ];
 
-const IMAGE_SETTINGS_KEY = 'isi-profile-image';
-
-interface ImagePosition { x: number; y: number; }
-interface ImageSettings { image: string; position: ImagePosition; }
-
-function loadImageSettings(): ImageSettings {
-  const defaults: ImageSettings = { image: '/images/mentees/gettyimages-1430123251-612x612.jpg', position: { x: 0, y: 0 } };
-  try {
-    const saved = localStorage.getItem(IMAGE_SETTINGS_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      return {
-        image: parsed.image ?? defaults.image,
-        position: parsed.position ?? defaults.position,
-      };
-    }
-  } catch {}
-  return defaults;
-}
-
-function getObjectPosition(pos: ImagePosition) {
-  return `${50 + pos.x}% ${50 + pos.y}%`;
+function getObjectPosition(x: number, y: number) {
+  return `${50 + x}% ${50 + y}%`;
 }
 
 export function ProfilePage() {
@@ -84,10 +64,12 @@ export function ProfilePage() {
   const { profile, user, refreshProfile, signOut } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
-  const [localImageSettings] = useState<ImageSettings>(loadImageSettings);
 
-  const displayImage = profile?.avatar_url ?? localImageSettings.image;
-  const displayPosition = getObjectPosition(localImageSettings.position);
+  const displayImage = profile?.avatar_url ?? undefined;
+  const displayPosition = getObjectPosition(
+    profile?.avatar_position_x ?? 0,
+    profile?.avatar_position_y ?? 0,
+  );
 
   const role = profile?.role ?? 'mentee';
   const fullName = profile ? `${profile.first_name} ${profile.last_name}`.trim() : '';

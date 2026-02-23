@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Calendar, MessageCircle, Target, TrendingUp,
   ChevronRight, Sparkles, Clock, Users, Shield, Edit3, Check,
@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../layout';
 import { Card, Avatar, Badge, Button } from '../ui';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 import { mockMentees } from '../../data/mockData';
 
 const AFFIRMATION_STORAGE_KEY = 'isi-daily-affirmation';
@@ -121,75 +122,87 @@ const dailyPrompt = getDailyPrompt();
 export function Dashboard() {
   const navigate = useNavigate();
   const [checkedIn, setCheckedIn] = useState(false);
-  const { profile } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
   const role = profile?.role ?? 'mentee';
   const firstName = profile?.first_name ?? 'Friend';
   const lastName = profile?.last_name ?? '';
   const connections = getConnectionsForRole(role);
   const fullName = `${firstName} ${lastName}`.trim();
 
-  // Profile image state
-  const [profileImageSettings, setProfileImageSettings] = useState<ProfileImageSettings>(() => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  // Fallback local image settings when no Supabase avatar
+  const [localImageSettings, setLocalImageSettings] = useState<ProfileImageSettings>(() => {
     const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        if (parsed[role]) {
-          return parsed[role];
-        }
-      } catch {
-        // Fall through to default
-      }
+        if (parsed[role]) return parsed[role];
+      } catch { /* fall through */ }
     }
-    return {
-      image: getDefaultProfileImage(role),
-      position: { x: 0, y: 0 },
-    };
+    return { image: getDefaultProfileImage(role), position: { x: 0, y: 0 } };
   });
   const [isEditingImage, setIsEditingImage] = useState(false);
-  const [tempImageSettings, setTempImageSettings] = useState<ProfileImageSettings>(profileImageSettings);
+  const [tempImageSettings, setTempImageSettings] = useState<ProfileImageSettings>(localImageSettings);
 
-  // Update profile image when role changes
+  const displayImage = profile?.avatar_url ?? localImageSettings.image;
+  const displayPosition = profile?.avatar_url ? '50% 50%' : getObjectPosition(localImageSettings.position);
+
   useEffect(() => {
     const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         if (parsed[role]) {
-          setProfileImageSettings(parsed[role]);
+          setLocalImageSettings(parsed[role]);
           setTempImageSettings(parsed[role]);
           return;
         }
-      } catch {
-        // Fall through to default
-      }
+      } catch { /* fall through */ }
     }
-    const defaultSettings = {
-      image: getDefaultProfileImage(role),
-      position: { x: 0, y: 0 },
-    };
-    setProfileImageSettings(defaultSettings);
+    const defaultSettings = { image: getDefaultProfileImage(role), position: { x: 0, y: 0 } };
+    setLocalImageSettings(defaultSettings);
     setTempImageSettings(defaultSettings);
   }, [role]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const path = `${user.id}/avatar.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+      if (updateError) throw updateError;
+      await refreshProfile();
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSaveImageSettings = () => {
     const stored = localStorage.getItem(PROFILE_IMAGE_STORAGE_KEY);
     let data: Record<string, ProfileImageSettings> = {};
     if (stored) {
-      try {
-        data = JSON.parse(stored);
-      } catch {
-        data = {};
-      }
+      try { data = JSON.parse(stored); } catch { data = {}; }
     }
     data[role] = tempImageSettings;
     localStorage.setItem(PROFILE_IMAGE_STORAGE_KEY, JSON.stringify(data));
-    setProfileImageSettings(tempImageSettings);
+    setLocalImageSettings(tempImageSettings);
     setIsEditingImage(false);
   };
 
   const handleCancelImageEdit = () => {
-    setTempImageSettings(profileImageSettings);
+    setTempImageSettings(localImageSettings);
     setIsEditingImage(false);
   };
 
@@ -204,23 +217,16 @@ export function Dashboard() {
   };
 
   const resetPosition = () => {
-    setTempImageSettings(prev => ({
-      ...prev,
-      position: { x: 0, y: 0 },
-    }));
+    setTempImageSettings(prev => ({ ...prev, position: { x: 0, y: 0 } }));
   };
 
   const selectImage = (image: string) => {
-    setTempImageSettings(prev => ({
-      ...prev,
-      image,
-      position: { x: 0, y: 0 }, // Reset position when selecting new image
-    }));
+    setTempImageSettings(prev => ({ ...prev, image, position: { x: 0, y: 0 } }));
   };
 
-  const getObjectPosition = (pos: ImagePosition) => {
+  function getObjectPosition(pos: ImagePosition) {
     return `${50 + pos.x}% ${50 + pos.y}%`;
-  };
+  }
 
   // Affirmation state
   const [affirmation, setAffirmation] = useState(() => {
@@ -377,10 +383,10 @@ export function Dashboard() {
             <div className="absolute -inset-4 bg-gradient-to-t from-blue-500/30 to-transparent rounded-full blur-xl" />
             <div className="relative w-44 h-60 rounded-t-full overflow-hidden border-4 border-blue-400/50">
               <img
-                src={profileImageSettings.image}
+                src={displayImage}
                 alt={fullName}
                 className="w-full h-full object-cover"
-                style={{ objectPosition: getObjectPosition(profileImageSettings.position) }}
+                style={{ objectPosition: displayPosition }}
               />
             </div>
           </div>
@@ -389,13 +395,27 @@ export function Dashboard() {
         {/* Bottom curve transition */}
         <div className="absolute bottom-0 left-0 right-0 h-6 bg-iron-50 rounded-t-3xl z-40" />
 
+        {/* Hidden file input for upload */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleAvatarUpload}
+        />
+
         {/* Camera button - ON TOP of white curve */}
         <button
           onClick={() => {
-            setTempImageSettings(profileImageSettings);
-            setIsEditingImage(true);
+            if (user) {
+              fileInputRef.current?.click();
+            } else {
+              setTempImageSettings(localImageSettings);
+              setIsEditingImage(true);
+            }
           }}
-          className="absolute bottom-3 right-6 w-9 h-9 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-blue-600 transition-colors z-50"
+          disabled={uploading}
+          className="absolute bottom-3 right-6 w-9 h-9 bg-blue-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-blue-600 transition-colors z-50 disabled:opacity-60"
         >
           <Camera className="w-4 h-4" />
         </button>

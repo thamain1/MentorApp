@@ -430,7 +430,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-iron-50">
       {/* Hero Section with Profile Image and Affirmation */}
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', minHeight: '26rem' }}>
+      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', minHeight: 'clamp(22rem, 70vw, 36rem)' }}>
         {/* Header overlay - topmost */}
         <div className="absolute top-0 left-0 right-0 z-50">
           <Header
@@ -439,68 +439,68 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: Affirmation Text - BACK (background text) */}
-        <div className="absolute top-0 left-0 right-0 z-10 pt-8" style={{ padding: '0 3px' }}>
-          {/* Permanent "I AM" header - spans full width, 3px padding from edges */}
+        {/* Layer 1: "I AM" - pure background, centered vertically in hero */}
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none" style={{ paddingBottom: '1.5rem' }}>
           <h1
-            className="leading-[0.85] w-full text-center"
+            className="leading-none w-full text-center select-none"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'min(30vw, 13rem)',
+              fontSize: 'clamp(7rem, 35vw, 18rem)',
               color: 'transparent',
               WebkitTextStroke: '3px #35d6f5',
               textShadow: 'none',
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
+              opacity: 0.9,
             }}
           >
             I AM
           </h1>
-
-          {/* Editable sub-message - constrained to left side, away from profile image */}
-          <div style={{ width: '52%' }}>
-            <div className="space-y-0 leading-snug mt-1">
-              {affirmation.split('\n').map((line: string, index: number) => {
-                const len = line.length;
-                const fontSize = len <= 10
-                  ? 'clamp(1.4rem, 5.5vw, 2rem)'
-                  : len <= 20
-                  ? 'clamp(1.1rem, 4.5vw, 1.6rem)'
-                  : len <= 35
-                  ? 'clamp(0.9rem, 3.8vw, 1.3rem)'
-                  : 'clamp(0.75rem, 3vw, 1rem)';
-                return (
-                  <h2
-                    key={index}
-                    className="font-bold text-white leading-[1.1] tracking-wide uppercase"
-                    style={{
-                      fontSize,
-                      textShadow: '1px 1px 6px rgba(0,0,0,0.7)',
-                    }}
-                  >
-                    {line}
-                  </h2>
-                );
-              })}
-            </div>
-            <button
-              onClick={() => {
-                setEditText(affirmation);
-                setIsEditingAffirmation(true);
-              }}
-              className="mt-2 flex items-center gap-1 text-iron-400 hover:text-blue-400 text-xs transition-colors relative z-[60]"
-            >
-              <Edit3 className="w-3 h-3" />
-              Edit message
-            </button>
-          </div>
         </div>
 
-        {/* Layer 2: Floating connection bubbles - middle */}
+        {/* Layer 2: Sub-message overlay - bottom left, above "I AM" */}
+        <div className="absolute bottom-10 left-4 z-20" style={{ maxWidth: '52%' }}>
+          <div className="space-y-0 leading-snug">
+            {affirmation.split('\n').map((line: string, index: number) => {
+              const len = line.length;
+              const fontSize = len <= 10
+                ? 'clamp(1.4rem, 5.5vw, 2rem)'
+                : len <= 20
+                ? 'clamp(1.1rem, 4.5vw, 1.6rem)'
+                : len <= 35
+                ? 'clamp(0.9rem, 3.8vw, 1.3rem)'
+                : 'clamp(0.75rem, 3vw, 1rem)';
+              return (
+                <h2
+                  key={index}
+                  className="font-bold text-white leading-[1.1] tracking-wide uppercase"
+                  style={{
+                    fontSize,
+                    textShadow: '1px 1px 6px rgba(0,0,0,0.7)',
+                  }}
+                >
+                  {line}
+                </h2>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => {
+              setEditText(affirmation);
+              setIsEditingAffirmation(true);
+            }}
+            className="mt-2 flex items-center gap-1 text-iron-400 hover:text-blue-400 text-xs transition-colors relative z-[60]"
+          >
+            <Edit3 className="w-3 h-3" />
+            Edit message
+          </button>
+        </div>
+
+        {/* Layer 3: Floating connection bubbles */}
         <div
           className="absolute w-12 h-12 rounded-full border-2 border-teal-400 overflow-hidden shadow-lg z-20"
-          style={{ top: '25%', right: '45%' }}
+          style={{ top: '28%', right: '48%' }}
         >
           <img
             src={connections[0]?.image}
@@ -510,7 +510,7 @@ export function Dashboard() {
         </div>
         <div
           className="absolute w-10 h-10 rounded-full border-2 border-brand-400 overflow-hidden shadow-lg z-20"
-          style={{ top: '60%', right: '55%' }}
+          style={{ top: '55%', right: '58%' }}
         >
           <img
             src={connections[1]?.image}
@@ -520,7 +520,7 @@ export function Dashboard() {
         </div>
         <div
           className="absolute w-11 h-11 rounded-full border-2 border-flame-400 overflow-hidden shadow-lg z-20"
-          style={{ top: '20%', right: '15%' }}
+          style={{ top: '18%', right: '12%' }}
         >
           <img
             src={connections[2]?.image}
@@ -529,11 +529,14 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 3: Main profile image - FRONT (on top of text) */}
+        {/* Layer 4: Main profile image - anchored to bottom right, always fully visible */}
         <div className="absolute right-4 bottom-0 z-30">
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-t from-blue-500/30 to-transparent rounded-full blur-xl" />
-            <div className="relative w-44 h-60 rounded-t-full overflow-hidden border-4 border-blue-400/50">
+            <div
+              className="relative rounded-t-full overflow-hidden border-4 border-blue-400/50"
+              style={{ width: 'clamp(9rem, 38vw, 14rem)', height: 'clamp(12rem, 50vw, 18rem)' }}
+            >
               <img
                 src={displayImage}
                 alt={fullName}

@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar } from '../ui';
-import { mockCurrentUser, mockMentorProfile, mockMentees } from '../../data/mockData';
+import { mockMentorProfile, mockMentees } from '../../data/mockData';
 import { useLocation } from 'react-router-dom';
-import { useUser } from '../../context';
+import { useAuth } from '../../context/AuthContext';
 
 // Extended post type with images, category, role, and comments
 interface PostWithImages {
@@ -133,14 +133,14 @@ const postsWithImages: PostWithImages[] = [
     id: 'post-4',
     group_id: null,
     category: 'faith',
-    user_id: mockCurrentUser.user_id,
+    user_id: mockMentees[2].user_id,
     content: 'As iron sharpens iron, so one person sharpens another. Grateful for this community and the men who pour into us daily. 🙏',
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
     author: {
-      id: mockCurrentUser.id,
-      first_name: mockCurrentUser.first_name,
-      last_name: mockCurrentUser.last_name,
-      avatar_url: mockCurrentUser.avatar_url,
+      id: mockMentees[2].id,
+      first_name: mockMentees[2].first_name,
+      last_name: mockMentees[2].last_name,
+      avatar_url: mockMentees[2].avatar_url,
       role: 'Mentee',
     },
     likes: 203,
@@ -244,7 +244,8 @@ function formatTimeAgo(dateString: string): string {
 
 export function CommunityFeed() {
   const location = useLocation();
-  const { currentUser, role } = useUser();
+  const { profile } = useAuth();
+  const role = profile?.role ?? 'mentee';
   const [posts, setPosts] = useState<PostWithImages[]>(postsWithImages);
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
@@ -339,14 +340,14 @@ export function CommunityFeed() {
       id: `post-new-${Date.now()}`,
       group_id: null,
       category: 'mentors',
-      user_id: currentUser.user_id,
+      user_id: profile?.id ?? '',
       content: newPost,
       created_at: new Date().toISOString(),
       author: {
-        id: currentUser.id,
-        first_name: currentUser.first_name,
-        last_name: currentUser.last_name,
-        avatar_url: currentUser.avatar_url,
+        id: profile?.id ?? '',
+        first_name: profile?.first_name ?? '',
+        last_name: profile?.last_name ?? '',
+        avatar_url: profile?.avatar_url ?? null,
         role: roleLabel,
       },
       likes: 0,
@@ -613,8 +614,8 @@ export function CommunityFeed() {
               <div className="p-4">
                 <div className="flex gap-3">
                   <Avatar
-                    src={currentUser.avatar_url}
-                    name={`${currentUser.first_name} ${currentUser.last_name}`}
+                    src={profile?.avatar_url ?? undefined}
+                    name={`${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim()}
                     size="md"
                     className="flex-shrink-0"
                   />

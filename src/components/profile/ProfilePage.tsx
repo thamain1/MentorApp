@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EditProfileModal } from './EditProfileModal';
 import {
   Camera,
   Edit2,
@@ -64,6 +65,7 @@ export function ProfilePage() {
   const { profile, user, refreshProfile, signOut } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const displayImage = profile?.avatar_url ?? undefined;
   const displayPosition = getObjectPosition(
@@ -116,7 +118,7 @@ export function ProfilePage() {
     {
       icon: Edit2,
       label: 'Edit Profile',
-      onClick: () => {},
+      onClick: () => setShowEditModal(true),
     },
     {
       icon: Bell,
@@ -341,6 +343,9 @@ export function ProfilePage() {
           Iron Sharpens Iron v1.0.0
         </p>
       </div>
+      {showEditModal && (
+        <EditProfileModal onClose={() => setShowEditModal(false)} />
+      )}
     </AppShell>
   );
 }

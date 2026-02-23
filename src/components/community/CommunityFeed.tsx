@@ -184,6 +184,7 @@ export function CommunityFeed() {
     const state = location.state as { checkInPrompt?: string; openCompose?: boolean } | null;
     if (state?.checkInPrompt) {
       setCheckInPrompt(state.checkInPrompt);
+      setNewPost(state.checkInPrompt + '\n\n');
       setShowCompose(true);
       window.history.replaceState({}, document.title);
     } else if (state?.openCompose) {

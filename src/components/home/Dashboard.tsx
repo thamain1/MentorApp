@@ -439,28 +439,27 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - pure background, centered vertically in hero */}
-        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none" style={{ paddingBottom: '1.5rem' }}>
+        {/* Layer 1: "I AM" - background text anchored to top */}
+        <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none" style={{ paddingTop: '3.5rem' }}>
           <h1
             className="leading-none w-full text-center select-none"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'clamp(7rem, 35vw, 18rem)',
+              fontSize: 'clamp(7rem, 32vw, 16rem)',
               color: 'transparent',
               WebkitTextStroke: '3px #35d6f5',
               textShadow: 'none',
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
-              opacity: 0.9,
             }}
           >
             I AM
           </h1>
         </div>
 
-        {/* Layer 2: Sub-message overlay - bottom left, above "I AM" */}
-        <div className="absolute bottom-10 left-4 z-20" style={{ maxWidth: '52%' }}>
+        {/* Layer 2: Sub-message overlay - bottom left, beside the profile image */}
+        <div className="absolute bottom-10 left-4 z-20" style={{ maxWidth: '48%' }}>
           <div className="space-y-0 leading-snug">
             {affirmation.split('\n').map((line: string, index: number) => {
               const len = line.length;

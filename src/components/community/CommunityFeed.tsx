@@ -350,6 +350,8 @@ export function CommunityFeed() {
         first_name: profile?.first_name ?? '',
         last_name: profile?.last_name ?? '',
         avatar_url: profile?.avatar_url ?? null,
+        avatar_position_x: profile?.avatar_position_x ?? 0,
+        avatar_position_y: profile?.avatar_position_y ?? 0,
         role: roleLabel,
       },
       likes: 0,

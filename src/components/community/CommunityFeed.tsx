@@ -7,40 +7,31 @@ import {
   MoreHorizontal,
   Image,
   X,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar } from '../ui';
-import { mockMentorProfile, mockMentees } from '../../data/mockData';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
 
-// Extended post type with images, category, role, and comments
-interface PostWithImages {
+// Post type with author info and like data
+interface PostWithAuthor {
   id: string;
-  group_id: string | null;
-  category: string;
-  user_id: string;
   content: string;
   created_at: string;
+  user_id: string;
+  group_id: string | null;
   author: {
     id: string;
     first_name: string;
     last_name: string;
     avatar_url: string | null;
-    avatar_position_x?: number;
-    avatar_position_y?: number;
-    role?: string;
+    avatar_position_x: number;
+    avatar_position_y: number;
+    role: string;
   };
-  likes: number;
-  comments: number;
-  hasLiked: boolean;
-  images?: string[];
-  topComment?: {
-    author: string;
-    text: string;
-  };
+  like_count: number;
+  liked_by_me: boolean;
 }
 
 // Group categories for the story-style filter
@@ -52,182 +43,6 @@ const groupCategories = [
   { id: 'construction', name: 'Construction', abbrev: 'CON', color: 'from-slate-500 to-zinc-600' },
   { id: 'health', name: 'Health', abbrev: 'HTH', color: 'from-coral-400 to-coral-600' },
   { id: 'faith', name: 'Faith', abbrev: 'FTH', color: 'from-brand-500 to-brand-700' },
-];
-
-// Posts with the new format
-const postsWithImages: PostWithImages[] = [
-  {
-    id: 'post-1',
-    group_id: null,
-    category: 'education',
-    user_id: mockMentorProfile.user_id,
-    content: 'Just completed my first hackathon! Here are 5 tips for young developers looking to participate in their first coding competition 🚀',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    author: {
-      id: mockMentorProfile.id,
-      first_name: 'Alex',
-      last_name: 'Martinez',
-      avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-      role: 'Software Engineer',
-    },
-    likes: 124,
-    comments: 18,
-    hasLiked: true,
-    images: [
-      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=640&q=80',
-    ],
-    topComment: {
-      author: 'jessica_codes',
-      text: 'This is so inspiring! Thanks for sharing 🙌',
-    },
-  },
-  {
-    id: 'post-2',
-    group_id: null,
-    category: 'mentors',
-    user_id: mockMentorProfile.user_id,
-    content: 'Great turnout at today\'s group mentoring session! These young men are putting in the work. Proud of each and every one of them. 💪',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
-    author: {
-      id: mockMentorProfile.id,
-      first_name: mockMentorProfile.first_name,
-      last_name: mockMentorProfile.last_name,
-      avatar_url: mockMentorProfile.avatar_url,
-      role: 'Lead Mentor',
-    },
-    likes: 89,
-    comments: 12,
-    hasLiked: false,
-    images: [
-      'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=640&q=80',
-    ],
-    topComment: {
-      author: 'marcus_j',
-      text: 'Best session yet! Learned so much 📚',
-    },
-  },
-  {
-    id: 'post-3',
-    group_id: null,
-    category: 'entrepreneur',
-    user_id: mockMentees[1].user_id,
-    content: 'Started my first small business this week - a lawn care service! My mentor helped me write a business plan and set my prices. First client already booked! 🌱',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-    author: {
-      id: mockMentees[1].id,
-      first_name: mockMentees[1].first_name,
-      last_name: mockMentees[1].last_name,
-      avatar_url: mockMentees[1].avatar_url,
-      role: 'Aspiring Entrepreneur',
-    },
-    likes: 156,
-    comments: 24,
-    hasLiked: true,
-    images: [
-      'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=640&q=80',
-    ],
-    topComment: {
-      author: 'coach_williams',
-      text: 'So proud of you! This is what it\'s all about 🙏',
-    },
-  },
-  {
-    id: 'post-4',
-    group_id: null,
-    category: 'faith',
-    user_id: mockMentees[2].user_id,
-    content: 'As iron sharpens iron, so one person sharpens another. Grateful for this community and the men who pour into us daily. 🙏',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    author: {
-      id: mockMentees[2].id,
-      first_name: mockMentees[2].first_name,
-      last_name: mockMentees[2].last_name,
-      avatar_url: mockMentees[2].avatar_url,
-      role: 'Mentee',
-    },
-    likes: 203,
-    comments: 31,
-    hasLiked: true,
-    topComment: {
-      author: 'david_w',
-      text: 'Amen! This community changed my life 💯',
-    },
-  },
-  {
-    id: 'post-5',
-    group_id: null,
-    category: 'health',
-    user_id: mockMentorProfile.user_id,
-    content: 'Morning workout complete! Remember kings, taking care of your body is taking care of your mind. Who else got their workout in today? 💪',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString(),
-    author: {
-      id: mockMentorProfile.id,
-      first_name: 'Coach',
-      last_name: 'Mike',
-      avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&q=80',
-      role: 'Fitness Coach',
-    },
-    likes: 78,
-    comments: 15,
-    hasLiked: false,
-    images: [
-      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=640&q=80',
-    ],
-    topComment: {
-      author: 'young_king_23',
-      text: 'Just finished mine! 5am gang 🔥',
-    },
-  },
-  {
-    id: 'post-6',
-    group_id: null,
-    category: 'lifeskills',
-    user_id: mockMentees[0].user_id,
-    content: 'Finally learned how to cook a proper meal for my family tonight! My mentor taught me that taking care of others starts with small acts of service. Thanks for pushing me to learn these skills. 🍳',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    author: {
-      id: mockMentees[0].id,
-      first_name: mockMentees[0].first_name,
-      last_name: mockMentees[0].last_name,
-      avatar_url: mockMentees[0].avatar_url,
-      role: 'Mentee',
-    },
-    likes: 92,
-    comments: 8,
-    hasLiked: false,
-    images: [
-      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=640&q=80',
-    ],
-    topComment: {
-      author: 'mentor_james',
-      text: 'So proud of you! This is what growth looks like 👏',
-    },
-  },
-  {
-    id: 'post-7',
-    group_id: null,
-    category: 'construction',
-    user_id: mockMentorProfile.user_id,
-    content: 'Big day on the job site! These young men are learning valuable trade skills that will serve them for life. Hard work pays off. 🔨',
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString(),
-    author: {
-      id: mockMentorProfile.id,
-      first_name: 'Steve',
-      last_name: 'Johnson',
-      avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
-      role: 'Trades Mentor',
-    },
-    likes: 145,
-    comments: 22,
-    hasLiked: true,
-    images: [
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=640&q=80',
-    ],
-    topComment: {
-      author: 'apprentice_mike',
-      text: 'Learning so much every day on this crew! 💪',
-    },
-  },
 ];
 
 // Format time like "2h ago"
@@ -243,26 +58,121 @@ function formatTimeAgo(dateString: string): string {
   return `${Math.floor(seconds / 604800)}w`;
 }
 
+function roleLabel(role: string): string {
+  if (role === 'mentor') return 'Mentor';
+  if (role === 'admin') return 'Admin';
+  return 'Mentee';
+}
 
 export function CommunityFeed() {
   const location = useLocation();
-  const { profile } = useAuth();
-  const role = profile?.role ?? 'mentee';
-  const [posts, setPosts] = useState<PostWithImages[]>(postsWithImages);
+  const { user, profile } = useAuth();
+  const [posts, setPosts] = useState<PostWithAuthor[]>([]);
+  const [loading, setLoading] = useState(true);
   const [savedPosts, setSavedPosts] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
   const [newPost, setNewPost] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [likeAnimation, setLikeAnimation] = useState<string | null>(null);
-  const [imageIndexes, setImageIndexes] = useState<Record<string, number>>({});
   const [checkInPrompt, setCheckInPrompt] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Filter posts by selected category
-  const filteredPosts = selectedCategory === 'all'
-    ? posts
-    : posts.filter(post => post.category === selectedCategory);
+  const fetchPosts = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+
+    // 1. Fetch posts
+    const { data: rawPosts, error } = await supabase
+      .from('posts')
+      .select('id, group_id, user_id, content, created_at')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error || !rawPosts || rawPosts.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    const postIds = rawPosts.map(p => p.id);
+    const userIds = [...new Set(rawPosts.map(p => p.user_id))];
+
+    // 2. Fetch profiles for all post authors (profiles.user_id = posts.user_id)
+    const { data: authorProfiles } = await supabase
+      .from('profiles')
+      .select('id, user_id, first_name, last_name, avatar_url, avatar_position_x, avatar_position_y, role')
+      .in('user_id', userIds);
+
+    const profileByUserId = new Map<string, {
+      id: string;
+      user_id: string;
+      first_name: string;
+      last_name: string;
+      avatar_url: string | null;
+      avatar_position_x: number;
+      avatar_position_y: number;
+      role: string;
+    }>();
+    (authorProfiles ?? []).forEach(p => profileByUserId.set(p.user_id, {
+      ...p,
+      avatar_position_x: p.avatar_position_x ?? 0,
+      avatar_position_y: p.avatar_position_y ?? 0,
+    }));
+
+    // 3. Fetch all likes for these posts
+    const { data: allLikes } = await supabase
+      .from('post_likes')
+      .select('post_id, user_id')
+      .in('post_id', postIds);
+
+    // Count likes per post
+    const likeCountMap = new Map<string, number>();
+    const myLikedSet = new Set<string>();
+    (allLikes ?? []).forEach(like => {
+      likeCountMap.set(like.post_id, (likeCountMap.get(like.post_id) ?? 0) + 1);
+      if (like.user_id === user.id) {
+        myLikedSet.add(like.post_id);
+      }
+    });
+
+    // 4. Assemble PostWithAuthor objects
+    const assembled: PostWithAuthor[] = rawPosts
+      .map(post => {
+        const authorProfile = profileByUserId.get(post.user_id);
+        if (!authorProfile) return null;
+        return {
+          id: post.id,
+          content: post.content,
+          created_at: post.created_at,
+          user_id: post.user_id,
+          group_id: post.group_id ?? null,
+          author: {
+            id: authorProfile.id,
+            first_name: authorProfile.first_name,
+            last_name: authorProfile.last_name,
+            avatar_url: authorProfile.avatar_url,
+            avatar_position_x: authorProfile.avatar_position_x,
+            avatar_position_y: authorProfile.avatar_position_y,
+            role: roleLabel(authorProfile.role),
+          },
+          like_count: likeCountMap.get(post.id) ?? 0,
+          liked_by_me: myLikedSet.has(post.id),
+        };
+      })
+      .filter((p): p is PostWithAuthor => p !== null);
+
+    setPosts(assembled);
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  // Filter posts by selected category (group_id-based filtering is not available without group data;
+  // category filtering is kept as UI state but since posts table has no category column,
+  // all posts show under 'all'. The filter UI is preserved as-is.)
+  const filteredPosts = posts;
 
   // Check if navigated from Daily Check-in or Create button
   useEffect(() => {
@@ -277,23 +187,45 @@ export function CommunityFeed() {
     }
   }, [location.state]);
 
-  const handleLike = useCallback((postId: string) => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        return {
-          ...post,
-          hasLiked: !post.hasLiked,
-          likes: post.hasLiked ? post.likes - 1 : post.likes + 1,
-        };
-      }
-      return post;
-    }));
-  }, [posts]);
+  const handleLike = useCallback(async (postId: string) => {
+    if (!user) return;
 
-  const handleDoubleTap = useCallback((postId: string, hasLiked: boolean) => {
-    if (!hasLiked) {
-      handleLike(postId);
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    if (post.liked_by_me) {
+      // Unlike: DELETE from post_likes
+      const { error } = await supabase
+        .from('post_likes')
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', user.id);
+
+      if (!error) {
+        setPosts(prev => prev.map(p =>
+          p.id === postId
+            ? { ...p, liked_by_me: false, like_count: p.like_count - 1 }
+            : p
+        ));
+      }
+    } else {
+      // Like: INSERT into post_likes
+      const { error } = await supabase
+        .from('post_likes')
+        .insert({ post_id: postId, user_id: user.id });
+
+      if (!error) {
+        setPosts(prev => prev.map(p =>
+          p.id === postId
+            ? { ...p, liked_by_me: true, like_count: p.like_count + 1 }
+            : p
+        ));
+      }
     }
+  }, [user, posts]);
+
+  const handleDoubleTap = useCallback((postId: string, likedByMe: boolean) => {
+    if (!likedByMe) handleLike(postId);
     setLikeAnimation(postId);
     setTimeout(() => setLikeAnimation(null), 1000);
   }, [handleLike]);
@@ -333,48 +265,46 @@ export function CommunityFeed() {
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handlePost = () => {
+  const handlePost = async () => {
     if (!newPost.trim() && selectedImages.length === 0) return;
+    if (!user || !profile) return;
 
-    const roleLabel = role === 'mentor' ? 'Mentor' : role === 'admin' ? 'Admin' : 'Mentee';
+    const { data: inserted, error } = await supabase
+      .from('posts')
+      .insert({
+        user_id: user.id,
+        content: newPost.trim(),
+        group_id: null,
+      })
+      .select('id, group_id, user_id, content, created_at')
+      .single();
 
-    const newPostObj: PostWithImages = {
-      id: `post-new-${Date.now()}`,
-      group_id: null,
-      category: 'mentors',
-      user_id: profile?.id ?? '',
-      content: newPost,
-      created_at: new Date().toISOString(),
-      author: {
-        id: profile?.id ?? '',
-        first_name: profile?.first_name ?? '',
-        last_name: profile?.last_name ?? '',
-        avatar_url: profile?.avatar_url ?? null,
-        avatar_position_x: profile?.avatar_position_x ?? 0,
-        avatar_position_y: profile?.avatar_position_y ?? 0,
-        role: roleLabel,
-      },
-      likes: 0,
-      comments: 0,
-      hasLiked: false,
-      images: selectedImages.length > 0 ? selectedImages : undefined,
-    };
+    if (!error && inserted) {
+      const newPostObj: PostWithAuthor = {
+        id: inserted.id,
+        content: inserted.content,
+        created_at: inserted.created_at,
+        user_id: inserted.user_id,
+        group_id: inserted.group_id ?? null,
+        author: {
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          avatar_url: profile.avatar_url ?? null,
+          avatar_position_x: profile.avatar_position_x ?? 0,
+          avatar_position_y: profile.avatar_position_y ?? 0,
+          role: roleLabel(profile.role),
+        },
+        like_count: 0,
+        liked_by_me: false,
+      };
+      setPosts(prev => [newPostObj, ...prev]);
+    }
 
-    setPosts([newPostObj, ...posts]);
     setNewPost('');
     setSelectedImages([]);
     setCheckInPrompt(null);
     setShowCompose(false);
-  };
-
-  const navigateImage = (postId: string, direction: 'prev' | 'next', totalImages: number) => {
-    setImageIndexes(prev => {
-      const current = prev[postId] || 0;
-      let newIndex = direction === 'next' ? current + 1 : current - 1;
-      if (newIndex < 0) newIndex = 0;
-      if (newIndex >= totalImages) newIndex = totalImages - 1;
-      return { ...prev, [postId]: newIndex };
-    });
   };
 
   return (
@@ -422,155 +352,129 @@ export function CommunityFeed() {
           </div>
         </div>
 
-        {/* Feed */}
-        <div className="space-y-4 pt-4 px-4">
-          {filteredPosts.map((post) => {
-            const authorName = `${post.author.first_name} ${post.author.last_name}`;
-            const isSaved = savedPosts.has(post.id);
-            const showHeartAnimation = likeAnimation === post.id;
-            const hasImages = post.images && post.images.length > 0;
-            const currentImageIndex = imageIndexes[post.id] || 0;
+        {/* Loading skeleton */}
+        {loading ? (
+          <div className="space-y-4 pt-4 px-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-white rounded-2xl shadow-sm overflow-hidden animate-pulse">
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <div className="w-10 h-10 rounded-full bg-iron-200" />
+                  <div className="flex-1 space-y-1">
+                    <div className="h-4 bg-iron-200 rounded w-1/3" />
+                    <div className="h-3 bg-iron-100 rounded w-1/4" />
+                  </div>
+                </div>
+                <div className="px-4 pb-3 space-y-2">
+                  <div className="h-4 bg-iron-100 rounded w-full" />
+                  <div className="h-4 bg-iron-100 rounded w-3/4" />
+                </div>
+                <div className="h-48 bg-iron-100" />
+                <div className="px-4 py-3 flex gap-4">
+                  <div className="h-6 w-12 bg-iron-100 rounded" />
+                  <div className="h-6 w-12 bg-iron-100 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Feed */
+          <div className="space-y-4 pt-4 px-4">
+            {filteredPosts.map((post) => {
+              const authorName = `${post.author.first_name} ${post.author.last_name}`;
+              const isSaved = savedPosts.has(post.id);
+              const showHeartAnimation = likeAnimation === post.id;
 
-            return (
-              <article key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
-                {/* Post Header */}
-                <div className="flex items-center justify-between px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="p-[2px] rounded-full bg-gradient-to-tr from-brand-500 via-brand-400 to-coral-500">
-                      <div className="bg-white p-[1px] rounded-full">
-                        <Avatar
-                          src={post.author.avatar_url}
-                          name={authorName}
-                          size="md"
-                          style={{ objectPosition: `${50 + (post.author.avatar_position_x ?? 0)}% ${50 + (post.author.avatar_position_y ?? 0)}%` }}
-                        />
+              return (
+                <article key={post.id} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  {/* Post Header */}
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="p-[2px] rounded-full bg-gradient-to-tr from-brand-500 via-brand-400 to-coral-500">
+                        <div className="bg-white p-[1px] rounded-full">
+                          <Avatar
+                            src={post.author.avatar_url}
+                            name={authorName}
+                            size="md"
+                            style={{ objectPosition: `${50 + (post.author.avatar_position_x ?? 0)}% ${50 + (post.author.avatar_position_y ?? 0)}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm text-iron-900">
+                          {authorName}
+                        </h4>
+                        <p className="text-xs text-iron-500">
+                          {post.author.role} • {formatTimeAgo(post.created_at)}
+                        </p>
                       </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-sm text-iron-900">
-                        {authorName}
-                      </h4>
-                      <p className="text-xs text-iron-500">
-                        {post.author.role} • {formatTimeAgo(post.created_at)}
-                      </p>
-                    </div>
-                  </div>
-                  <button className="p-2 -mr-2 text-iron-400 hover:text-iron-600">
-                    <MoreHorizontal className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Post Text - Above Image */}
-                <div className="px-4 pb-3">
-                  <p className="text-iron-800 text-[15px] leading-relaxed">
-                    {post.content}
-                  </p>
-                </div>
-
-                {/* Post Image(s) */}
-                {hasImages && (
-                  <div
-                    className="relative bg-iron-100 cursor-pointer select-none"
-                    onDoubleClick={() => handleDoubleTap(post.id, post.hasLiked)}
-                  >
-                    <img
-                      src={post.images![currentImageIndex]}
-                      alt="Post image"
-                      className="w-full object-cover"
-                      style={{ maxHeight: '400px' }}
-                    />
-
-                    {/* Image Navigation */}
-                    {post.images!.length > 1 && (
-                      <>
-                        {currentImageIndex > 0 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigateImage(post.id, 'prev', post.images!.length);
-                            }}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-lg"
-                          >
-                            <ChevronLeft className="w-5 h-5 text-iron-700" />
-                          </button>
-                        )}
-                        {currentImageIndex < post.images!.length - 1 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigateImage(post.id, 'next', post.images!.length);
-                            }}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-lg"
-                          >
-                            <ChevronRight className="w-5 h-5 text-iron-700" />
-                          </button>
-                        )}
-                      </>
-                    )}
-
-                    {/* Heart animation */}
-                    {showHeartAnimation && (
-                      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                        <Heart className="w-24 h-24 text-white fill-white drop-shadow-lg animate-ping" />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Action Bar */}
-                <div className="px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleLike(post.id)}
-                        className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors"
-                      >
-                        <Heart
-                          className={`w-5 h-5 ${
-                            post.hasLiked
-                              ? 'text-coral-500 fill-coral-500'
-                              : 'text-iron-600'
-                          }`}
-                        />
-                        <span className="text-sm text-iron-600">{post.likes}</span>
-                      </button>
-                      <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
-                        <MessageCircle className="w-5 h-5 text-iron-600" />
-                        <span className="text-sm text-iron-600">{post.comments}</span>
-                      </button>
-                      <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
-                        <Send className="w-5 h-5 text-iron-600" />
-                        <span className="text-sm text-iron-600">Share</span>
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => handleSave(post.id)}
-                      className="p-1.5 rounded-lg hover:bg-iron-50 transition-colors"
-                    >
-                      <Bookmark
-                        className={`w-5 h-5 ${
-                          isSaved
-                            ? 'text-iron-900 fill-iron-900'
-                            : 'text-iron-600'
-                        }`}
-                      />
+                    <button className="p-2 -mr-2 text-iron-400 hover:text-iron-600">
+                      <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
 
-                  {/* Comment Preview */}
-                  {post.topComment && (
-                    <div className="mt-3 pt-3 border-t border-iron-100">
-                      <p className="text-sm">
-                        <span className="font-semibold text-iron-900">{post.topComment.author}</span>{' '}
-                        <span className="text-iron-600">{post.topComment.text}</span>
-                      </p>
+                  {/* Post Text */}
+                  <div
+                    className="px-4 pb-3"
+                    onDoubleClick={() => handleDoubleTap(post.id, post.liked_by_me)}
+                  >
+                    <p className="text-iron-800 text-[15px] leading-relaxed">
+                      {post.content}
+                    </p>
+                  </div>
+
+                  {/* Action Bar */}
+                  <div className="px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleLike(post.id)}
+                          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors"
+                        >
+                          <Heart
+                            className={`w-5 h-5 ${
+                              post.liked_by_me
+                                ? 'text-coral-500 fill-coral-500'
+                                : 'text-iron-600'
+                            }`}
+                          />
+                          <span className="text-sm text-iron-600">{post.like_count}</span>
+                        </button>
+                        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
+                          <MessageCircle className="w-5 h-5 text-iron-600" />
+                          <span className="text-sm text-iron-600">0</span>
+                        </button>
+                        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
+                          <Send className="w-5 h-5 text-iron-600" />
+                          <span className="text-sm text-iron-600">Share</span>
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => handleSave(post.id)}
+                        className="p-1.5 rounded-lg hover:bg-iron-50 transition-colors"
+                      >
+                        <Bookmark
+                          className={`w-5 h-5 ${
+                            isSaved
+                              ? 'text-iron-900 fill-iron-900'
+                              : 'text-iron-600'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Heart animation overlay (shown on double-tap, no image to tap so kept hidden) */}
+                  {showHeartAnimation && (
+                    <div className="flex items-center justify-center py-2 pointer-events-none">
+                      <Heart className="w-12 h-12 text-coral-500 fill-coral-500 animate-ping" />
                     </div>
                   )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Compose Modal */}

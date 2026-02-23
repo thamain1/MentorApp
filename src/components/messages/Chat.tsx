@@ -1,42 +1,95 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Send, MoreVertical, Flag, ArrowLeft } from 'lucide-react';
 import { Avatar } from '../ui';
 import { formatTime, formatDate } from '../../lib/utils';
-import { mockConversations, mockMessages } from '../../data/mockData';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+
+interface Message {
+  id: string;
+  match_id: string;
+  sender_id: string;
+  content: string;
+  read_at: string | null;
+  created_at: string;
+  isOwn: boolean;
+}
+
+interface ParticipantProfile {
+  id: string;
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+}
 
 export function Chat() {
   const { matchId } = useParams<{ matchId: string }>();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [participant, setParticipant] = useState<ParticipantProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const conversation = mockConversations.find(c => c.matchId === matchId);
-  const messages = matchId ? mockMessages[matchId] || [] : [];
+  const fetchChatData = useCallback(async () => {
+    if (!user || !profile || !matchId) return;
+    setLoading(true);
+
+    // Fetch the match to determine the other person
+    const { data: match } = await supabase
+      .from('matches')
+      .select('id, mentor_id, mentee_id')
+      .eq('id', matchId)
+      .maybeSingle();
+
+    if (match) {
+      const otherProfileId = match.mentor_id === profile.id ? match.mentee_id : match.mentor_id;
+      const { data: otherProfile } = await supabase
+        .from('profiles')
+        .select('id, user_id, first_name, last_name, avatar_url')
+        .eq('id', otherProfileId)
+        .maybeSingle();
+      if (otherProfile) {
+        setParticipant(otherProfile as ParticipantProfile);
+      }
+    }
+
+    // Fetch messages for this match
+    const { data: msgs } = await supabase
+      .from('messages')
+      .select('id, match_id, sender_id, content, read_at, created_at')
+      .eq('match_id', matchId)
+      .order('created_at', { ascending: true });
+
+    if (msgs) {
+      setMessages(msgs.map(m => ({ ...m, isOwn: m.sender_id === user.id })));
+    }
+
+    // Mark messages as read (messages from the other person that haven't been read)
+    await supabase
+      .from('messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('match_id', matchId)
+      .neq('sender_id', user.id)
+      .is('read_at', null);
+
+    setLoading(false);
+  }, [user, profile, matchId]);
+
+  useEffect(() => {
+    fetchChatData();
+  }, [fetchChatData]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (!conversation) {
-    return (
-      <div className="app-container flex flex-col items-center justify-center min-h-screen p-8 text-center">
-        <p className="text-iron-500">Conversation not found</p>
-        <button
-          onClick={() => navigate('/messages')}
-          className="mt-4 text-brand-500 font-medium"
-        >
-          Back to messages
-        </button>
-      </div>
-    );
-  }
-
-  const participantName = `${conversation.participant.first_name} ${conversation.participant.last_name}`;
-
   // Group messages by date
-  const groupedMessages: { date: string; messages: typeof messages }[] = [];
+  const groupedMessages: { date: string; messages: Message[] }[] = [];
   let currentDate = '';
 
   messages.forEach((message) => {
@@ -60,11 +113,68 @@ export function Chat() {
     return formatDate(dateStr);
   };
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
-    // In real app, this would send to Supabase
+  const handleSend = async () => {
+    if (!newMessage.trim() || !user || !matchId) return;
+    const content = newMessage.trim();
     setNewMessage('');
+
+    const { data: inserted, error } = await supabase
+      .from('messages')
+      .insert({
+        match_id: matchId,
+        sender_id: user.id,
+        content,
+      })
+      .select('id, match_id, sender_id, content, read_at, created_at')
+      .single();
+
+    if (!error && inserted) {
+      setMessages(prev => [...prev, { ...inserted, isOwn: true }]);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="app-container flex flex-col h-screen bg-iron-50">
+        <header className="sticky top-0 z-40 px-4 py-3 flex items-center gap-3 bg-white border-b border-iron-100 safe-top">
+          <button
+            onClick={() => navigate('/messages')}
+            className="p-2 -ml-2 rounded-xl hover:bg-iron-100 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-iron-700" />
+          </button>
+          <div className="w-9 h-9 rounded-full bg-iron-200 animate-pulse" />
+          <div className="flex-1 space-y-1">
+            <div className="h-4 bg-iron-200 rounded w-32 animate-pulse" />
+            <div className="h-3 bg-iron-100 rounded w-16 animate-pulse" />
+          </div>
+        </header>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+              <div className="h-10 w-48 rounded-2xl bg-iron-200 animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!participant) {
+    return (
+      <div className="app-container flex flex-col items-center justify-center min-h-screen p-8 text-center">
+        <p className="text-iron-500">Conversation not found</p>
+        <button
+          onClick={() => navigate('/messages')}
+          className="mt-4 text-brand-500 font-medium"
+        >
+          Back to messages
+        </button>
+      </div>
+    );
+  }
+
+  const participantName = `${participant.first_name} ${participant.last_name}`;
 
   return (
     <div className="app-container flex flex-col h-screen bg-iron-50">
@@ -78,7 +188,7 @@ export function Chat() {
             <ArrowLeft className="w-5 h-5 text-iron-700" />
           </button>
           <Avatar
-            src={conversation.participant.avatar_url}
+            src={participant.avatar_url}
             name={participantName}
             size="md"
           />

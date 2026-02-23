@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   MessageSquare,
@@ -11,7 +11,19 @@ import {
 import { AppShell, Header } from '../layout';
 import { Card } from '../ui';
 import { formatRelativeTime } from '../../lib/utils';
-import { mockNotifications } from '../../data/mockData';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+
+interface Notification {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  action_url: string | null;
+  read_at: string | null;
+  created_at: string;
+}
 
 const notificationIcons: Record<string, typeof Bell> = {
   message: MessageSquare,
@@ -31,26 +43,62 @@ const notificationColors: Record<string, string> = {
 
 export function NotificationsList() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      setNotifications(data as Notification[]);
+    }
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const unreadCount = notifications.filter(n => !n.read_at).length;
 
-  const handleMarkAllRead = () => {
-    setNotifications(notifications.map(n => ({
-      ...n,
-      read_at: n.read_at || new Date().toISOString(),
-    })));
+  const handleMarkAllRead = async () => {
+    if (!user) return;
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read_at: now })
+      .eq('user_id', user.id)
+      .is('read_at', null);
+    if (!error) {
+      setNotifications(notifications.map(n => ({
+        ...n,
+        read_at: n.read_at || now,
+      })));
+    }
   };
 
-  const handleNotificationClick = (notification: typeof notifications[0]) => {
-    // Mark as read
-    setNotifications(notifications.map(n =>
-      n.id === notification.id
-        ? { ...n, read_at: n.read_at || new Date().toISOString() }
-        : n
-    ));
+  const handleNotificationClick = async (notification: Notification) => {
+    if (!notification.read_at) {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read_at: now })
+        .eq('id', notification.id);
+      if (!error) {
+        setNotifications(notifications.map(n =>
+          n.id === notification.id
+            ? { ...n, read_at: now }
+            : n
+        ));
+      }
+    }
 
-    // Navigate if action URL exists
     if (notification.action_url) {
       navigate(notification.action_url);
     }
@@ -74,8 +122,23 @@ export function NotificationsList() {
           </div>
         )}
 
-        {/* Notifications list */}
-        {notifications.length === 0 ? (
+        {/* Loading skeleton */}
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="w-full p-4 rounded-xl border border-iron-100 bg-white animate-pulse">
+                <div className="flex gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-iron-200 flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-iron-200 rounded w-3/4" />
+                    <div className="h-3 bg-iron-100 rounded w-full" />
+                    <div className="h-3 bg-iron-100 rounded w-1/4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : notifications.length === 0 ? (
           <Card className="p-8 text-center">
             <div className="w-16 h-16 bg-iron-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Bell className="w-8 h-8 text-iron-400" />

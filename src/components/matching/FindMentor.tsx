@@ -1,10 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Star, Clock, Users } from 'lucide-react';
+import { Search, Filter, Users } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Card, Avatar, Input } from '../ui';
-import { mockAvailableMentors, type MentorProfile } from '../../data/mockData';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { MENTOR_SPECIALTIES, SPECIALTY_COLORS } from '../../types';
+import type { Database } from '../../types/database.types';
+
+type MentorRow = Pick<
+  Database['public']['Tables']['profiles']['Row'],
+  'id' | 'user_id' | 'first_name' | 'last_name' | 'bio' | 'specialties' | 'location' | 'avatar_url'
+>;
 
 const getSpecialtyColor = (specialty: string) => {
   return SPECIALTY_COLORS[specialty] || SPECIALTY_COLORS['default'];
@@ -12,13 +19,40 @@ const getSpecialtyColor = (specialty: string) => {
 
 export function FindMentor() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [mentors, setMentors] = useState<MentorRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const allSpecialties = [...MENTOR_SPECIALTIES];
 
+  const fetchMentors = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('id, user_id, first_name, last_name, bio, specialties, location, avatar_url')
+        .eq('role', 'mentor');
+
+      if (fetchError) throw fetchError;
+      setMentors((data as MentorRow[]) ?? []);
+    } catch (err) {
+      setError('Failed to load mentors. Please try again.');
+      console.error('Error fetching mentors:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMentors();
+  }, [fetchMentors]);
+
   // Filter mentors based on search and specialty
-  const filteredMentors = mockAvailableMentors.filter((mentor) => {
+  const filteredMentors = mentors.filter((mentor) => {
     const matchesSearch =
       searchQuery === '' ||
       `${mentor.first_name} ${mentor.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -28,10 +62,13 @@ export function FindMentor() {
     const matchesSpecialty =
       selectedSpecialty === null || mentor.specialties.includes(selectedSpecialty);
 
-    return matchesSearch && matchesSpecialty;
+    // Exclude the current user's own profile
+    const isNotSelf = !profile || mentor.id !== profile.id;
+
+    return matchesSearch && matchesSpecialty && isNotSelf;
   });
 
-  const handleMentorClick = (mentor: MentorProfile) => {
+  const handleMentorClick = (mentor: MentorRow) => {
     navigate(`/mentors/${mentor.id}`);
   };
 
@@ -78,31 +115,58 @@ export function FindMentor() {
           ))}
         </div>
 
-        {/* Results Count */}
-        <p className="text-sm text-iron-500">
-          {filteredMentors.length} mentor{filteredMentors.length !== 1 ? 's' : ''} available
-        </p>
+        {/* Loading state */}
+        {loading && (
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-iron-100 rounded-2xl h-48 animate-pulse" />
+            ))}
+          </div>
+        )}
 
-        {/* Mentor Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {filteredMentors.map((mentor, index) => (
-            <MentorCard
-              key={mentor.id}
-              mentor={mentor}
-              onClick={() => handleMentorClick(mentor)}
-              ringColorIndex={index}
-            />
-          ))}
-        </div>
-
-        {filteredMentors.length === 0 && (
+        {/* Error state */}
+        {!loading && error && (
           <Card className="p-6 text-center">
-            <Filter className="w-10 h-10 text-iron-300 mx-auto mb-2" />
-            <p className="text-iron-600 font-medium mb-1">No mentors found</p>
-            <p className="text-sm text-iron-500">
-              Try adjusting your search or filters
-            </p>
+            <p className="text-iron-600 font-medium mb-1">{error}</p>
+            <button
+              onClick={fetchMentors}
+              className="text-sm text-blue-500 hover:underline mt-2"
+            >
+              Retry
+            </button>
           </Card>
+        )}
+
+        {/* Results */}
+        {!loading && !error && (
+          <>
+            {/* Results Count */}
+            <p className="text-sm text-iron-500">
+              {filteredMentors.length} mentor{filteredMentors.length !== 1 ? 's' : ''} available
+            </p>
+
+            {/* Mentor Grid */}
+            <div className="grid grid-cols-2 gap-3">
+              {filteredMentors.map((mentor, index) => (
+                <MentorCard
+                  key={mentor.id}
+                  mentor={mentor}
+                  onClick={() => handleMentorClick(mentor)}
+                  ringColorIndex={index}
+                />
+              ))}
+            </div>
+
+            {filteredMentors.length === 0 && (
+              <Card className="p-6 text-center">
+                <Filter className="w-10 h-10 text-iron-300 mx-auto mb-2" />
+                <p className="text-iron-600 font-medium mb-1">No mentors found</p>
+                <p className="text-sm text-iron-500">
+                  Try adjusting your search or filters
+                </p>
+              </Card>
+            )}
+          </>
         )}
       </div>
     </AppShell>
@@ -120,7 +184,7 @@ const ringColors = [
 ];
 
 interface MentorCardProps {
-  mentor: MentorProfile;
+  mentor: MentorRow;
   onClick: () => void;
   ringColorIndex: number;
 }
@@ -162,34 +226,24 @@ function MentorCard({ mentor, onClick, ringColorIndex }: MentorCardProps) {
       </h3>
 
       {/* Primary Specialty Badge */}
-      <div className="flex justify-center mb-3">
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
-          {primarySpecialty}
-        </span>
-      </div>
+      {primarySpecialty && (
+        <div className="flex justify-center mb-3">
+          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}>
+            {primarySpecialty}
+          </span>
+        </div>
+      )}
 
-      {/* Stats */}
+      {/* Location / session count */}
       <div className="space-y-1.5">
-        {/* Rating */}
-        {mentor.rating && (
-          <div className="flex items-center justify-center gap-1">
-            <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
-            <span className="text-xs text-iron-600">
-              {mentor.rating} rating
-            </span>
+        {mentor.location && (
+          <div className="flex items-center justify-center gap-1 text-xs text-iron-500">
+            <span>{mentor.location}</span>
           </div>
         )}
-
-        {/* Availability */}
-        <div className="flex items-center justify-center gap-1 text-xs text-iron-500">
-          <Clock className="w-3 h-3" />
-          <span>{mentor.availability}</span>
-        </div>
-
-        {/* Matches */}
         <div className="flex items-center justify-center gap-1 text-xs text-iron-500">
           <Users className="w-3 h-3" />
-          <span>{mentor.matchCount} matches</span>
+          <span>0 sessions</span>
         </div>
       </div>
     </button>

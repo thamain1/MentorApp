@@ -1,48 +1,100 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Calendar,
-  Video,
-  ChevronRight,
-  CheckCircle,
-  AlertCircle,
-} from 'lucide-react';
+import { Calendar, Video, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar, Card, Badge } from '../ui';
 import { formatDate, formatTime, formatRelativeTime } from '../../lib/utils';
-import { useUser } from '../../context';
-import {
-  mockMentorSessions,
-  mockMenteeSessions,
-  type SessionWithParticipant,
-} from '../../data/mockData';
-import type { UserRole } from '../../types';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
+import type { Session, Profile, Database } from '../../types';
+type SessionRow = Database['public']['Tables']['sessions']['Row'];
+
+interface SessionWithParticipant extends Session {
+  participant: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'avatar_url'>;
+  matchId: string;
+}
 
 export function SessionsList() {
   const navigate = useNavigate();
-  const { role } = useUser();
+  const { user, profile } = useAuth();
+  const [sessions, setSessions] = useState<SessionWithParticipant[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Map role to session view - admin sees mentor view for now
+  const role = profile?.role ?? 'mentee';
   const viewAs: 'mentor' | 'mentee' = role === 'mentee' ? 'mentee' : 'mentor';
-  const sessions = viewAs === 'mentor' ? mockMentorSessions : mockMenteeSessions;
 
-  // Separate sessions into categories
+  const fetchSessions = useCallback(async () => {
+    if (!user || !profile) return;
+
+    const { data: matchData } = await supabase
+      .from('matches')
+      .select('id, mentor_id, mentee_id, status')
+      .or(`mentor_id.eq.${profile.id},mentee_id.eq.${profile.id}`)
+      .eq('status', 'active');
+
+    if (!matchData || matchData.length === 0) {
+      setSessions([]);
+      setLoading(false);
+      return;
+    }
+
+    const matchIds = matchData.map(m => m.id);
+    const { data: sessionData } = await supabase
+      .from('sessions')
+      .select('*')
+      .in('match_id', matchIds)
+      .order('scheduled_at', { ascending: false });
+
+    if (!sessionData) {
+      setSessions([]);
+      setLoading(false);
+      return;
+    }
+
+    const participantProfileIds = matchData.map(m =>
+      viewAs === 'mentor' ? m.mentee_id : m.mentor_id
+    );
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, avatar_url')
+      .in('id', participantProfileIds);
+
+    const matchMap = new Map(matchData.map(m => [m.id, m]));
+    const profileMap = new Map((profileData ?? []).map(p => [p.id, p]));
+
+    const enriched: SessionWithParticipant[] = (sessionData as SessionRow[]).map(s => {
+      const match = matchMap.get(s.match_id)!;
+      const participantId = viewAs === 'mentor' ? match.mentee_id : match.mentor_id;
+      const participant = profileMap.get(participantId) ?? {
+        id: participantId,
+        first_name: 'Unknown',
+        last_name: '',
+        avatar_url: null,
+      };
+      return { ...s, participant, matchId: s.match_id };
+    });
+
+    setSessions(enriched);
+    setLoading(false);
+  }, [user, profile, viewAs]);
+
+  useEffect(() => { fetchSessions(); }, [fetchSessions]);
+
   const now = new Date();
   const upcomingSessions = sessions
-    .filter((s) => s.status === 'scheduled' && new Date(s.scheduled_at) > now)
+    .filter(s => s.status === 'scheduled' && new Date(s.scheduled_at) > now)
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
 
-  const needsAttention = sessions.filter((s) => {
+  const needsAttention = sessions.filter(s => {
     if (s.status !== 'completed') return false;
-    // Sessions needing notes from current user
     if (viewAs === 'mentor' && !s.mentor_notes) return true;
     if (viewAs === 'mentee' && !s.mentee_notes) return true;
     return false;
   });
 
   const pastSessions = sessions
-    .filter((s) => s.status === 'completed')
-    .filter((s) => {
-      // Exclude sessions needing attention from past list
+    .filter(s => s.status === 'completed')
+    .filter(s => {
       if (viewAs === 'mentor' && !s.mentor_notes) return false;
       if (viewAs === 'mentee' && !s.mentee_notes) return false;
       return true;
@@ -52,24 +104,15 @@ export function SessionsList() {
   const getNextSessionLabel = (date: string) => {
     const sessionDate = new Date(date);
     const diffHours = (sessionDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-
     if (diffHours < 24) return 'Today';
     if (diffHours < 48) return 'Tomorrow';
     return formatDate(date);
   };
 
-  const handleSessionClick = (session: SessionWithParticipant) => {
-    navigate(`/sessions/${session.matchId}`, {
-      state: { sessionId: session.id, viewAs },
-    });
-  };
-
   return (
     <AppShell>
       <Header title="Sessions" showNotifications />
-
       <div className="p-4 space-y-6">
-        {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
           <Card className="p-3 text-center">
             <p className="text-2xl font-bold text-brand-600">{upcomingSessions.length}</p>
@@ -85,81 +128,79 @@ export function SessionsList() {
           </Card>
         </div>
 
-        {/* Needs Attention */}
-        {needsAttention.length > 0 && (
-          <section>
-            <h3 className="text-sm font-medium text-iron-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-500" />
-              Needs Your Notes
-            </h3>
-            <div className="space-y-2">
-              {needsAttention.map((session) => (
-                <SessionCard
-                  key={session.id}
-                  session={session}
-                  viewAs={viewAs}
-                  onClick={() => handleSessionClick(session)}
-                  variant="attention"
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Upcoming Sessions */}
-        <section>
-          <h3 className="text-sm font-medium text-iron-500 uppercase tracking-wide mb-3">
-            Upcoming Sessions ({upcomingSessions.length})
-          </h3>
-          {upcomingSessions.length === 0 ? (
-            <Card className="p-6 text-center">
-              <Calendar className="w-10 h-10 text-iron-300 mx-auto mb-2" />
-              <p className="text-iron-600 font-medium mb-1">No upcoming sessions</p>
-              <p className="text-sm text-iron-500">
-                {viewAs === 'mentor'
-                  ? 'Schedule sessions with your mentees'
-                  : 'Request a session with your mentor'}
-              </p>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {upcomingSessions.map((session) => (
-                <SessionCard
-                  key={session.id}
-                  session={session}
-                  viewAs={viewAs}
-                  onClick={() => handleSessionClick(session)}
-                  variant="upcoming"
-                  dateLabel={getNextSessionLabel(session.scheduled_at)}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Past Sessions */}
-        {pastSessions.length > 0 && (
-          <section>
-            <h3 className="text-sm font-medium text-iron-500 uppercase tracking-wide mb-3">
-              Past Sessions
-            </h3>
-            <div className="space-y-2">
-              {pastSessions.slice(0, 5).map((session) => (
-                <SessionCard
-                  key={session.id}
-                  session={session}
-                  viewAs={viewAs}
-                  onClick={() => handleSessionClick(session)}
-                  variant="past"
-                />
-              ))}
-            </div>
-            {pastSessions.length > 5 && (
-              <button className="w-full mt-3 py-2 text-sm text-brand-600 font-medium">
-                View all past sessions ({pastSessions.length})
-              </button>
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-16 bg-white rounded-xl border border-iron-100 animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {needsAttention.length > 0 && (
+              <section>
+                <h3 className="text-sm font-medium text-iron-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-500" />
+                  Needs Your Notes
+                </h3>
+                <div className="space-y-2">
+                  {needsAttention.map(s => (
+                    <SessionCard
+                      key={s.id}
+                      session={s}
+                      viewAs={viewAs}
+                      onClick={() => navigate(`/sessions/${s.matchId}`, { state: { sessionId: s.id, viewAs } })}
+                      variant="attention"
+                    />
+                  ))}
+                </div>
+              </section>
             )}
-          </section>
+
+            <section>
+              <h3 className="text-sm font-medium text-iron-500 uppercase tracking-wide mb-3">
+                Upcoming Sessions ({upcomingSessions.length})
+              </h3>
+              {upcomingSessions.length === 0 ? (
+                <Card className="p-6 text-center">
+                  <Calendar className="w-10 h-10 text-iron-300 mx-auto mb-2" />
+                  <p className="text-iron-600 font-medium mb-1">No upcoming sessions</p>
+                  <p className="text-sm text-iron-500">
+                    {viewAs === 'mentor' ? 'Schedule sessions with your mentees' : 'Request a session with your mentor'}
+                  </p>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {upcomingSessions.map(s => (
+                    <SessionCard
+                      key={s.id}
+                      session={s}
+                      viewAs={viewAs}
+                      onClick={() => navigate(`/sessions/${s.matchId}`, { state: { sessionId: s.id, viewAs } })}
+                      variant="upcoming"
+                      dateLabel={getNextSessionLabel(s.scheduled_at)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {pastSessions.length > 0 && (
+              <section>
+                <h3 className="text-sm font-medium text-iron-500 uppercase tracking-wide mb-3">Past Sessions</h3>
+                <div className="space-y-2">
+                  {pastSessions.slice(0, 5).map(s => (
+                    <SessionCard
+                      key={s.id}
+                      session={s}
+                      viewAs={viewAs}
+                      onClick={() => navigate(`/sessions/${s.matchId}`, { state: { sessionId: s.id, viewAs } })}
+                      variant="past"
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </div>
     </AppShell>
@@ -168,7 +209,7 @@ export function SessionsList() {
 
 interface SessionCardProps {
   session: SessionWithParticipant;
-  viewAs: UserRole;
+  viewAs: 'mentor' | 'mentee';
   onClick: () => void;
   variant: 'upcoming' | 'past' | 'attention';
   dateLabel?: string;
@@ -188,18 +229,12 @@ function SessionCard({ session, viewAs, onClick, variant, dateLabel }: SessionCa
       }`}
     >
       <div className="flex items-center gap-3">
-        <Avatar
-          src={session.participant.avatar_url}
-          name={participantName}
-          size="md"
-        />
-
+        <Avatar src={session.participant.avatar_url} name={participantName} size="md" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <h4 className="font-semibold text-iron-900 truncate">{participantName}</h4>
             <Badge variant="default" className="text-xs">{roleLabel}</Badge>
           </div>
-
           <div className="flex items-center gap-3 text-sm text-iron-500">
             {variant === 'upcoming' && dateLabel && (
               <>
@@ -207,29 +242,14 @@ function SessionCard({ session, viewAs, onClick, variant, dateLabel }: SessionCa
                 <span>{formatTime(session.scheduled_at)}</span>
               </>
             )}
-            {variant === 'past' && (
-              <span>{formatRelativeTime(session.scheduled_at)}</span>
-            )}
-            {variant === 'attention' && (
-              <span className="text-amber-600 font-medium">
-                Add your notes
-              </span>
-            )}
+            {variant === 'past' && <span>{formatRelativeTime(session.scheduled_at)}</span>}
+            {variant === 'attention' && <span className="text-amber-600 font-medium">Add your notes</span>}
           </div>
         </div>
-
         <div className="flex items-center gap-2">
-          {variant === 'upcoming' && (
-            <div className="flex items-center gap-1 text-iron-400">
-              <Video className="w-4 h-4" />
-            </div>
-          )}
-          {variant === 'past' && (
-            <CheckCircle className="w-5 h-5 text-green-500" />
-          )}
-          {variant === 'attention' && (
-            <AlertCircle className="w-5 h-5 text-amber-500" />
-          )}
+          {variant === 'upcoming' && <Video className="w-4 h-4 text-iron-400" />}
+          {variant === 'past' && <CheckCircle className="w-5 h-5 text-green-500" />}
+          {variant === 'attention' && <AlertCircle className="w-5 h-5 text-amber-500" />}
           <ChevronRight className="w-5 h-5 text-iron-400" />
         </div>
       </div>

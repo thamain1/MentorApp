@@ -1,16 +1,123 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle, Lock, Play, ChevronLeft } from 'lucide-react';
 import { AppShell } from '../layout';
 import { Card, Badge, Button } from '../ui';
-import { mockTrainingTracks } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
+import { supabase } from '../../lib/supabase';
+
+interface TrainingTrack {
+  id: string;
+  title: string;
+  description: string;
+  display_order: number;
+  badge_image_url: string | null;
+  created_at: string;
+}
+
+interface TrainingModule {
+  id: string;
+  track_id: string;
+  title: string;
+  content: string;
+  display_order: number;
+  duration_mins: number;
+  created_at: string;
+}
 
 export function TrackDetail() {
   const { trackId } = useParams<{ trackId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const track = mockTrainingTracks.find(t => t.id === trackId);
+  const [track, setTrack] = useState<TrainingTrack | null>(null);
+  const [modules, setModules] = useState<TrainingModule[]>([]);
+  const [completedModuleIds, setCompletedModuleIds] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!track) {
+  useEffect(() => {
+    if (!user || !trackId) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Fetch the track
+        const { data: trackData, error: trackError } = await supabase
+          .from('training_tracks')
+          .select('*')
+          .eq('id', trackId)
+          .maybeSingle();
+
+        if (trackError) throw trackError;
+        if (!trackData) {
+          setNotFound(true);
+          return;
+        }
+        setTrack(trackData as TrainingTrack);
+
+        // Fetch modules for this track
+        const { data: modulesData, error: modulesError } = await supabase
+          .from('training_modules')
+          .select('*')
+          .eq('track_id', trackId)
+          .order('display_order');
+
+        if (modulesError) throw modulesError;
+        setModules((modulesData ?? []) as TrainingModule[]);
+
+        // Fetch user progress
+        const { data: progressData, error: progressError } = await supabase
+          .from('user_training_progress')
+          .select('module_id')
+          .eq('user_id', user.id);
+
+        if (progressError) throw progressError;
+        setCompletedModuleIds(new Set((progressData ?? []).map((p) => p.module_id)));
+      } catch (err) {
+        console.error('Error fetching track data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user, trackId]);
+
+  if (loading) {
+    return (
+      <AppShell showNav={false}>
+        <header className="sticky top-0 z-40 bg-white border-b border-iron-100 safe-top">
+          <div className="px-4 py-3 flex items-center gap-3">
+            <button
+              onClick={() => navigate('/training')}
+              className="p-2 -ml-2 rounded-xl hover:bg-iron-100 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-iron-700" />
+            </button>
+            <div className="flex-1">
+              <div className="h-4 bg-iron-100 rounded animate-pulse w-1/2" />
+            </div>
+          </div>
+        </header>
+        <div className="p-4 space-y-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-iron-100 animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-iron-100 rounded animate-pulse w-3/4" />
+                  <div className="h-3 bg-iron-100 rounded animate-pulse w-1/4" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (notFound || !track) {
     return (
       <AppShell showNav={false}>
         <div className="flex flex-col items-center justify-center p-8 text-center min-h-screen">
@@ -26,9 +133,13 @@ export function TrackDetail() {
     );
   }
 
-  const trackProgress = track.modules.length > 0
-    ? Math.round((track.completedModules / track.modules.length) * 100)
+  const completedCount = modules.filter((m) => completedModuleIds.has(m.id)).length;
+  const trackProgress = modules.length > 0
+    ? Math.round((completedCount / modules.length) * 100)
     : 0;
+
+  // Determine the index of the next module to complete (first not completed in order)
+  const nextModuleIndex = modules.findIndex((m) => !completedModuleIds.has(m.id));
 
   return (
     <AppShell showNav={false}>
@@ -44,7 +155,7 @@ export function TrackDetail() {
           <div className="flex-1">
             <h1 className="font-semibold text-iron-900">{track.title}</h1>
             <p className="text-xs text-iron-500">
-              {track.completedModules} of {track.modules.length} modules complete
+              {completedCount} of {modules.length} modules complete
             </p>
           </div>
           <Badge variant={trackProgress === 100 ? 'success' : 'default'}>
@@ -73,10 +184,10 @@ export function TrackDetail() {
           </h3>
 
           <div className="space-y-2">
-            {track.modules.map((module, index) => {
-              const isCompleted = index < track.completedModules;
-              const isNext = index === track.completedModules;
-              const isLocked = index > track.completedModules;
+            {modules.map((module, index) => {
+              const isCompleted = completedModuleIds.has(module.id);
+              const isNext = index === nextModuleIndex;
+              const isLocked = !isCompleted && !isNext;
 
               return (
                 <Card
@@ -142,12 +253,12 @@ export function TrackDetail() {
         </section>
 
         {/* Continue Button */}
-        {trackProgress < 100 && (
+        {trackProgress < 100 && nextModuleIndex !== -1 && (
           <div className="pb-4">
             <Button
               className="w-full"
               onClick={() => {
-                const nextModule = track.modules[track.completedModules];
+                const nextModule = modules[nextModuleIndex];
                 if (nextModule) {
                   navigate(`/training/${trackId}/${nextModule.id}`);
                 }

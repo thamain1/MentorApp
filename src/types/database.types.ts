@@ -7,37 +7,13 @@ export type Json =
   | Json[];
 
 export type UserRole = 'admin' | 'mentor' | 'mentee';
-export type MatchStatus = 'pending' | 'active' | 'completed' | 'paused';
+export type MatchStatus = 'pending' | 'active' | 'completed' | 'cancelled';
 export type SessionStatus = 'scheduled' | 'completed' | 'cancelled';
-export type GoalStatus = 'active' | 'completed' | 'abandoned';
+export type GoalStatus = 'active' | 'completed' | 'archived';
 
 export interface Database {
   public: {
     Tables: {
-      users: {
-        Row: {
-          id: string;
-          email: string;
-          role: UserRole;
-          status: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          email: string;
-          role: UserRole;
-          status?: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          email?: string;
-          role?: UserRole;
-          status?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
       profiles: {
         Row: {
           id: string;
@@ -152,7 +128,7 @@ export interface Database {
         };
         Relationships: [];
       };
-      mentor_specialties_lookup: {
+      mentor_specialties: {
         Row: {
           id: string;
           name: string;
@@ -182,27 +158,39 @@ export interface Database {
           mentor_id: string;
           mentee_id: string;
           status: MatchStatus;
-          match_notes: string | null;
-          matched_at: string;
+          requested_at: string;
+          approved_at: string | null;
+          approved_by: string | null;
+          ended_at: string | null;
+          mentee_message: string | null;
           created_at: string;
+          updated_at: string;
         };
         Insert: {
           id?: string;
           mentor_id: string;
           mentee_id: string;
           status?: MatchStatus;
-          match_notes?: string | null;
-          matched_at?: string;
+          requested_at?: string;
+          approved_at?: string | null;
+          approved_by?: string | null;
+          ended_at?: string | null;
+          mentee_message?: string | null;
           created_at?: string;
+          updated_at?: string;
         };
         Update: {
           id?: string;
           mentor_id?: string;
           mentee_id?: string;
           status?: MatchStatus;
-          match_notes?: string | null;
-          matched_at?: string;
+          requested_at?: string;
+          approved_at?: string | null;
+          approved_by?: string | null;
+          ended_at?: string | null;
+          mentee_message?: string | null;
           created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -307,7 +295,7 @@ export interface Database {
           id: string;
           title: string;
           description: string | null;
-          order: number;
+          display_order: number;
           badge_image_url: string | null;
           created_at: string;
         };
@@ -315,7 +303,7 @@ export interface Database {
           id?: string;
           title: string;
           description?: string | null;
-          order?: number;
+          display_order?: number;
           badge_image_url?: string | null;
           created_at?: string;
         };
@@ -323,7 +311,7 @@ export interface Database {
           id?: string;
           title?: string;
           description?: string | null;
-          order?: number;
+          display_order?: number;
           badge_image_url?: string | null;
           created_at?: string;
         };
@@ -335,7 +323,7 @@ export interface Database {
           track_id: string;
           title: string;
           content: string;
-          order: number;
+          display_order: number;
           duration_mins: number;
           created_at: string;
         };
@@ -344,7 +332,7 @@ export interface Database {
           track_id: string;
           title: string;
           content: string;
-          order?: number;
+          display_order?: number;
           duration_mins?: number;
           created_at?: string;
         };
@@ -353,7 +341,7 @@ export interface Database {
           track_id?: string;
           title?: string;
           content?: string;
-          order?: number;
+          display_order?: number;
           duration_mins?: number;
           created_at?: string;
         };
@@ -365,18 +353,21 @@ export interface Database {
           user_id: string;
           module_id: string;
           completed_at: string;
+          created_at: string;
         };
         Insert: {
           id?: string;
           user_id: string;
           module_id: string;
           completed_at?: string;
+          created_at?: string;
         };
         Update: {
           id?: string;
           user_id?: string;
           module_id?: string;
           completed_at?: string;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -386,6 +377,8 @@ export interface Database {
           name: string;
           description: string | null;
           type: string;
+          image_url: string | null;
+          created_by: string | null;
           created_at: string;
         };
         Insert: {
@@ -393,6 +386,8 @@ export interface Database {
           name: string;
           description?: string | null;
           type?: string;
+          image_url?: string | null;
+          created_by?: string | null;
           created_at?: string;
         };
         Update: {
@@ -400,7 +395,33 @@ export interface Database {
           name?: string;
           description?: string | null;
           type?: string;
+          image_url?: string | null;
+          created_by?: string | null;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      group_members: {
+        Row: {
+          id: string;
+          group_id: string;
+          user_id: string;
+          role: string;
+          joined_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          user_id: string;
+          role?: string;
+          joined_at?: string;
+        };
+        Update: {
+          id?: string;
+          group_id?: string;
+          user_id?: string;
+          role?: string;
+          joined_at?: string;
         };
         Relationships: [];
       };
@@ -424,6 +445,27 @@ export interface Database {
           group_id?: string | null;
           user_id?: string;
           content?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      post_likes: {
+        Row: {
+          id: string;
+          post_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          post_id?: string;
+          user_id?: string;
           created_at?: string;
         };
         Relationships: [];
@@ -500,7 +542,6 @@ export interface Database {
   };
 }
 
-export type User = Database['public']['Tables']['users']['Row'];
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Match = Database['public']['Tables']['matches']['Row'];
 export type Session = Database['public']['Tables']['sessions']['Row'];
@@ -509,6 +550,8 @@ export type Goal = Database['public']['Tables']['goals']['Row'];
 export type TrainingTrack = Database['public']['Tables']['training_tracks']['Row'];
 export type TrainingModule = Database['public']['Tables']['training_modules']['Row'];
 export type Group = Database['public']['Tables']['groups']['Row'];
+export type GroupMember = Database['public']['Tables']['group_members']['Row'];
 export type Post = Database['public']['Tables']['posts']['Row'];
+export type PostLike = Database['public']['Tables']['post_likes']['Row'];
 export type Message = Database['public']['Tables']['messages']['Row'];
 export type Notification = Database['public']['Tables']['notifications']['Row'];

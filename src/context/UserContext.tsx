@@ -1,47 +1,58 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { UserRole } from '../types';
-import { testUsers, type TestUser } from '../data/mockData';
+import { supabase } from '../lib/supabase';
 
-const STORAGE_KEY = 'isi-test-role';
+const PERSONA_CREDENTIALS: Record<UserRole, { email: string; password: string; name: string; description: string }> = {
+  admin: {
+    email: 'dan@ironsharpensirontest.dev',
+    password: 'IronTest2026!',
+    name: 'Dan Mitchell',
+    description: 'Program Director',
+  },
+  mentor: {
+    email: 'david@ironsharpensirontest.dev',
+    password: 'IronTest2026!',
+    name: 'David Williams',
+    description: 'Software Engineer',
+  },
+  mentee: {
+    email: 'marcus@ironsharpensirontest.dev',
+    password: 'IronTest2026!',
+    name: 'Marcus Johnson',
+    description: 'High School Junior',
+  },
+};
 
 interface UserContextType {
-  currentUser: TestUser;
   role: UserRole;
-  switchRole: (role: UserRole) => void;
+  switching: boolean;
+  switchRole: (role: UserRole) => Promise<void>;
+  personaCredentials: typeof PERSONA_CREDENTIALS;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
 
-interface UserProviderProps {
-  children: ReactNode;
-}
+export function UserProvider({ children }: { children: ReactNode }) {
+  const [role, setRole] = useState<UserRole>('mentee');
+  const [switching, setSwitching] = useState(false);
 
-export function UserProvider({ children }: UserProviderProps) {
-  const [role, setRole] = useState<UserRole>(() => {
-    // Load from localStorage on init
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored && (stored === 'admin' || stored === 'mentor' || stored === 'mentee')) {
-        return stored as UserRole;
-      }
+  const switchRole = async (newRole: UserRole) => {
+    if (switching) return;
+    setSwitching(true);
+    try {
+      const creds = PERSONA_CREDENTIALS[newRole];
+      await supabase.auth.signInWithPassword({
+        email: creds.email,
+        password: creds.password,
+      });
+      setRole(newRole);
+    } finally {
+      setSwitching(false);
     }
-    return 'mentee';
-  });
-
-  const currentUser = testUsers[role];
-
-  const switchRole = (newRole: UserRole) => {
-    setRole(newRole);
-    localStorage.setItem(STORAGE_KEY, newRole);
   };
 
-  // Sync to localStorage when role changes
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, role);
-  }, [role]);
-
   return (
-    <UserContext.Provider value={{ currentUser, role, switchRole }}>
+    <UserContext.Provider value={{ role, switching, switchRole, personaCredentials: PERSONA_CREDENTIALS }}>
       {children}
     </UserContext.Provider>
   );

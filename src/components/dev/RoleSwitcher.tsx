@@ -1,89 +1,72 @@
 import { useState } from 'react';
-import { UserCog, X, Shield, Users, User } from 'lucide-react';
+import { UserCog, X, Shield, Users, User, Loader2 } from 'lucide-react';
 import { useUser } from '../../context';
+import { useAuth } from '../../context/AuthContext';
 import type { UserRole } from '../../types';
 import { cn } from '../../lib/utils';
 
-const roleConfig: Record<UserRole, { label: string; icon: typeof User; color: string; bgColor: string }> = {
-  admin: {
-    label: 'Admin',
-    icon: Shield,
-    color: 'text-purple-600',
-    bgColor: 'bg-purple-100',
-  },
-  mentor: {
-    label: 'Mentor',
-    icon: Users,
-    color: 'text-teal-600',
-    bgColor: 'bg-teal-100',
-  },
-  mentee: {
-    label: 'Mentee',
-    icon: User,
-    color: 'text-brand-600',
-    bgColor: 'bg-brand-100',
-  },
+const roleConfig: Record<UserRole, { icon: typeof User; color: string; bgColor: string }> = {
+  admin: { icon: Shield, color: 'text-teal-600', bgColor: 'bg-teal-100' },
+  mentor: { icon: Users, color: 'text-blue-600', bgColor: 'bg-blue-100' },
+  mentee: { icon: User, color: 'text-brand-600', bgColor: 'bg-brand-100' },
 };
 
 export function RoleSwitcher() {
   const [isOpen, setIsOpen] = useState(false);
-  const { role, switchRole, currentUser } = useUser();
+  const { role, switching, switchRole, personaCredentials } = useUser();
+  const { profile } = useAuth();
 
   const currentConfig = roleConfig[role];
 
-  const handleRoleSelect = (newRole: UserRole) => {
-    switchRole(newRole);
+  const handleRoleSelect = async (newRole: UserRole) => {
+    if (newRole === role) {
+      setIsOpen(false);
+      return;
+    }
     setIsOpen(false);
+    await switchRole(newRole);
   };
 
   return (
     <>
-      {/* Floating Button */}
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
           'fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all',
           'border-2 border-white',
-          currentConfig.bgColor
+          switching ? 'bg-iron-200' : currentConfig.bgColor
         )}
-        aria-label="Switch test role"
+        aria-label="Switch test persona"
+        disabled={switching}
       >
-        <UserCog className={cn('w-6 h-6', currentConfig.color)} />
+        {switching
+          ? <Loader2 className="w-6 h-6 text-iron-500 animate-spin" />
+          : <UserCog className={cn('w-6 h-6', currentConfig.color)} />
+        }
       </button>
 
-      {/* Modal Overlay */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setIsOpen(false)}
-          />
-
-          {/* Modal */}
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)} />
           <div className="relative bg-white rounded-t-2xl w-full max-w-md p-6 pb-8 animate-in slide-in-from-bottom duration-300">
-            {/* Close button */}
             <button
               onClick={() => setIsOpen(false)}
               className="absolute top-4 right-4 p-2 text-iron-400 hover:text-iron-600"
             >
               <X className="w-5 h-5" />
             </button>
-
-            {/* Header */}
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-iron-900">Switch Test Role</h2>
+              <h2 className="text-lg font-bold text-iron-900">Switch Persona</h2>
               <p className="text-sm text-iron-500">
-                Testing as: <span className="font-medium">{currentUser.first_name} {currentUser.last_name}</span>
+                Signed in as: <span className="font-medium">{profile ? `${profile.first_name} ${profile.last_name}` : '...'}</span>
               </p>
             </div>
-
-            {/* Role Options */}
             <div className="space-y-3">
               {(Object.keys(roleConfig) as UserRole[]).map((roleOption) => {
                 const config = roleConfig[roleOption];
                 const Icon = config.icon;
                 const isSelected = role === roleOption;
+                const creds = personaCredentials[roleOption];
 
                 return (
                   <button
@@ -100,12 +83,8 @@ export function RoleSwitcher() {
                       <Icon className={cn('w-6 h-6', config.color)} />
                     </div>
                     <div className="flex-1 text-left">
-                      <h3 className="font-semibold text-iron-900">{config.label}</h3>
-                      <p className="text-sm text-iron-500">
-                        {roleOption === 'admin' && 'Dan Mitchell - Program Director'}
-                        {roleOption === 'mentor' && 'David Williams - Software Engineer'}
-                        {roleOption === 'mentee' && 'Marcus Johnson - High School Junior'}
-                      </p>
+                      <h3 className="font-semibold text-iron-900">{creds.name}</h3>
+                      <p className="text-sm text-iron-500">{creds.description} · {roleOption}</p>
                     </div>
                     {isSelected && (
                       <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center">
@@ -118,11 +97,7 @@ export function RoleSwitcher() {
                 );
               })}
             </div>
-
-            {/* Dev Note */}
-            <p className="mt-6 text-xs text-iron-400 text-center">
-              This switcher is for development testing only
-            </p>
+            <p className="mt-6 text-xs text-iron-400 text-center">Development persona switcher</p>
           </div>
         </div>
       )}

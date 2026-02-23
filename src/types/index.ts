@@ -2,7 +2,7 @@
 export * from './database.types';
 
 // Import types for use in this file
-import type { User, Profile, Match, Session } from './database.types';
+import type { Profile, Match, Session } from './database.types';
 
 // App-specific types
 export interface OnboardingState {
@@ -21,7 +21,6 @@ export interface OnboardingState {
 }
 
 export interface AuthState {
-  user: User | null;
   profile: Profile | null;
   loading: boolean;
   error: string | null;

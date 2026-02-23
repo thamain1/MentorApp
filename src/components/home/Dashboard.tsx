@@ -9,7 +9,6 @@ import { Header } from '../layout';
 import { Card, Avatar, Badge, Button } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { mockMentees } from '../../data/mockData';
 
 const AFFIRMATION_STORAGE_KEY = 'isi-daily-affirmation';
 
@@ -89,11 +88,6 @@ interface ProfileImageSettings {
 // Get all available images for selection
 const getAllAvailableImages = () => [...menteeImages, ...mentorImages];
 
-const mockGoals = [
-  { id: '1', title: 'Improve public speaking', progress: 60 },
-  { id: '2', title: 'Read 2 books this month', progress: 50 },
-];
-
 // Daily prompts
 const dailyPrompts = [
   "What's one thing you're grateful for today?",
@@ -118,6 +112,29 @@ const getDailyPrompt = () => {
 
 const dailyPrompt = getDailyPrompt();
 
+// Types for Supabase data
+interface MenteeProfile {
+  id: string;
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  match_id: string;
+}
+
+interface UpcomingSession {
+  id: string;
+  scheduled_at: string;
+  match_id: string;
+}
+
+interface AdminStats {
+  totalMentors: number;
+  totalMentees: number;
+  activeMatches: number;
+  pendingMatches: number;
+}
+
 export function Dashboard() {
   const navigate = useNavigate();
   const [checkedIn, setCheckedIn] = useState(false);
@@ -131,11 +148,139 @@ export function Dashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
+  // Supabase data state
+  const [menteesForMentor, setMenteesForMentor] = useState<MenteeProfile[]>([]);
+  const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
+  const [upcomingSession, setUpcomingSession] = useState<UpcomingSession | null>(null);
+  const [activeGoalsCount, setActiveGoalsCount] = useState<number>(0);
+  const [completedGoalsCount, setCompletedGoalsCount] = useState<number>(0);
+  const [adminStats, setAdminStats] = useState<AdminStats>({
+    totalMentors: 0,
+    totalMentees: 0,
+    activeMatches: 0,
+    pendingMatches: 0,
+  });
+  const [dataLoading, setDataLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user || !profile) return;
+
+    const fetchDashboardData = async () => {
+      setDataLoading(true);
+      try {
+        if (role === 'admin') {
+          // Fetch admin stats
+          const [mentorsRes, menteesRes, activeMatchesRes, pendingMatchesRes] = await Promise.all([
+            supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'mentor'),
+            supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('role', 'mentee'),
+            supabase.from('matches').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+            supabase.from('matches').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+          ]);
+
+          setAdminStats({
+            totalMentors: mentorsRes.count ?? 0,
+            totalMentees: menteesRes.count ?? 0,
+            activeMatches: activeMatchesRes.count ?? 0,
+            pendingMatches: pendingMatchesRes.count ?? 0,
+          });
+        } else if (role === 'mentor') {
+          // Fetch active matches where this user is the mentor
+          const { data: matchesData } = await supabase
+            .from('matches')
+            .select('id, mentee_id')
+            .eq('mentor_id', profile.id)
+            .eq('status', 'active');
+
+          if (matchesData && matchesData.length > 0) {
+            setActiveMatchId(matchesData[0].id);
+
+            // Fetch mentee profiles for all active matches
+            const menteeProfileIds = matchesData.map((m) => m.mentee_id);
+            const { data: menteeProfilesData } = await supabase
+              .from('profiles')
+              .select('id, user_id, first_name, last_name, avatar_url')
+              .in('id', menteeProfileIds);
+
+            // Map match_id onto each mentee profile
+            const menteesWithMatchId: MenteeProfile[] = (menteeProfilesData ?? []).map((p) => {
+              const match = matchesData.find((m) => m.mentee_id === p.id);
+              return { ...p, match_id: match?.id ?? '' };
+            });
+            setMenteesForMentor(menteesWithMatchId);
+
+            // Fetch upcoming session from mentor's matches
+            const matchIds = matchesData.map((m) => m.id);
+            const { data: sessionsData } = await supabase
+              .from('sessions')
+              .select('id, scheduled_at, match_id')
+              .in('match_id', matchIds)
+              .eq('status', 'scheduled')
+              .gte('scheduled_at', new Date().toISOString())
+              .order('scheduled_at')
+              .limit(1);
+
+            if (sessionsData && sessionsData.length > 0) {
+              setUpcomingSession(sessionsData[0] as UpcomingSession);
+            }
+          }
+
+          // Goals
+          const [activeGoals, completedGoals] = await Promise.all([
+            supabase.from('goals').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'active'),
+            supabase.from('goals').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'completed'),
+          ]);
+          setActiveGoalsCount(activeGoals.count ?? 0);
+          setCompletedGoalsCount(completedGoals.count ?? 0);
+        } else {
+          // Mentee: fetch active match where this user is the mentee
+          const { data: matchesData } = await supabase
+            .from('matches')
+            .select('id, mentor_id')
+            .eq('mentee_id', profile.id)
+            .eq('status', 'active')
+            .limit(1);
+
+          if (matchesData && matchesData.length > 0) {
+            setActiveMatchId(matchesData[0].id);
+
+            // Fetch upcoming session
+            const { data: sessionsData } = await supabase
+              .from('sessions')
+              .select('id, scheduled_at, match_id')
+              .eq('match_id', matchesData[0].id)
+              .eq('status', 'scheduled')
+              .gte('scheduled_at', new Date().toISOString())
+              .order('scheduled_at')
+              .limit(1);
+
+            if (sessionsData && sessionsData.length > 0) {
+              setUpcomingSession(sessionsData[0] as UpcomingSession);
+            }
+          }
+
+          // Goals
+          const [activeGoals, completedGoals] = await Promise.all([
+            supabase.from('goals').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'active'),
+            supabase.from('goals').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('status', 'completed'),
+          ]);
+          setActiveGoalsCount(activeGoals.count ?? 0);
+          setCompletedGoalsCount(completedGoals.count ?? 0);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setDataLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [user, profile, role]);
+
   const currentSettings: ProfileImageSettings = {
     image: profile?.avatar_url ?? getDefaultProfileImage(role),
     position: {
-      x: profile?.avatar_position_x ?? 0,
-      y: profile?.avatar_position_y ?? 0,
+      x: (profile as any)?.avatar_position_x ?? 0,
+      y: (profile as any)?.avatar_position_y ?? 0,
     },
   };
 
@@ -146,8 +291,8 @@ export function Dashboard() {
     setTempImageSettings({
       image: profile?.avatar_url ?? getDefaultProfileImage(role),
       position: {
-        x: profile?.avatar_position_x ?? 0,
-        y: profile?.avatar_position_y ?? 0,
+        x: (profile as any)?.avatar_position_x ?? 0,
+        y: (profile as any)?.avatar_position_y ?? 0,
       },
     });
   }, [profile, role]);
@@ -186,7 +331,7 @@ export function Dashboard() {
         avatar_url: tempImageSettings.image,
         avatar_position_x: tempImageSettings.position.x,
         avatar_position_y: tempImageSettings.position.y,
-      })
+      } as any)
       .eq('user_id', user.id);
     if (!error) {
       await refreshProfile();
@@ -274,6 +419,12 @@ export function Dashboard() {
   const handleCheckIn = () => {
     setCheckedIn(true);
     navigate('/community', { state: { checkInPrompt: dailyPrompt } });
+  };
+
+  // Format scheduled_at for display
+  const formatSessionTime = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   };
 
   return (
@@ -582,7 +733,7 @@ export function Dashboard() {
         )}
 
         {/* Role-specific Content */}
-        {role === 'mentee' && (
+        {role === 'mentee' && !dataLoading && !activeMatchId && (
           <Card className="mb-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center">
@@ -606,24 +757,48 @@ export function Dashboard() {
           <Card className="mb-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-iron-900">Your Mentees</h3>
-              <Badge variant="success">{mockMentees.length} Active</Badge>
+              {!dataLoading && (
+                <Badge variant="success">{menteesForMentor.length} Active</Badge>
+              )}
             </div>
-            <div className="space-y-3">
-              {mockMentees.slice(0, 2).map((mentee) => (
-                <div key={mentee.id} className="flex items-center gap-3">
-                  <Avatar name={`${mentee.first_name} ${mentee.last_name}`} size="md" />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-iron-900">{mentee.first_name} {mentee.last_name}</h4>
-                    <p className="text-sm text-iron-500">Age {mentee.age}</p>
+            {dataLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-iron-100 animate-pulse" />
+                    <div className="flex-1 space-y-1">
+                      <div className="h-4 bg-iron-100 rounded animate-pulse w-1/2" />
+                      <div className="h-3 bg-iron-100 rounded animate-pulse w-1/4" />
+                    </div>
                   </div>
-                  <Link to={`/messages/match-${mentee.id}`}>
-                    <Button variant="ghost" size="sm">
-                      <MessageCircle className="w-4 h-4" />
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {menteesForMentor.slice(0, 2).map((mentee) => (
+                  <div key={mentee.id} className="flex items-center gap-3">
+                    <Avatar
+                      src={mentee.avatar_url ?? undefined}
+                      name={`${mentee.first_name ?? ''} ${mentee.last_name ?? ''}`.trim()}
+                      size="md"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-medium text-iron-900">
+                        {mentee.first_name} {mentee.last_name}
+                      </h4>
+                    </div>
+                    <Link to={`/messages/${mentee.match_id}`}>
+                      <Button variant="ghost" size="sm">
+                        <MessageCircle className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                  </div>
+                ))}
+                {menteesForMentor.length === 0 && (
+                  <p className="text-sm text-iron-500">No active mentees yet.</p>
+                )}
+              </div>
+            )}
             <Link to="/sessions" className="block mt-4">
               <Button variant="outline" className="w-full">
                 <Users className="w-4 h-4 mr-2" />
@@ -639,16 +814,35 @@ export function Dashboard() {
               <h3 className="font-semibold text-purple-900">Admin Dashboard</h3>
               <Badge className="bg-purple-500 text-white">Admin</Badge>
             </div>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-white rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-purple-600">8</p>
-                <p className="text-xs text-iron-500">Pending Matches</p>
+            {dataLoading ? (
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-white rounded-lg p-3 text-center">
+                    <div className="h-8 bg-iron-100 rounded animate-pulse mx-auto w-1/2 mb-1" />
+                    <div className="h-3 bg-iron-100 rounded animate-pulse" />
+                  </div>
+                ))}
               </div>
-              <div className="bg-white rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-amber-600">1</p>
-                <p className="text-xs text-iron-500">Flagged Items</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-purple-600">{adminStats.pendingMatches}</p>
+                  <p className="text-xs text-iron-500">Pending Matches</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-green-600">{adminStats.activeMatches}</p>
+                  <p className="text-xs text-iron-500">Active Matches</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-blue-600">{adminStats.totalMentors}</p>
+                  <p className="text-xs text-iron-500">Mentors</p>
+                </div>
+                <div className="bg-white rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-teal-600">{adminStats.totalMentees}</p>
+                  <p className="text-xs text-iron-500">Mentees</p>
+                </div>
               </div>
-            </div>
+            )}
             <Link to="/admin">
               <Button className="w-full bg-purple-600 hover:bg-purple-700">
                 <Shield className="w-4 h-4 mr-2" />
@@ -658,55 +852,94 @@ export function Dashboard() {
           </Card>
         )}
 
-        {/* Upcoming Session placeholder */}
+        {/* Upcoming Session */}
         {role !== 'admin' && (
-          <Link to="/sessions">
-            <Card className="mb-4 hover:border-brand-200 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-brand-600" />
+          upcomingSession ? (
+            <Link to={`/sessions/${upcomingSession.match_id}`}>
+              <Card className="mb-4 hover:border-brand-200 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-brand-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-iron-900">Upcoming Session</h4>
+                    <p className="text-sm text-iron-500">{formatSessionTime(upcomingSession.scheduled_at)}</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-iron-400" />
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-iron-900">Sessions</h4>
-                  <p className="text-sm text-iron-500">View and schedule sessions</p>
+              </Card>
+            </Link>
+          ) : (
+            <Link to="/sessions">
+              <Card className="mb-4 hover:border-brand-200 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-brand-100 rounded-xl flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-brand-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-medium text-iron-900">Sessions</h4>
+                    <p className="text-sm text-iron-500">View and schedule sessions</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-iron-400" />
                 </div>
-                <ChevronRight className="w-5 h-5 text-iron-400" />
-              </div>
-            </Card>
-          </Link>
+              </Card>
+            </Link>
+          )
         )}
 
         {/* Goals Progress */}
-        <Card className="mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-iron-900">Your Goals</h3>
-            <Link to="/goals" className="text-sm text-brand-500 font-medium">
-              View All
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {mockGoals.map((goal) => (
-              <div key={goal.id}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-iron-700">{goal.title}</span>
-                  <span className="text-xs text-iron-500">{goal.progress}%</span>
-                </div>
-                <div className="h-2 bg-iron-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-teal-500 rounded-full transition-all"
-                    style={{ width: `${goal.progress}%` }}
-                  />
-                </div>
+        {role !== 'admin' && (
+          <Card className="mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-iron-900">Your Goals</h3>
+              <Link to="/goals" className="text-sm text-brand-500 font-medium">
+                View All
+              </Link>
+            </div>
+            {dataLoading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i}>
+                    <div className="h-3 bg-iron-100 rounded animate-pulse w-3/4 mb-2" />
+                    <div className="h-2 bg-iron-100 rounded-full animate-pulse" />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <Link to="/goals">
-            <Button variant="ghost" size="sm" className="w-full mt-4">
-              <Target className="w-4 h-4 mr-2" />
-              Add New Goal
-            </Button>
-          </Link>
-        </Card>
+            ) : (
+              <div className="space-y-3">
+                {activeGoalsCount > 0 ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-iron-700">Active Goals</span>
+                      <span className="text-xs text-iron-500">{activeGoalsCount} active</span>
+                    </div>
+                    <div className="h-2 bg-iron-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-teal-500 rounded-full transition-all"
+                        style={{
+                          width: activeGoalsCount + completedGoalsCount > 0
+                            ? `${Math.round((completedGoalsCount / (activeGoalsCount + completedGoalsCount)) * 100)}%`
+                            : '0%'
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs text-iron-400 mt-1">
+                      {completedGoalsCount} of {activeGoalsCount + completedGoalsCount} completed
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-iron-500">No goals yet. Add your first goal!</p>
+                )}
+              </div>
+            )}
+            <Link to="/goals">
+              <Button variant="ghost" size="sm" className="w-full mt-4">
+                <Target className="w-4 h-4 mr-2" />
+                Add New Goal
+              </Button>
+            </Link>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-3">

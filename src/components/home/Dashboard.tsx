@@ -441,17 +441,19 @@ export function Dashboard() {
 
         {/* Layer 1: Affirmation Text - BACK (background text) */}
         <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-3">
-          {/* Permanent "I AM" header - spans full width, centered */}
+          {/* Permanent "I AM" header - spans full width, 3px padding from edges */}
           <h1
             className="leading-[0.85] w-full text-center"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'clamp(6rem, 26vw, 11rem)',
+              fontSize: 'calc(100vw / 2.05)',
               color: 'transparent',
               WebkitTextStroke: '3px #35d6f5',
               textShadow: 'none',
               letterSpacing: '-0.02em',
+              paddingLeft: '3px',
+              paddingRight: '3px',
             }}
           >
             I AM

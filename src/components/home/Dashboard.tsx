@@ -474,14 +474,14 @@ export function Dashboard() {
             </div>
           ) : (
             <div>
-              <div className="space-y-0 leading-none mt-0">
+              <div className="space-y-0 leading-snug mt-1">
                 {affirmation.split('\n').map((line: string, index: number) => (
                   <h2
                     key={index}
-                    className="font-black text-white leading-[0.9] tracking-tight"
+                    className="font-bold text-white leading-[1.1] tracking-wide uppercase"
                     style={{
-                      fontSize: 'clamp(1.25rem, 6vw, 2.5rem)',
-                      textShadow: '2px 2px 8px rgba(0,0,0,0.6)',
+                      fontSize: 'clamp(0.85rem, 3.5vw, 1.25rem)',
+                      textShadow: '1px 1px 6px rgba(0,0,0,0.7)',
                     }}
                   >
                     {line}

@@ -430,7 +430,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-iron-50">
       {/* Hero Section with Profile Image and Affirmation */}
-      <div className="relative overflow-hidden h-96" style={{ backgroundColor: '#562F65' }}>
+      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', minHeight: '22rem' }}>
         {/* Header overlay - topmost */}
         <div className="absolute top-0 left-0 right-0 z-50">
           <Header
@@ -447,7 +447,7 @@ export function Dashboard() {
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'clamp(4rem, 24vw, 13rem)',
+              fontSize: 'clamp(7rem, 24vw, 13rem)',
               color: 'transparent',
               WebkitTextStroke: '3px #35d6f5',
               textShadow: 'none',

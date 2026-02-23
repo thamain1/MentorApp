@@ -439,20 +439,21 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - decorative background watermark text */}
-        <div className="absolute inset-0 z-[5] pointer-events-none overflow-hidden flex items-center justify-center">
+        {/* Layer 1: "I AM" - large bold background graphic */}
+        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none overflow-hidden">
           <h1
-            className="leading-none select-none"
+            className="leading-none select-none w-full text-center"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
-              fontSize: 'clamp(6rem, 28vw, 11rem)',
+              fontSize: '44vw',
               color: 'transparent',
-              WebkitTextStroke: '1.5px rgba(53,214,245,0.35)',
+              WebkitTextStroke: '2px #35d6f5',
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
-              lineHeight: 1,
-              userSelect: 'none',
+              lineHeight: 0.85,
+              marginTop: '-0.05em',
+              opacity: 0.35,
             }}
           >
             I AM

@@ -440,8 +440,8 @@ export function Dashboard() {
         </div>
 
         {/* Layer 1: Affirmation Text - BACK (background text) */}
-        <div className="absolute top-0 left-0 z-10 pt-8 px-3" style={{ width: '55%' }}>
-          {/* Permanent "I AM" header */}
+        <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-3">
+          {/* Permanent "I AM" header - spans full width */}
           <h1
             className="font-black text-blue-500 leading-[0.85] tracking-tighter w-full"
             style={{
@@ -453,7 +453,7 @@ export function Dashboard() {
             I AM
           </h1>
 
-          {/* Editable sub-message */}
+          {/* Editable sub-message - constrained to left side, away from profile image */}
           {isEditingAffirmation ? (
             <div className="max-w-sm relative z-50 mt-1">
               <textarea
@@ -473,7 +473,7 @@ export function Dashboard() {
               </button>
             </div>
           ) : (
-            <div>
+            <div style={{ width: '52%' }}>
               <div className="space-y-0 leading-snug mt-1">
                 {affirmation.split('\n').map((line: string, index: number) => (
                   <h2

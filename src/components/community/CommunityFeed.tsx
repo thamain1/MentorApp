@@ -709,7 +709,7 @@ export function CommunityFeed() {
                       )}
 
                       {/* Comment Input */}
-                      <div className="flex items-center gap-2 px-4 py-3 border-t border-iron-50">
+                      <div className="flex items-center gap-2 px-4 py-3 border-t border-iron-50" onClick={e => e.stopPropagation()}>
                         <Avatar
                           src={profile?.avatar_url ?? undefined}
                           name={`${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim()}
@@ -726,13 +726,15 @@ export function CommunityFeed() {
                               setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }));
                             }}
                             onKeyDown={e => {
+                              e.stopPropagation();
                               if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();
                                 handleSubmitComment(post.id);
                               }
                             }}
+                            onClick={e => e.stopPropagation()}
                             placeholder="Add a comment..."
-                            className="flex-1 bg-transparent text-sm text-iron-800 placeholder:text-iron-400 outline-none"
+                            className="flex-1 bg-transparent text-[16px] text-iron-800 placeholder:text-iron-400 outline-none"
                           />
                           <button
                             onClick={() => handleSubmitComment(post.id)}

@@ -103,6 +103,7 @@ export function CommunityFeed() {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [comments, setComments] = useState<Record<string, PostComment[]>>({});
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({});
+  const commentInputsRef = useRef<Record<string, string>>({});
   const [commentLoading, setCommentLoading] = useState<Record<string, boolean>>({});
   const [submittingComment, setSubmittingComment] = useState<Record<string, boolean>>({});
 
@@ -351,7 +352,7 @@ export function CommunityFeed() {
   }, [comments, fetchComments]);
 
   const handleSubmitComment = useCallback(async (postId: string) => {
-    const content = (commentInputs[postId] ?? '').trim();
+    const content = (commentInputsRef.current[postId] ?? '').trim();
     if (!content || !user || !profile) return;
 
     setSubmittingComment(prev => ({ ...prev, [postId]: true }));
@@ -388,11 +389,12 @@ export function CommunityFeed() {
       setPosts(prev => prev.map(p =>
         p.id === postId ? { ...p, comment_count: p.comment_count + 1 } : p
       ));
+      commentInputsRef.current = { ...commentInputsRef.current, [postId]: '' };
       setCommentInputs(prev => ({ ...prev, [postId]: '' }));
     }
 
     setSubmittingComment(prev => ({ ...prev, [postId]: false }));
-  }, [commentInputs, user, profile]);
+  }, [user, profile]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -719,7 +721,10 @@ export function CommunityFeed() {
                           <input
                             type="text"
                             value={commentInputs[post.id] ?? ''}
-                            onChange={e => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            onChange={e => {
+                              commentInputsRef.current = { ...commentInputsRef.current, [post.id]: e.target.value };
+                              setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }));
+                            }}
                             onKeyDown={e => {
                               if (e.key === 'Enter' && !e.shiftKey) {
                                 e.preventDefault();

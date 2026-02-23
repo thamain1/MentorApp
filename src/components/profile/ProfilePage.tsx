@@ -61,11 +61,18 @@ interface ImagePosition { x: number; y: number; }
 interface ImageSettings { image: string; position: ImagePosition; }
 
 function loadImageSettings(): ImageSettings {
+  const defaults: ImageSettings = { image: '/images/mentees/gettyimages-1430123251-612x612.jpg', position: { x: 0, y: 0 } };
   try {
     const saved = localStorage.getItem(IMAGE_SETTINGS_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        image: parsed.image ?? defaults.image,
+        position: parsed.position ?? defaults.position,
+      };
+    }
   } catch {}
-  return { image: '/images/mentees/gettyimages-1430123251-612x612.jpg', position: { x: 0, y: 0 } };
+  return defaults;
 }
 
 function getObjectPosition(pos: ImagePosition) {

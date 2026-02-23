@@ -440,7 +440,7 @@ export function Dashboard() {
         </div>
 
         {/* Layer 1: Affirmation Text - BACK (background text) */}
-        <div className="absolute top-0 left-0 right-0 z-10 pt-8 px-3">
+        <div className="absolute top-0 left-0 z-10 pt-8 px-3" style={{ width: '55%' }}>
           {/* Permanent "I AM" header */}
           <h1
             className="font-black text-blue-500 leading-[0.85] tracking-tighter w-full"
@@ -473,7 +473,7 @@ export function Dashboard() {
               </button>
             </div>
           ) : (
-            <div className="max-w-[52%]">
+            <div>
               <div className="space-y-0 leading-snug mt-1">
                 {affirmation.split('\n').map((line: string, index: number) => (
                   <h2

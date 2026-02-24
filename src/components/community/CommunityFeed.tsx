@@ -831,9 +831,9 @@ export function CommunityFeed() {
         const isOwner = post.user_id === user?.id;
         return (
           <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setPostMenuId(null)}>
-            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl" onClick={e => e.stopPropagation()}>
+            <div className="absolute bottom-16 left-0 right-0 bg-white rounded-t-2xl" onClick={e => e.stopPropagation()}>
               <div className="w-10 h-1 bg-iron-200 rounded-full mx-auto mt-3 mb-2" />
-              <div className="px-4 pb-10 space-y-1">
+              <div className="px-4 pb-4 space-y-1">
                 <button
                   onClick={() => handleSharePost(post)}
                   className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-iron-50 text-left transition-colors"

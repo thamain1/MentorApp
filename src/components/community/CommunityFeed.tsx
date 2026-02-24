@@ -34,6 +34,7 @@ interface PostComment {
 
 interface PostWithAuthor {
   id: string;
+  title: string | null;
   content: string;
   image_urls: string[];
   created_at: string;
@@ -176,6 +177,7 @@ export function CommunityFeed() {
         if (!authorProfile) return null;
         return {
           id: post.id,
+          title: (post as { title?: string | null }).title ?? null,
           content: post.content,
           image_urls: (post as { image_urls?: string[] }).image_urls ?? [],
           created_at: post.created_at,
@@ -211,7 +213,7 @@ export function CommunityFeed() {
     const state = location.state as { checkInPrompt?: string; openCompose?: boolean } | null;
     if (state?.checkInPrompt) {
       setCheckInPrompt(state.checkInPrompt);
-      setNewPost(state.checkInPrompt + '\n\n');
+      setNewPost('');
       setShowCompose(true);
       window.history.replaceState({}, document.title);
     } else if (state?.openCompose) {
@@ -432,22 +434,26 @@ export function CommunityFeed() {
       }
     }
 
-    const { data: inserted, error } = await supabase
+    type InsertedPost = { id: string; group_id: string | null; user_id: string; title: string | null; content: string; image_urls: string[]; created_at: string };
+    const { data: insertedRaw, error } = await supabase
       .from('posts')
       .insert({
         user_id: user.id,
+        title: checkInPrompt || null,
         content: newPost.trim(),
         group_id: null,
         image_urls: uploadedUrls,
-      })
-      .select('id, group_id, user_id, content, image_urls, created_at')
+      } as never)
+      .select('id, group_id, user_id, title, content, image_urls, created_at')
       .single();
+    const inserted = insertedRaw as unknown as InsertedPost | null;
 
     if (!error && inserted) {
       const newPostObj: PostWithAuthor = {
         id: inserted.id,
+        title: inserted.title ?? null,
         content: inserted.content,
-        image_urls: (inserted as { image_urls?: string[] }).image_urls ?? [],
+        image_urls: inserted.image_urls ?? [],
         created_at: inserted.created_at,
         user_id: inserted.user_id,
         group_id: inserted.group_id ?? null,
@@ -586,6 +592,11 @@ export function CommunityFeed() {
                     className="px-4 pb-3"
                     onDoubleClick={() => handleDoubleTap(post.id, post.liked_by_me)}
                   >
+                    {post.title && (
+                      <p className="font-semibold text-iron-900 text-[15px] leading-snug mb-1">
+                        {post.title}
+                      </p>
+                    )}
                     <p className="text-iron-800 text-[15px] leading-relaxed">
                       {post.content}
                     </p>

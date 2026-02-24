@@ -112,11 +112,13 @@ export function CommunityFeed() {
     if (!user) return;
     setLoading(true);
 
-    const { data: rawPosts, error } = await supabase
+    type RawPost = { id: string; group_id: string | null; user_id: string; title: string | null; content: string; image_urls: string[]; created_at: string };
+    const { data: rawPostsUntyped, error } = await supabase
       .from('posts')
-      .select('id, group_id, user_id, content, image_urls, created_at')
+      .select('id, group_id, user_id, title, content, image_urls, created_at')
       .order('created_at', { ascending: false })
       .limit(20);
+    const rawPosts = rawPostsUntyped as unknown as RawPost[] | null;
 
     if (error || !rawPosts || rawPosts.length === 0) {
       setLoading(false);

@@ -704,7 +704,10 @@ export function CommunityFeed() {
                             : <ChevronDown className="w-3.5 h-3.5 text-iron-400" />
                           }
                         </button>
-                        <button className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors">
+                        <button
+                          onClick={() => handleSharePost(post)}
+                          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg hover:bg-iron-50 transition-colors"
+                        >
                           <Send className="w-5 h-5 text-iron-600" />
                           <span className="text-sm text-iron-600">Share</span>
                         </button>

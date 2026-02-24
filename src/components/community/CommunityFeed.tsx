@@ -9,6 +9,10 @@ import {
   X,
   ChevronDown,
   ChevronUp,
+  Trash2,
+  Pencil,
+  Share2,
+  Flag,
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar } from '../ui';
@@ -100,6 +104,12 @@ export function CommunityFeed() {
   const [checkInPrompt, setCheckInPrompt] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [postMenuId, setPostMenuId] = useState<string | null>(null);
+  const [editingPost, setEditingPost] = useState<PostWithAuthor | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [reportingPostId, setReportingPostId] = useState<string | null>(null);
 
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [comments, setComments] = useState<Record<string, PostComment[]>>({});
@@ -400,6 +410,40 @@ export function CommunityFeed() {
     setSubmittingComment(prev => ({ ...prev, [postId]: false }));
   }, [user, profile]);
 
+  const handleDeletePost = async (postId: string) => {
+    const { error } = await supabase.from('posts').delete().eq('id', postId);
+    if (!error) {
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    }
+    setDeletingPostId(null);
+    setPostMenuId(null);
+  };
+
+  const handleEditPost = async () => {
+    if (!editingPost || !editContent.trim()) return;
+    const { error } = await supabase
+      .from('posts')
+      .update({ content: editContent.trim() } as never)
+      .eq('id', editingPost.id);
+    if (!error) {
+      setPosts(prev => prev.map(p =>
+        p.id === editingPost.id ? { ...p, content: editContent.trim() } : p
+      ));
+    }
+    setEditingPost(null);
+    setEditContent('');
+  };
+
+  const handleSharePost = (post: PostWithAuthor) => {
+    const text = post.title ? `${post.title}\n\n${post.content}` : post.content;
+    if (navigator.share) {
+      navigator.share({ text }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+    setPostMenuId(null);
+  };
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -584,7 +628,10 @@ export function CommunityFeed() {
                         </p>
                       </div>
                     </div>
-                    <button className="p-2 -mr-2 text-iron-400 hover:text-iron-600">
+                    <button
+                      onClick={() => setPostMenuId(postMenuId === post.id ? null : post.id)}
+                      className="p-2 -mr-2 text-iron-400 hover:text-iron-600 transition-colors"
+                    >
                       <MoreHorizontal className="w-5 h-5" />
                     </button>
                   </div>
@@ -776,6 +823,141 @@ export function CommunityFeed() {
           </div>
         )}
       </div>
+
+      {/* Post Action Bottom Sheet */}
+      {postMenuId && (() => {
+        const post = posts.find(p => p.id === postMenuId);
+        if (!post) return null;
+        const isOwner = post.user_id === user?.id;
+        return (
+          <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setPostMenuId(null)}>
+            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl" onClick={e => e.stopPropagation()}>
+              <div className="w-10 h-1 bg-iron-200 rounded-full mx-auto mt-3 mb-2" />
+              <div className="px-4 pb-10 space-y-1">
+                <button
+                  onClick={() => handleSharePost(post)}
+                  className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-iron-50 text-left transition-colors"
+                >
+                  <Share2 className="w-5 h-5 text-iron-500" />
+                  <span className="text-iron-800 font-medium">Share post</span>
+                </button>
+                {isOwner && (
+                  <>
+                    <button
+                      onClick={() => { setEditingPost(post); setEditContent(post.content); setPostMenuId(null); }}
+                      className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-iron-50 text-left transition-colors"
+                    >
+                      <Pencil className="w-5 h-5 text-iron-500" />
+                      <span className="text-iron-800 font-medium">Edit post</span>
+                    </button>
+                    <button
+                      onClick={() => { setDeletingPostId(post.id); setPostMenuId(null); }}
+                      className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-red-50 text-left transition-colors"
+                    >
+                      <Trash2 className="w-5 h-5 text-red-500" />
+                      <span className="text-red-600 font-medium">Delete post</span>
+                    </button>
+                  </>
+                )}
+                {!isOwner && (
+                  <button
+                    onClick={() => { setReportingPostId(post.id); setPostMenuId(null); }}
+                    className="w-full flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-red-50 text-left transition-colors"
+                  >
+                    <Flag className="w-5 h-5 text-red-500" />
+                    <span className="text-red-600 font-medium">Report post</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Delete Confirmation */}
+      {deletingPostId && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="text-lg font-semibold text-iron-900 mb-2">Delete this post?</h3>
+            <p className="text-iron-500 text-sm mb-6">This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeletingPostId(null)}
+                className="flex-1 py-2.5 rounded-xl border border-iron-200 text-iron-700 font-medium hover:bg-iron-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeletePost(deletingPostId)}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Post Modal */}
+      {editingPost && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
+          <div className="w-full max-w-md bg-white rounded-t-2xl max-h-[70vh] flex flex-col mb-16">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-iron-100 flex-shrink-0">
+              <button
+                onClick={() => { setEditingPost(null); setEditContent(''); }}
+                className="text-iron-600 font-medium"
+              >
+                Cancel
+              </button>
+              <h3 className="font-semibold text-iron-900">Edit Post</h3>
+              <button
+                onClick={handleEditPost}
+                disabled={!editContent.trim()}
+                className={`font-semibold transition-colors ${editContent.trim() ? 'text-brand-500' : 'text-brand-300'}`}
+              >
+                Save
+              </button>
+            </div>
+            {editingPost.title && (
+              <div className="px-4 py-3 bg-iron-50 border-b border-iron-100 flex-shrink-0">
+                <p className="text-sm font-semibold text-iron-700">{editingPost.title}</p>
+              </div>
+            )}
+            <div className="flex-1 overflow-y-auto p-4">
+              <textarea
+                value={editContent}
+                onChange={e => setEditContent(e.target.value)}
+                className="w-full text-[16px] text-iron-800 placeholder:text-iron-400 border-0 focus:ring-0 resize-none min-h-[120px] outline-none"
+                autoFocus
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Confirmation */}
+      {reportingPostId && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <h3 className="text-lg font-semibold text-iron-900 mb-2">Report this post?</h3>
+            <p className="text-iron-500 text-sm mb-6">An admin will review this post for community guideline violations.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setReportingPostId(null)}
+                className="flex-1 py-2.5 rounded-xl border border-iron-200 text-iron-700 font-medium hover:bg-iron-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setReportingPostId(null)}
+                className="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-colors"
+              >
+                Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Compose Modal */}
       {showCompose && (

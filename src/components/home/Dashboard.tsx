@@ -439,26 +439,28 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - large bold background graphic */}
-        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none" style={{ marginTop: '-0.05em' }}>
-          <h1
-            className="leading-none select-none"
-            style={{
-              fontFamily: "'Lato', sans-serif",
-              fontWeight: 900,
-              fontSize: '28vw',
-              color: 'transparent',
-              WebkitTextStroke: '2px #35d6f5',
-              letterSpacing: '-0.02em',
-              whiteSpace: 'nowrap',
-              lineHeight: 0.85,
-              opacity: 0.35,
-              textAlign: 'left',
-              paddingLeft: '0.05em',
-            }}
+        {/* Layer 1: "I AM" - large bold SVG background graphic that fills full width */}
+        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none" style={{ opacity: 0.35 }}>
+          <svg
+            viewBox="0 0 300 260"
+            preserveAspectRatio="none"
+            width="100%"
+            style={{ display: 'block' }}
           >
-            I AM
-          </h1>
+            <text
+              x="0"
+              y="230"
+              fontFamily="'Lato', sans-serif"
+              fontWeight="900"
+              fontSize="300"
+              fill="none"
+              stroke="#35d6f5"
+              strokeWidth="3"
+              letterSpacing="-5"
+            >
+              I AM
+            </text>
+          </svg>
         </div>
 
         {/* Layer 2: Affirmation text - bottom left, beside the profile image */}

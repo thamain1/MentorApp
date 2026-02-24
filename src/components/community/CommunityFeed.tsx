@@ -434,14 +434,32 @@ export function CommunityFeed() {
     setEditContent('');
   };
 
-  const handleSharePost = (post: PostWithAuthor) => {
+  const handleSharePost = async (post: PostWithAuthor) => {
+    const title = post.title || 'Iron Sharpens Iron';
     const text = post.title ? `${post.title}\n\n${post.content}` : post.content;
-    if (navigator.share) {
-      navigator.share({ text }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(text).catch(() => {});
-    }
+    const url = window.location.href;
     setPostMenuId(null);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch {
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Post copied to clipboard!');
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      alert('Post copied to clipboard!');
+    }
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

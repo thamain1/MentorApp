@@ -10,6 +10,54 @@ import { Card, Avatar, Badge, Button } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 
+function IAmText() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const measure = () => {
+      if (containerRef.current && textRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const textWidth = textRef.current.scrollWidth;
+        if (textWidth > 0) {
+          setScale(containerWidth / textWidth);
+        }
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute top-0 left-0 right-0 z-[5] pointer-events-none overflow-hidden"
+      style={{ opacity: 0.35, lineHeight: 0.85 }}
+    >
+      <span
+        ref={textRef}
+        style={{
+          fontFamily: "'Lato', sans-serif",
+          fontWeight: 900,
+          fontSize: '20vw',
+          color: 'transparent',
+          WebkitTextStroke: '2px #35d6f5',
+          whiteSpace: 'nowrap',
+          lineHeight: 0.85,
+          display: 'inline-block',
+          transformOrigin: 'top left',
+          transform: `scaleX(${scale})`,
+        }}
+      >
+        I AM
+      </span>
+    </div>
+  );
+}
+
 const AFFIRMATION_STORAGE_KEY = 'isi-daily-affirmation';
 
 // Default affirmation sub-messages by role (shown below the permanent "I AM")
@@ -439,29 +487,8 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - large bold SVG background graphic that fills full width */}
-        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none" style={{ opacity: 0.35 }}>
-          <svg
-            viewBox="0 0 300 260"
-            preserveAspectRatio="none"
-            width="100%"
-            style={{ display: 'block' }}
-          >
-            <text
-              x="0"
-              y="230"
-              fontFamily="'Lato', sans-serif"
-              fontWeight="900"
-              fontSize="300"
-              fill="none"
-              stroke="#35d6f5"
-              strokeWidth="3"
-              letterSpacing="-5"
-            >
-              I AM
-            </text>
-          </svg>
-        </div>
+        {/* Layer 1: "I AM" - large bold background text via fit-text approach */}
+        <IAmText />
 
         {/* Layer 2: Affirmation text - bottom left, beside the profile image */}
         <div className="absolute z-20" style={{ bottom: '2.5rem', left: '1rem', maxWidth: '50%' }}>

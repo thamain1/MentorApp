@@ -35,7 +35,7 @@ function IAmText() {
     <div
       ref={containerRef}
       className="absolute top-0 left-0 right-0 z-[5] pointer-events-none overflow-hidden"
-      style={{ opacity: 0.35, lineHeight: 0.85 }}
+      style={{ opacity: 0.7, lineHeight: 0.85 }}
     >
       <span
         ref={textRef}

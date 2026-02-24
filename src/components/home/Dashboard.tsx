@@ -430,7 +430,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-iron-50">
       {/* Hero Section with Profile Image and Affirmation */}
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', height: 'clamp(26rem, 75vw, 40rem)' }}>
+      <div className="relative" style={{ backgroundColor: '#562F65', height: 'clamp(26rem, 75vw, 40rem)', clipPath: 'inset(0)' }}>
         {/* Header overlay - topmost */}
         <div className="absolute top-0 left-0 right-0 z-50">
           <Header
@@ -439,13 +439,10 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - large bold background graphic anchored left */}
-        <div
-          className="absolute top-0 left-0 z-[5] pointer-events-none"
-          style={{ marginTop: '-0.04em', marginLeft: '-0.02em' }}
-        >
+        {/* Layer 1: "I AM" - large bold background graphic */}
+        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none" style={{ marginTop: '-0.05em' }}>
           <h1
-            className="leading-none select-none"
+            className="leading-none select-none w-full text-center"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,

@@ -439,10 +439,13 @@ export function Dashboard() {
           />
         </div>
 
-        {/* Layer 1: "I AM" - large bold background graphic */}
-        <div className="absolute top-0 left-0 right-0 z-[5] pointer-events-none overflow-hidden">
+        {/* Layer 1: "I AM" - large bold background graphic anchored left */}
+        <div
+          className="absolute top-0 left-0 z-[5] pointer-events-none"
+          style={{ marginTop: '-0.04em', marginLeft: '-0.02em' }}
+        >
           <h1
-            className="leading-none select-none w-full text-center"
+            className="leading-none select-none"
             style={{
               fontFamily: "'Lato', sans-serif",
               fontWeight: 900,
@@ -452,7 +455,6 @@ export function Dashboard() {
               letterSpacing: '-0.02em',
               whiteSpace: 'nowrap',
               lineHeight: 0.85,
-              marginTop: '-0.05em',
               opacity: 0.35,
             }}
           >

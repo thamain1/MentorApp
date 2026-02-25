@@ -122,7 +122,7 @@ export function ModuleDetail() {
 
   if (loading) {
     return (
-      <AppShell>
+      <AppShell showNav={false}>
         <Header title="Module" showBack />
         <div className="p-4 space-y-4">
           <Card className="p-6">
@@ -146,7 +146,7 @@ export function ModuleDetail() {
 
   if (notFound || !module || !track) {
     return (
-      <AppShell>
+      <AppShell showNav={false}>
         <Header title="Module" showBack />
         <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
           <p className="text-iron-500">Module not found</p>
@@ -167,7 +167,7 @@ export function ModuleDetail() {
   const nextModule = moduleIndex < allModules.length - 1 ? allModules[moduleIndex + 1] : null;
 
   return (
-    <AppShell>
+    <AppShell showNav={false}>
       <Header title={track.title} showBack />
 
       <div className="p-4 space-y-4 pb-32">

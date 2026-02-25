@@ -41,6 +41,7 @@ export const testUsers: Record<UserRoleType, TestUser> = {
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-02-01T15:30:00Z',
+    is_blocked: false,
     role: 'admin',
   },
   mentor: {
@@ -60,6 +61,7 @@ export const testUsers: Record<UserRoleType, TestUser> = {
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-01-20T12:00:00Z',
+    is_blocked: false,
     role: 'mentor',
   },
   mentee: {
@@ -79,6 +81,7 @@ export const testUsers: Record<UserRoleType, TestUser> = {
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-02-01T15:30:00Z',
+    is_blocked: false,
     role: 'mentee',
   },
 };
@@ -150,6 +153,7 @@ export const mockCurrentUser: Profile = {
   guidelines_accepted_at: '2024-01-15T10:00:00Z',
   created_at: '2024-01-15T10:00:00Z',
   updated_at: '2024-02-01T15:30:00Z',
+  is_blocked: false,
 };
 
 // Mock mentor profile
@@ -171,6 +175,7 @@ export const mockMentorProfile: Profile = {
   guidelines_accepted_at: '2023-06-01T10:00:00Z',
   created_at: '2023-06-01T10:00:00Z',
   updated_at: '2024-01-20T12:00:00Z',
+  is_blocked: false,
 };
 
 // Additional profiles for community posts
@@ -194,6 +199,7 @@ const mockProfiles: Profile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-01-10T09:00:00Z',
+    is_blocked: false,
   },
   {
     id: 'mentee-2-id',
@@ -213,6 +219,7 @@ const mockProfiles: Profile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-01-25T11:00:00Z',
+    is_blocked: false,
   },
   {
     id: 'mentee-3-id',
@@ -232,6 +239,7 @@ const mockProfiles: Profile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-02-01T14:00:00Z',
+    is_blocked: false,
   },
 ];
 
@@ -821,6 +829,7 @@ export const mockMentees: Profile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-01-25T11:00:00Z',
+    is_blocked: false,
   },
   {
     id: 'mentee-3-id',
@@ -840,6 +849,7 @@ export const mockMentees: Profile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-02-01T14:00:00Z',
+    is_blocked: false,
   },
 ];
 
@@ -1103,6 +1113,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-01-10T09:00:00Z',
+    is_blocked: false,
     yearsExperience: 5,
     availability: 'Weekends',
     matchCount: 8,
@@ -1126,6 +1137,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-02-01T09:00:00Z',
+    is_blocked: false,
     yearsExperience: 8,
     availability: 'Flexible',
     matchCount: 12,
@@ -1149,6 +1161,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-01-15T09:00:00Z',
+    is_blocked: false,
     yearsExperience: 15,
     availability: 'Weekday mornings',
     matchCount: 20,
@@ -1172,6 +1185,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     guidelines_accepted_at: '2023-04-01T10:00:00Z',
     created_at: '2023-04-01T10:00:00Z',
     updated_at: '2024-01-20T09:00:00Z',
+    is_blocked: false,
     yearsExperience: 12,
     availability: 'Weekday afternoons',
     matchCount: 15,
@@ -1195,6 +1209,7 @@ export const mockAvailableMentors: MentorProfile[] = [
     avatar_position_x: 0,
     avatar_position_y: 0,
     updated_at: '2024-02-01T09:00:00Z',
+    is_blocked: false,
     yearsExperience: 6,
     availability: 'Flexible',
     matchCount: 10,

@@ -18,6 +18,10 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { formatRelativeTime } from '../../lib/utils';
 import type { Database } from '../../types/database.types';
+import { MentorsDetail } from './MentorsDetail';
+import { MenteesDetail } from './MenteesDetail';
+import { ActiveMatchesDetail } from './ActiveMatchesDetail';
+import { PendingDetail } from './PendingDetail';
 
 type ProfileRow = Database['public']['Tables']['profiles']['Row'];
 
@@ -39,6 +43,7 @@ interface PendingMatchRow {
 }
 
 type AdminTab = 'overview' | 'matches' | 'safety' | 'reports';
+type DetailView = 'mentors' | 'mentees' | 'active-matches' | 'pending' | null;
 
 // ---- Report data types ----
 interface SurveyRow {
@@ -113,6 +118,7 @@ export function AdminDashboard() {
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState<string | null>(null);
   const [reportsLoaded, setReportsLoaded] = useState(false);
+  const [detailView, setDetailView] = useState<DetailView>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -250,6 +256,7 @@ export function AdminDashboard() {
 
   const handleTabChange = (tab: AdminTab) => {
     setActiveTab(tab);
+    setDetailView(null);
     if (tab === 'reports' && !reportsLoaded) {
       fetchReports();
     }
@@ -375,7 +382,7 @@ export function AdminDashboard() {
           <div className="space-y-4">
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-3">
-              <Card className="p-4">
+              <Card className="p-4 cursor-pointer hover:border-brand-200 active:scale-95 transition-all" onClick={() => setDetailView('mentors')}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
                     <Users className="w-5 h-5 text-blue-600" />
@@ -386,7 +393,7 @@ export function AdminDashboard() {
                   </div>
                 </div>
               </Card>
-              <Card className="p-4">
+              <Card className="p-4 cursor-pointer hover:border-brand-200 active:scale-95 transition-all" onClick={() => setDetailView('mentees')}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                     <Users className="w-5 h-5 text-green-600" />
@@ -397,7 +404,7 @@ export function AdminDashboard() {
                   </div>
                 </div>
               </Card>
-              <Card className="p-4">
+              <Card className="p-4 cursor-pointer hover:border-brand-200 active:scale-95 transition-all" onClick={() => setDetailView('active-matches')}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center">
                     <UserCheck className="w-5 h-5 text-brand-600" />
@@ -408,7 +415,7 @@ export function AdminDashboard() {
                   </div>
                 </div>
               </Card>
-              <Card className="p-4">
+              <Card className="p-4 cursor-pointer hover:border-brand-200 active:scale-95 transition-all" onClick={() => setDetailView('pending')}>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
                     <Clock className="w-5 h-5 text-amber-600" />
@@ -420,6 +427,20 @@ export function AdminDashboard() {
                 </div>
               </Card>
             </div>
+
+            {/* Detail panels */}
+            {detailView === 'mentors' && (
+              <MentorsDetail onBack={() => setDetailView(null)} onChanged={fetchData} />
+            )}
+            {detailView === 'mentees' && (
+              <MenteesDetail onBack={() => setDetailView(null)} onChanged={fetchData} />
+            )}
+            {detailView === 'active-matches' && (
+              <ActiveMatchesDetail onBack={() => setDetailView(null)} onChanged={fetchData} />
+            )}
+            {detailView === 'pending' && (
+              <PendingDetail onBack={() => setDetailView(null)} onChanged={fetchData} />
+            )}
 
             {/* Session Stats */}
             <Card>

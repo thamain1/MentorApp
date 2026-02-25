@@ -12,3 +12,11 @@ export const supabase = createClient<Database>(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-key'
 );
+
+const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+
+export const supabaseAdmin = createClient<Database>(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseServiceKey || 'placeholder-service-key',
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);

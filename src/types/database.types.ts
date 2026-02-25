@@ -37,6 +37,7 @@ export interface Database {
           guidelines_accepted_at: string | null;
           created_at: string;
           updated_at: string;
+          is_blocked: boolean;
         };
         Insert: {
           id?: string;
@@ -56,6 +57,7 @@ export interface Database {
           guidelines_accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          is_blocked?: boolean;
         };
         Update: {
           id?: string;
@@ -75,6 +77,7 @@ export interface Database {
           guidelines_accepted_at?: string | null;
           created_at?: string;
           updated_at?: string;
+          is_blocked?: boolean;
         };
         Relationships: [];
       };

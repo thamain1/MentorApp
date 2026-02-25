@@ -1,4 +1,10 @@
-# Iron Sharpens Iron - Project Context for Claude
+# Iron Sharpens Iron (MentorProgram) - Project Context for Claude
+
+## Repository & Local Path
+- **GitHub**: https://github.com/thamain1/MentorApp.git
+- **Local Path**: `C:\dev\MentorProgram\iron-sharpens-iron`
+- **Branch**: `master`
+- **Run**: `cd C:\dev\MentorProgram\iron-sharpens-iron && npm run dev`
 
 ## Overview
 Iron Sharpens Iron is a mobile-first web application for a non-profit mentorship program connecting young men (ages 12-19) with adult mentors (ages 19+). The platform facilitates structured mentorship relationships, community building, and a train-the-trainer pipeline.
@@ -151,7 +157,10 @@ Because users include minors (ages 12-19):
 
 ## Brand Colors
 - **Iron** (grays): Primary neutral palette (`iron-50` through `iron-950`)
-- **Flame** (orange): Primary accent color (`flame-50` through `flame-950`)
+- **Brand** (electric indigo): Primary accent
+- **Teal**: Vibrant secondary color
+- **Coral**: Energy/accent color
+- **Typography**: Inter font system
 
 ## Development Commands
 ```bash

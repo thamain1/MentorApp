@@ -40,28 +40,6 @@ const mentorImages = [
   '/images/mentors/gettyimages-2206642276-612x612.jpg',
 ];
 
-// Mock connections for the floating bubbles (using mentor images)
-const getConnectionsForRole = (role: string) => {
-  if (role === 'mentee') {
-    return [
-      { id: '1', name: 'David Williams', image: mentorImages[0] },
-      { id: '2', name: 'James Thompson', image: mentorImages[1] },
-      { id: '3', name: 'Michael Chen', image: mentorImages[2] },
-    ];
-  } else if (role === 'mentor') {
-    return [
-      { id: '1', name: 'Marcus Johnson', image: mentorImages[3] },
-      { id: '2', name: 'Tyler Brown', image: mentorImages[4] },
-      { id: '3', name: 'Jordan Davis', image: mentorImages[5] },
-    ];
-  } else {
-    return [
-      { id: '1', name: 'David Williams', image: mentorImages[0] },
-      { id: '2', name: 'Marcus Johnson', image: mentorImages[1] },
-      { id: '3', name: 'James Thompson', image: mentorImages[2] },
-    ];
-  }
-};
 
 // Get default profile image based on role
 const getDefaultProfileImage = (role: string) => {
@@ -143,7 +121,6 @@ export function Dashboard() {
   const role = profile?.role ?? 'mentee';
   const firstName = profile?.first_name ?? 'Friend';
   const lastName = profile?.last_name ?? '';
-  const connections = getConnectionsForRole(role);
   const fullName = `${firstName} ${lastName}`.trim();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -484,39 +461,7 @@ export function Dashboard() {
           </button>
         </div>
 
-        {/* Layer 3: Floating connection bubbles */}
-        <div
-          className="absolute w-12 h-12 rounded-full border-2 border-teal-400 overflow-hidden shadow-lg z-20"
-          style={{ top: '28%', right: '48%' }}
-        >
-          <img
-            src={connections[0]?.image}
-            alt={connections[0]?.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div
-          className="absolute w-10 h-10 rounded-full border-2 border-brand-400 overflow-hidden shadow-lg z-20"
-          style={{ top: '55%', right: '58%' }}
-        >
-          <img
-            src={connections[1]?.image}
-            alt={connections[1]?.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div
-          className="absolute w-11 h-11 rounded-full border-2 border-flame-400 overflow-hidden shadow-lg z-20"
-          style={{ top: '18%', right: '12%' }}
-        >
-          <img
-            src={connections[2]?.image}
-            alt={connections[2]?.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Layer 4: Main profile image - anchored to bottom right, always fully visible */}
+        {/* Layer 3: Main profile image - anchored to bottom right, always fully visible */}
         <div className="absolute right-4 bottom-0 z-30">
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-t from-blue-500/30 to-transparent rounded-full blur-xl" />

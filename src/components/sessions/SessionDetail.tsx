@@ -71,17 +71,19 @@ export function SessionDetail() {
   const fetchSession = useCallback(async () => {
     if (!sessionId) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('sessions')
       .select(`
         *,
         session_participants(
           id, profile_id, status,
-          profile:profiles(id, first_name, last_name, avatar_url)
+          profile:profile_id(id, first_name, last_name, avatar_url)
         )
       `)
       .eq('id', sessionId)
       .maybeSingle();
+
+    if (error) console.error('[SessionDetail] fetch error:', error);
 
     if (!data) {
       setLoading(false);

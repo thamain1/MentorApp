@@ -145,7 +145,7 @@ export function ScheduleSessionModal({
           })),
       ];
 
-      if (participantsToInsert.length > 1) {
+      if (participantsToInsert.length > 0) {
         await supabase.from('session_participants').insert(participantsToInsert);
       }
 

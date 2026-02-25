@@ -82,6 +82,23 @@ export function SessionsList() {
       groupSessions = (groupData as SessionRow[]) ?? [];
     }
 
+    // Also fetch sessions where user is the organizer (catches newly created
+    // sessions before participants are inserted, and any edge cases)
+    const { data: organizerData } = await supabase
+      .from('sessions')
+      .select('*')
+      .eq('organizer_id', profile.id)
+      .order('scheduled_at', { ascending: false });
+
+    const seenIds = new Set([
+      ...matchSessions.map(s => s.id),
+      ...groupSessions.map(s => s.id),
+    ]);
+    const organizerOnly = ((organizerData as SessionRow[]) ?? []).filter(
+      s => !seenIds.has(s.id)
+    );
+    groupSessions = [...groupSessions, ...organizerOnly];
+
     // 4. Enrich match sessions with participant profiles
     const matchMap = new Map((matchData ?? []).map(m => [m.id, m]));
     const participantProfileIds = (matchData ?? []).map(m =>

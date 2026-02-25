@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Search, Plus, Users, User, Shield } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useUser } from '../../context';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavItem {
   path: string | null;
@@ -38,7 +39,11 @@ const adminNavItems: NavItem[] = [
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { role } = useUser();
+  const { role: devRole } = useUser();
+  const { profile } = useAuth();
+
+  // Use the authenticated profile role; fall back to dev switcher role
+  const role = (profile?.role ?? devRole) as 'mentor' | 'mentee' | 'admin';
 
   const navItems =
     role === 'admin' ? adminNavItems :

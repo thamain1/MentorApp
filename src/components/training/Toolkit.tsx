@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   BookOpen,
   FileText,
@@ -11,21 +11,47 @@ import {
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Card, Input } from '../ui';
-import { mockToolkitResources, type ToolkitResource } from '../../data/mockData';
+import { supabase } from '../../lib/supabase';
 
 type ResourceFilter = 'all' | 'guide' | 'template' | 'activity' | 'video';
 
+interface ToolkitResource {
+  id: string;
+  title: string;
+  description: string;
+  type: 'guide' | 'template' | 'activity' | 'video';
+  category: string;
+  content: string | null;
+  download_url: string | null;
+}
+
 export function Toolkit() {
+  const [resources, setResources] = useState<ToolkitResource[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<ResourceFilter>('all');
   const [expandedResource, setExpandedResource] = useState<string | null>(null);
 
+  const fetchResources = useCallback(async () => {
+    const { data } = await supabase
+      .from('toolkit_resources')
+      .select('id, title, description, type, category, content, download_url')
+      .eq('active', true)
+      .order('display_order');
+    if (data) setResources(data);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchResources();
+  }, [fetchResources]);
+
   // Get unique categories
   const categories = Array.from(
-    new Set(mockToolkitResources.map((r) => r.category))
+    new Set(resources.map((r) => r.category))
   ).sort();
 
-  const filteredResources = mockToolkitResources.filter((resource) => {
+  const filteredResources = resources.filter((resource) => {
     const matchesSearch =
       searchQuery === '' ||
       resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -39,9 +65,9 @@ export function Toolkit() {
 
   // Group by category
   const resourcesByCategory = categories.reduce((acc, category) => {
-    const resources = filteredResources.filter((r) => r.category === category);
-    if (resources.length > 0) {
-      acc[category] = resources;
+    const categoryResources = filteredResources.filter((r) => r.category === category);
+    if (categoryResources.length > 0) {
+      acc[category] = categoryResources;
     }
     return acc;
   }, {} as Record<string, ToolkitResource[]>);
@@ -127,7 +153,11 @@ export function Toolkit() {
         </div>
 
         {/* Resources by Category */}
-        {Object.keys(resourcesByCategory).length === 0 ? (
+        {loading ? (
+          <Card className="p-6 text-center">
+            <p className="text-iron-500 text-sm">Loading resources...</p>
+          </Card>
+        ) : Object.keys(resourcesByCategory).length === 0 ? (
           <Card className="p-6 text-center">
             <Folder className="w-10 h-10 text-iron-300 mx-auto mb-2" />
             <p className="text-iron-600 font-medium mb-1">No resources found</p>
@@ -209,11 +239,16 @@ function ResourceCard({
               {resource.content}
             </pre>
           </div>
-          {resource.downloadUrl && (
-            <button className="mt-3 flex items-center gap-2 text-sm text-brand-600 font-medium">
+          {resource.download_url && (
+            <a
+              href={resource.download_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 flex items-center gap-2 text-sm text-brand-600 font-medium"
+            >
               <Download className="w-4 h-4" />
               Download PDF
-            </button>
+            </a>
           )}
         </div>
       )}

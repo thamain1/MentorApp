@@ -8,7 +8,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { Card, Avatar, Badge } from '../ui';
-import { supabase, supabaseAdmin } from '../../lib/supabase';
+import { supabaseAdmin } from '../../lib/supabase';
 
 interface MenteeRow {
   id: string;
@@ -118,7 +118,7 @@ export function MenteeAdminDetail({ mentee, onBack, onChanged }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const { data: matchData, error: matchErr } = await supabase
+      const { data: matchData, error: matchErr } = await supabaseAdmin
         .from('matches')
         .select('id, mentor_id, status, approved_at, requested_at')
         .eq('mentee_id', mentee.id)
@@ -133,28 +133,28 @@ export function MenteeAdminDetail({ mentee, onBack, onChanged }: Props) {
 
       const [sessionsRes, mentorRes, goalsRes, checkInsRes, trainingRes] = await Promise.all([
         matchIds.length
-          ? supabase
+          ? supabaseAdmin
               .from('sessions')
               .select('id, duration_mins, status, completed_at, created_at')
               .in('match_id', matchIds)
           : Promise.resolve({ data: [], error: null }),
         mentorIds.length
-          ? supabase
+          ? supabaseAdmin
               .from('profiles')
               .select('id, first_name, last_name, avatar_url')
               .in('id', mentorIds)
           : Promise.resolve({ data: [], error: null }),
-        supabase
+        supabaseAdmin
           .from('goals')
           .select('id, title, status, target_date, completed_at')
           .eq('user_id', mentee.id)
           .order('created_at', { ascending: false }),
-        supabase
+        supabaseAdmin
           .from('check_ins')
           .select('id, mood, created_at')
           .eq('user_id', mentee.id)
           .order('created_at', { ascending: false }),
-        supabase
+        supabaseAdmin
           .from('user_training_progress')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', mentee.id),
@@ -186,7 +186,7 @@ export function MenteeAdminDetail({ mentee, onBack, onChanged }: Props) {
     setBlocking(true);
     try {
       const newBlocked = !currentMentee.is_blocked;
-      const { error: updateErr } = await supabase
+      const { error: updateErr } = await supabaseAdmin
         .from('profiles')
         .update({ is_blocked: newBlocked })
         .eq('id', currentMentee.id);

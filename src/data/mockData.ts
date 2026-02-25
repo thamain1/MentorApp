@@ -4,7 +4,6 @@
 import type {
   Profile,
   Message,
-  Session,
   Goal,
   TrainingTrack,
   TrainingModule,
@@ -98,7 +97,20 @@ export interface MessageWithSender extends Message {
   isOwn: boolean;
 }
 
-export interface SessionWithMatch extends Session {
+// Local base type for mock session objects (original fields only, pre-enhancement)
+interface BaseMockSession {
+  id: string;
+  match_id: string;
+  scheduled_at: string;
+  google_event_id: string | null;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  completed_at: string | null;
+  mentee_notes: string | null;
+  mentor_notes: string | null;
+  created_at: string;
+}
+
+export interface SessionWithMatch extends BaseMockSession {
   matchName: string;
   matchAvatar?: string;
 }
@@ -782,7 +794,7 @@ export const mockUserStats = {
 };
 
 // Extended session type with participant info for list views
-export interface SessionWithParticipant extends Session {
+export interface SessionWithParticipant extends BaseMockSession {
   participant: Pick<Profile, 'id' | 'first_name' | 'last_name' | 'avatar_url'>;
   matchId: string;
   userRole: UserRoleType;

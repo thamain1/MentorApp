@@ -62,7 +62,7 @@ function AppRoutes() {
       <Route path="/profile" element={isAuthenticated && hasProfile ? <ProfilePage /> : <Navigate to="/" replace />} />
       <Route path="/goals" element={isAuthenticated && hasProfile ? <GoalsPage /> : <Navigate to="/" replace />} />
       <Route path="/sessions" element={isAuthenticated && hasProfile ? <SessionsListPage /> : <Navigate to="/" replace />} />
-      <Route path="/sessions/:matchId" element={isAuthenticated && hasProfile ? <SessionsPage /> : <Navigate to="/" replace />} />
+      <Route path="/sessions/view/:sessionId" element={isAuthenticated && hasProfile ? <SessionsPage /> : <Navigate to="/" replace />} />
       <Route path="/notifications" element={isAuthenticated && hasProfile ? <NotificationsPage /> : <Navigate to="/" replace />} />
       <Route path="/mentors" element={isAuthenticated && hasProfile ? <FindMentorPage /> : <Navigate to="/" replace />} />
       <Route path="/mentees" element={isAuthenticated && hasProfile ? <FindMenteesPage /> : <Navigate to="/" replace />} />

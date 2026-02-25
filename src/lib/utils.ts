@@ -52,3 +52,25 @@ export function calculateAge(birthDate: string | Date): number {
   }
   return age;
 }
+
+export function buildGoogleCalendarUrl(opts: {
+  title: string;
+  description?: string;
+  scheduledAt: string;
+  durationMins: number;
+  meetingUrl?: string;
+}): string {
+  const start = new Date(opts.scheduledAt);
+  const end = new Date(start.getTime() + opts.durationMins * 60_000);
+  const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const details = [opts.description, opts.meetingUrl ? `Join: ${opts.meetingUrl}` : '']
+    .filter(Boolean)
+    .join('\n');
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: opts.title,
+    dates: `${fmt(start)}/${fmt(end)}`,
+    ...(details && { details }),
+  });
+  return `https://calendar.google.com/calendar/render?${params}`;
+}

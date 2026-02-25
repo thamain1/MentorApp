@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, FileText } from 'lucide-react';
 import { Button, Textarea } from '../ui';
-import type { UserRole } from '../../data/mockData';
+import type { UserRole } from '../../types/database.types';
 
 interface SessionNotesModalProps {
   isOpen: boolean;

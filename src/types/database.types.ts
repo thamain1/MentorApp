@@ -10,6 +10,9 @@ export type UserRole = 'admin' | 'mentor' | 'mentee';
 export type MatchStatus = 'pending' | 'active' | 'completed' | 'cancelled';
 export type SessionStatus = 'scheduled' | 'completed' | 'cancelled';
 export type GoalStatus = 'active' | 'completed' | 'archived';
+export type SessionType = '1on1' | 'group';
+export type MeetingType = 'video' | 'voice' | 'chat';
+export type RecurrenceType = 'none' | 'weekly' | 'biweekly' | 'monthly';
 
 export interface Database {
   public: {
@@ -197,7 +200,7 @@ export interface Database {
       sessions: {
         Row: {
           id: string;
-          match_id: string;
+          match_id: string | null;
           scheduled_at: string;
           google_event_id: string | null;
           status: SessionStatus;
@@ -205,10 +208,19 @@ export interface Database {
           mentee_notes: string | null;
           mentor_notes: string | null;
           created_at: string;
+          session_type: SessionType;
+          meeting_type: MeetingType;
+          meeting_url: string | null;
+          title: string | null;
+          description: string | null;
+          organizer_id: string | null;
+          duration_mins: number;
+          recurrence: RecurrenceType;
+          recurrence_end_date: string | null;
         };
         Insert: {
           id?: string;
-          match_id: string;
+          match_id?: string | null;
           scheduled_at: string;
           google_event_id?: string | null;
           status?: SessionStatus;
@@ -216,16 +228,61 @@ export interface Database {
           mentee_notes?: string | null;
           mentor_notes?: string | null;
           created_at?: string;
+          session_type?: SessionType;
+          meeting_type?: MeetingType;
+          meeting_url?: string | null;
+          title?: string | null;
+          description?: string | null;
+          organizer_id?: string | null;
+          duration_mins?: number;
+          recurrence?: RecurrenceType;
+          recurrence_end_date?: string | null;
         };
         Update: {
           id?: string;
-          match_id?: string;
+          match_id?: string | null;
           scheduled_at?: string;
           google_event_id?: string | null;
           status?: SessionStatus;
           completed_at?: string | null;
           mentee_notes?: string | null;
           mentor_notes?: string | null;
+          created_at?: string;
+          session_type?: SessionType;
+          meeting_type?: MeetingType;
+          meeting_url?: string | null;
+          title?: string | null;
+          description?: string | null;
+          organizer_id?: string | null;
+          duration_mins?: number;
+          recurrence?: RecurrenceType;
+          recurrence_end_date?: string | null;
+        };
+        Relationships: [];
+      };
+      session_participants: {
+        Row: {
+          id: string;
+          session_id: string;
+          profile_id: string;
+          status: string;
+          invited_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          session_id: string;
+          profile_id: string;
+          status?: string;
+          invited_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          session_id?: string;
+          profile_id?: string;
+          status?: string;
+          invited_by?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -551,6 +608,7 @@ export interface Database {
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Match = Database['public']['Tables']['matches']['Row'];
 export type Session = Database['public']['Tables']['sessions']['Row'];
+export type SessionParticipant = Database['public']['Tables']['session_participants']['Row'];
 export type CheckIn = Database['public']['Tables']['check_ins']['Row'];
 export type Goal = Database['public']['Tables']['goals']['Row'];
 export type TrainingTrack = Database['public']['Tables']['training_tracks']['Row'];

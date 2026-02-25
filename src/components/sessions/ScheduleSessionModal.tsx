@@ -98,6 +98,13 @@ export function ScheduleSessionModal({
     setSaving(true);
     try {
       const scheduledAt = new Date(`${selectedDate}T${selectedTime}`).toISOString();
+
+      // Ensure meeting URL has a protocol so it opens as an external link
+      const rawUrl = meetingUrl.trim();
+      const normalizedUrl = rawUrl && !rawUrl.match(/^https?:\/\//i)
+        ? `https://${rawUrl}`
+        : rawUrl;
+
       const sessionTitle =
         sessionType === 'group'
           ? title.trim()
@@ -113,7 +120,7 @@ export function ScheduleSessionModal({
           status: 'scheduled',
           session_type: sessionType,
           meeting_type: meetingType,
-          meeting_url: meetingUrl.trim() || null,
+          meeting_url: normalizedUrl || null,
           title: sessionTitle,
           description: description.trim() || null,
           organizer_id: profile.id,

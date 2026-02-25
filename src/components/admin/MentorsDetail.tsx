@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, Avatar, Badge } from '../ui';
 import { supabase, supabaseAdmin } from '../../lib/supabase';
+import { MentorAdminDetail } from './MentorAdminDetail';
 
 interface MentorRow {
   id: string;
@@ -9,6 +10,9 @@ interface MentorRow {
   first_name: string;
   last_name: string;
   avatar_url: string | null;
+  bio: string | null;
+  specialties: string[];
+  location: string | null;
   is_blocked: boolean;
   created_at: string;
 }
@@ -23,6 +27,7 @@ export function MentorsDetail({ onBack, onChanged }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [acting, setActing] = useState<string | null>(null);
+  const [selectedMentor, setSelectedMentor] = useState<MentorRow | null>(null);
 
   const fetchMentors = useCallback(async () => {
     setLoading(true);
@@ -30,7 +35,7 @@ export function MentorsDetail({ onBack, onChanged }: Props) {
     try {
       const { data, error: fetchErr } = await supabase
         .from('profiles')
-        .select('id, user_id, first_name, last_name, avatar_url, is_blocked, created_at')
+        .select('id, user_id, first_name, last_name, avatar_url, bio, specialties, location, is_blocked, created_at')
         .eq('role', 'mentor')
         .order('created_at', { ascending: false });
 
@@ -46,7 +51,8 @@ export function MentorsDetail({ onBack, onChanged }: Props) {
 
   useEffect(() => { fetchMentors(); }, [fetchMentors]);
 
-  const handleToggleBlock = async (mentor: MentorRow) => {
+  const handleToggleBlock = async (e: React.MouseEvent, mentor: MentorRow) => {
+    e.stopPropagation();
     setActing(mentor.id);
     try {
       const newBlocked = !mentor.is_blocked;
@@ -69,6 +75,23 @@ export function MentorsDetail({ onBack, onChanged }: Props) {
     }
   };
 
+  const handleDetailBack = useCallback(async () => {
+    setSelectedMentor(null);
+    await fetchMentors();
+  }, [fetchMentors]);
+
+  // ---- Drill-down view ----
+  if (selectedMentor) {
+    return (
+      <MentorAdminDetail
+        mentor={selectedMentor}
+        onBack={handleDetailBack}
+        onChanged={() => { fetchMentors(); onChanged(); }}
+      />
+    );
+  }
+
+  // ---- List view ----
   return (
     <Card className="mt-4">
       <div className="flex items-center gap-2 mb-4">
@@ -105,7 +128,11 @@ export function MentorsDetail({ onBack, onChanged }: Props) {
             <p className="text-sm text-iron-500 text-center py-4">No mentors found.</p>
           )}
           {mentors.map((mentor) => (
-            <div key={mentor.id} className="flex items-center gap-3 p-3 bg-iron-50 rounded-xl">
+            <button
+              key={mentor.id}
+              onClick={() => setSelectedMentor(mentor)}
+              className="w-full flex items-center gap-3 p-3 bg-iron-50 rounded-xl hover:bg-iron-100 transition-colors text-left"
+            >
               <Avatar
                 name={`${mentor.first_name} ${mentor.last_name}`}
                 src={mentor.avatar_url}
@@ -123,7 +150,7 @@ export function MentorsDetail({ onBack, onChanged }: Props) {
                 {mentor.is_blocked ? 'Blocked' : 'Active'}
               </Badge>
               <button
-                onClick={() => handleToggleBlock(mentor)}
+                onClick={(e) => handleToggleBlock(e, mentor)}
                 disabled={acting === mentor.id}
                 className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-50 ${
                   mentor.is_blocked
@@ -133,7 +160,8 @@ export function MentorsDetail({ onBack, onChanged }: Props) {
               >
                 {acting === mentor.id ? '…' : mentor.is_blocked ? 'Unblock' : 'Block'}
               </button>
-            </div>
+              <ChevronRight className="w-4 h-4 text-iron-400 shrink-0" />
+            </button>
           ))}
         </div>
       )}

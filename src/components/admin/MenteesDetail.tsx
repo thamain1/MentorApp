@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, Avatar, Badge } from '../ui';
 import { supabase, supabaseAdmin } from '../../lib/supabase';
+import { MenteeAdminDetail } from './MenteeAdminDetail';
 
 interface MenteeRow {
   id: string;
@@ -9,6 +10,11 @@ interface MenteeRow {
   first_name: string;
   last_name: string;
   avatar_url: string | null;
+  bio: string | null;
+  age: number;
+  interests: string[];
+  goals: string[];
+  location: string | null;
   is_blocked: boolean;
   created_at: string;
 }
@@ -24,6 +30,7 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [acting, setActing] = useState<string | null>(null);
+  const [selectedMentee, setSelectedMentee] = useState<MenteeRow | null>(null);
 
   const fetchMentees = useCallback(async () => {
     setLoading(true);
@@ -31,7 +38,7 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
     try {
       const { data, error: fetchErr } = await supabase
         .from('profiles')
-        .select('id, user_id, first_name, last_name, avatar_url, is_blocked, created_at')
+        .select('id, user_id, first_name, last_name, avatar_url, bio, age, interests, goals, location, is_blocked, created_at')
         .eq('role', 'mentee')
         .order('created_at', { ascending: false });
 
@@ -46,7 +53,6 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
           .select('mentee_id, status')
           .in('mentee_id', ids);
 
-        // Build map: menteeId → highest-priority status
         const priority: Record<string, number> = { active: 3, pending: 2, completed: 1, cancelled: 0 };
         const statusMap: Record<string, string> = {};
         (matchData ?? []).forEach((m) => {
@@ -67,7 +73,8 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
 
   useEffect(() => { fetchMentees(); }, [fetchMentees]);
 
-  const handleToggleBlock = async (mentee: MenteeRow) => {
+  const handleToggleBlock = async (e: React.MouseEvent, mentee: MenteeRow) => {
+    e.stopPropagation();
     setActing(mentee.id);
     try {
       const newBlocked = !mentee.is_blocked;
@@ -90,6 +97,11 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
     }
   };
 
+  const handleDetailBack = useCallback(async () => {
+    setSelectedMentee(null);
+    await fetchMentees();
+  }, [fetchMentees]);
+
   const matchLabel = (id: string) => {
     const s = matchStatus[id];
     if (s === 'active') return 'Matched';
@@ -97,6 +109,18 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
     return 'No match';
   };
 
+  // ---- Drill-down view ----
+  if (selectedMentee) {
+    return (
+      <MenteeAdminDetail
+        mentee={selectedMentee}
+        onBack={handleDetailBack}
+        onChanged={() => { fetchMentees(); onChanged(); }}
+      />
+    );
+  }
+
+  // ---- List view ----
   return (
     <Card className="mt-4">
       <div className="flex items-center gap-2 mb-4">
@@ -133,7 +157,11 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
             <p className="text-sm text-iron-500 text-center py-4">No mentees found.</p>
           )}
           {mentees.map((mentee) => (
-            <div key={mentee.id} className="flex items-center gap-3 p-3 bg-iron-50 rounded-xl">
+            <button
+              key={mentee.id}
+              onClick={() => setSelectedMentee(mentee)}
+              className="w-full flex items-center gap-3 p-3 bg-iron-50 rounded-xl hover:bg-iron-100 transition-colors text-left"
+            >
               <Avatar
                 name={`${mentee.first_name} ${mentee.last_name}`}
                 src={mentee.avatar_url}
@@ -151,7 +179,7 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
                 {mentee.is_blocked ? 'Blocked' : 'Active'}
               </Badge>
               <button
-                onClick={() => handleToggleBlock(mentee)}
+                onClick={(e) => handleToggleBlock(e, mentee)}
                 disabled={acting === mentee.id}
                 className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-50 ${
                   mentee.is_blocked
@@ -161,7 +189,8 @@ export function MenteesDetail({ onBack, onChanged }: Props) {
               >
                 {acting === mentee.id ? '…' : mentee.is_blocked ? 'Unblock' : 'Block'}
               </button>
-            </div>
+              <ChevronRight className="w-4 h-4 text-iron-400 shrink-0" />
+            </button>
           ))}
         </div>
       )}

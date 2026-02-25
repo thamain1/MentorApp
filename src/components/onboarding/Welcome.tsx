@@ -14,7 +14,19 @@ export function Welcome({ onContinue }: WelcomeProps) {
     navigate('/home');
   };
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-iron-900 to-iron-950">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-6 relative"
+      style={{
+        backgroundImage: "url('/images/3.png')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/60" />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center w-full max-w-xs">
       {/* Logo */}
       <div className="mb-8">
         <div className="w-24 h-24 bg-brand-500 rounded-3xl flex items-center justify-center shadow-xl shadow-brand-500/30">
@@ -55,6 +67,7 @@ export function Welcome({ onContinue }: WelcomeProps) {
           Sign In
         </button>
       </p>
+      </div>
     </div>
   );
 }

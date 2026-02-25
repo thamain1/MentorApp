@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, MoreVertical, Flag, ArrowLeft } from 'lucide-react';
+import { Send, MoreVertical, Flag, ArrowLeft, Megaphone } from 'lucide-react';
 import { Avatar } from '../ui';
 import { formatTime, formatDate } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
@@ -8,7 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 
 interface Message {
   id: string;
-  match_id: string;
+  match_id: string | null;
+  conversation_id?: string | null;
   sender_id: string;
   content: string;
   read_at: string | null;
@@ -24,61 +25,119 @@ interface ParticipantProfile {
   avatar_url: string | null;
 }
 
+interface ConversationData {
+  id: string;
+  type: string;
+  title: string | null;
+}
+
 export function Chat() {
-  const { matchId } = useParams<{ matchId: string }>();
+  const { matchId, conversationId } = useParams<{ matchId?: string; conversationId?: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [participant, setParticipant] = useState<ParticipantProfile | null>(null);
+  const [conversation, setConversation] = useState<ConversationData | null>(null);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchChatData = useCallback(async () => {
-    if (!user || !profile || !matchId) return;
+    if (!user || !profile) return;
     setLoading(true);
 
-    // Fetch the match to determine the other person
-    const { data: match } = await supabase
-      .from('matches')
-      .select('id, mentor_id, mentee_id')
-      .eq('id', matchId)
-      .maybeSingle();
-
-    if (match) {
-      const otherProfileId = match.mentor_id === profile.id ? match.mentee_id : match.mentor_id;
-      const { data: otherProfile } = await supabase
-        .from('profiles')
-        .select('id, user_id, first_name, last_name, avatar_url')
-        .eq('id', otherProfileId)
+    if (conversationId) {
+      // Fetch the conversation
+      const { data: conv } = await supabase
+        .from('conversations')
+        .select('id, type, title')
+        .eq('id', conversationId)
         .maybeSingle();
-      if (otherProfile) {
-        setParticipant(otherProfile as ParticipantProfile);
+
+      if (conv) {
+        setConversation(conv as ConversationData);
       }
+
+      // Fetch other participant (for direct conversations)
+      if (conv?.type === 'direct') {
+        const { data: otherParticipants } = await supabase
+          .from('conversation_participants')
+          .select('profile_id')
+          .eq('conversation_id', conversationId)
+          .neq('profile_id', profile.id);
+
+        const otherProfileId = otherParticipants?.[0]?.profile_id;
+        if (otherProfileId) {
+          const { data: p } = await supabase
+            .from('profiles')
+            .select('id, user_id, first_name, last_name, avatar_url')
+            .eq('id', otherProfileId)
+            .maybeSingle();
+          if (p) setParticipant(p as ParticipantProfile);
+        }
+      }
+
+      // Fetch messages
+      const { data: msgs } = await supabase
+        .from('messages')
+        .select('id, match_id, conversation_id, sender_id, content, read_at, created_at')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+
+      if (msgs) {
+        setMessages(msgs.map(m => ({ ...m, isOwn: m.sender_id === user.id })));
+      }
+
+      // Mark messages as read
+      await supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', user.id)
+        .is('read_at', null);
+    } else if (matchId) {
+      // Fetch the match to determine the other person
+      const { data: match } = await supabase
+        .from('matches')
+        .select('id, mentor_id, mentee_id')
+        .eq('id', matchId)
+        .maybeSingle();
+
+      if (match) {
+        const otherProfileId = match.mentor_id === profile.id ? match.mentee_id : match.mentor_id;
+        const { data: otherProfile } = await supabase
+          .from('profiles')
+          .select('id, user_id, first_name, last_name, avatar_url')
+          .eq('id', otherProfileId)
+          .maybeSingle();
+        if (otherProfile) {
+          setParticipant(otherProfile as ParticipantProfile);
+        }
+      }
+
+      // Fetch messages for this match
+      const { data: msgs } = await supabase
+        .from('messages')
+        .select('id, match_id, conversation_id, sender_id, content, read_at, created_at')
+        .eq('match_id', matchId)
+        .order('created_at', { ascending: true });
+
+      if (msgs) {
+        setMessages(msgs.map(m => ({ ...m, isOwn: m.sender_id === user.id })));
+      }
+
+      // Mark messages as read
+      await supabase
+        .from('messages')
+        .update({ read_at: new Date().toISOString() })
+        .eq('match_id', matchId)
+        .neq('sender_id', user.id)
+        .is('read_at', null);
     }
-
-    // Fetch messages for this match
-    const { data: msgs } = await supabase
-      .from('messages')
-      .select('id, match_id, sender_id, content, read_at, created_at')
-      .eq('match_id', matchId)
-      .order('created_at', { ascending: true });
-
-    if (msgs) {
-      setMessages(msgs.map(m => ({ ...m, isOwn: m.sender_id === user.id })));
-    }
-
-    // Mark messages as read (messages from the other person that haven't been read)
-    await supabase
-      .from('messages')
-      .update({ read_at: new Date().toISOString() })
-      .eq('match_id', matchId)
-      .neq('sender_id', user.id)
-      .is('read_at', null);
 
     setLoading(false);
-  }, [user, profile, matchId]);
+  }, [user, profile, matchId, conversationId]);
 
   useEffect(() => {
     fetchChatData();
@@ -114,24 +173,49 @@ export function Chat() {
   };
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !user || !matchId) return;
+    if (!newMessage.trim() || !user) return;
     const content = newMessage.trim();
     setNewMessage('');
 
-    const { data: inserted, error } = await supabase
-      .from('messages')
-      .insert({
-        match_id: matchId,
-        sender_id: user.id,
-        content,
-      })
-      .select('id, match_id, sender_id, content, read_at, created_at')
-      .single();
+    if (conversationId) {
+      const { data: inserted, error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender_id: user.id,
+          content,
+        })
+        .select('id, match_id, conversation_id, sender_id, content, read_at, created_at')
+        .single();
 
-    if (!error && inserted) {
-      setMessages(prev => [...prev, { ...inserted, isOwn: true }]);
+      if (!error && inserted) {
+        setMessages(prev => [...prev, { ...inserted, isOwn: true }]);
+      }
+    } else if (matchId) {
+      const { data: inserted, error } = await supabase
+        .from('messages')
+        .insert({
+          match_id: matchId,
+          sender_id: user.id,
+          content,
+        })
+        .select('id, match_id, conversation_id, sender_id, content, read_at, created_at')
+        .single();
+
+      if (!error && inserted) {
+        setMessages(prev => [...prev, { ...inserted, isOwn: true }]);
+      }
     }
   };
+
+  const isAnnouncement = conversation?.type === 'announcement';
+  const isReadOnly = isAnnouncement && profile?.role !== 'admin';
+
+  const headerTitle = isAnnouncement
+    ? (conversation?.title ?? 'Announcements')
+    : participant
+    ? `${participant.first_name} ${participant.last_name}`
+    : '';
 
   if (loading) {
     return (
@@ -160,7 +244,7 @@ export function Chat() {
     );
   }
 
-  if (!participant) {
+  if (!participant && !conversation) {
     return (
       <div className="app-container flex flex-col items-center justify-center min-h-screen p-8 text-center">
         <p className="text-iron-500">Conversation not found</p>
@@ -174,8 +258,6 @@ export function Chat() {
     );
   }
 
-  const participantName = `${participant.first_name} ${participant.last_name}`;
-
   return (
     <div className="app-container flex flex-col h-screen bg-iron-50">
       {/* Header */}
@@ -187,46 +269,54 @@ export function Chat() {
           >
             <ArrowLeft className="w-5 h-5 text-iron-700" />
           </button>
-          <Avatar
-            src={participant.avatar_url}
-            name={participantName}
-            size="md"
-          />
+          {isAnnouncement ? (
+            <div className="w-9 h-9 bg-amber-100 rounded-full flex items-center justify-center">
+              <Megaphone className="w-5 h-5 text-amber-600" />
+            </div>
+          ) : (
+            <Avatar
+              src={participant?.avatar_url ?? null}
+              name={headerTitle}
+              size="md"
+            />
+          )}
           <div>
-            <h1 className="font-semibold text-iron-900">{participantName}</h1>
-            <p className="text-xs text-iron-500">Active now</p>
+            <h1 className="font-semibold text-iron-900">{headerTitle}</h1>
+            {!isAnnouncement && <p className="text-xs text-iron-500">Active now</p>}
           </div>
         </div>
 
-        <div className="relative">
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-2 rounded-xl hover:bg-iron-100 transition-colors"
-          >
-            <MoreVertical className="w-5 h-5 text-iron-700" />
-          </button>
+        {!isAnnouncement && (
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="p-2 rounded-xl hover:bg-iron-100 transition-colors"
+            >
+              <MoreVertical className="w-5 h-5 text-iron-700" />
+            </button>
 
-          {showMenu && (
-            <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowMenu(false)}
-              />
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-iron-100 py-1 z-50">
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    // Navigate to report page
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-2 text-left text-iron-700 hover:bg-iron-50"
-                >
-                  <Flag className="w-4 h-4" />
-                  Report concern
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+            {showMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMenu(false)}
+                />
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-iron-100 py-1 z-50">
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      // Navigate to report page
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-left text-iron-700 hover:bg-iron-50"
+                  >
+                    <Flag className="w-4 h-4" />
+                    Report concern
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Messages */}
@@ -250,6 +340,8 @@ export function Chat() {
                   className={`max-w-[80%] px-4 py-2 rounded-2xl ${
                     message.isOwn
                       ? 'bg-gradient-to-br from-brand-500 to-brand-600 text-white rounded-br-md'
+                      : isAnnouncement
+                      ? 'bg-amber-100 text-iron-900 border border-amber-200 rounded-bl-md'
                       : 'bg-white text-iron-900 border border-iron-100 rounded-bl-md'
                   }`}
                 >
@@ -271,23 +363,31 @@ export function Chat() {
 
       {/* Input */}
       <div className="sticky bottom-0 p-4 bg-white border-t border-iron-100 safe-bottom">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-3 bg-iron-50 rounded-xl border-0 focus:ring-2 focus:ring-brand-500 focus:bg-white transition-colors"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!newMessage.trim()}
-            className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send className="w-5 h-5" />
-          </button>
-        </div>
+        {isReadOnly ? (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 px-4 py-3 bg-iron-100 rounded-xl text-iron-400 text-sm cursor-not-allowed select-none">
+              Only admins can post announcements
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Type a message..."
+              className="flex-1 px-4 py-3 bg-iron-50 rounded-xl border-0 focus:ring-2 focus:ring-brand-500 focus:bg-white transition-colors"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!newMessage.trim()}
+              className="p-3 bg-brand-500 text-white rounded-xl hover:bg-brand-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

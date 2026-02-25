@@ -13,6 +13,7 @@ export type GoalStatus = 'active' | 'completed' | 'archived';
 export type SessionType = '1on1' | 'group';
 export type MeetingType = 'video' | 'voice' | 'chat';
 export type RecurrenceType = 'none' | 'weekly' | 'biweekly' | 'monthly';
+export type ConversationType = 'direct' | 'announcement';
 
 export interface Database {
   public: {
@@ -533,10 +534,48 @@ export interface Database {
         };
         Relationships: [];
       };
+      conversations: {
+        Row: {
+          id: string;
+          type: string;
+          title: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          type?: string;
+          title?: string | null;
+          created_by?: string | null;
+        };
+        Update: {
+          type?: string;
+          title?: string | null;
+        };
+        Relationships: [];
+      };
+      conversation_participants: {
+        Row: {
+          conversation_id: string;
+          profile_id: string;
+          added_by: string | null;
+          joined_at: string;
+        };
+        Insert: {
+          conversation_id: string;
+          profile_id: string;
+          added_by?: string | null;
+        };
+        Update: {
+          added_by?: string | null;
+        };
+        Relationships: [];
+      };
       messages: {
         Row: {
           id: string;
-          match_id: string;
+          match_id: string | null;
+          conversation_id?: string | null;
           sender_id: string;
           content: string;
           read_at: string | null;
@@ -544,7 +583,8 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          match_id: string;
+          match_id?: string | null;
+          conversation_id?: string | null;
           sender_id: string;
           content: string;
           read_at?: string | null;
@@ -552,7 +592,8 @@ export interface Database {
         };
         Update: {
           id?: string;
-          match_id?: string;
+          match_id?: string | null;
+          conversation_id?: string | null;
           sender_id?: string;
           content?: string;
           read_at?: string | null;
@@ -619,3 +660,5 @@ export type Post = Database['public']['Tables']['posts']['Row'];
 export type PostLike = Database['public']['Tables']['post_likes']['Row'];
 export type Message = Database['public']['Tables']['messages']['Row'];
 export type Notification = Database['public']['Tables']['notifications']['Row'];
+export type Conversation = Database['public']['Tables']['conversations']['Row'];
+export type ConversationParticipant = Database['public']['Tables']['conversation_participants']['Row'];

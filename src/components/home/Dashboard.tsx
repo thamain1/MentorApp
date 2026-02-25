@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import {
-  Calendar, MessageCircle, Target, TrendingUp,
+  Calendar, MessageCircle, MessageSquare, Target, TrendingUp,
   ChevronRight, Sparkles, Clock, Users, Shield, Edit3, Check,
   Camera, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw, UserPlus
 } from 'lucide-react';
@@ -139,6 +139,7 @@ export function Dashboard() {
     pendingMatches: 0,
   });
   const [dataLoading, setDataLoading] = useState(true);
+  const [unreadMsgCount, setUnreadMsgCount] = useState<number>(0);
 
   useEffect(() => {
     if (!user || !profile) return;
@@ -244,6 +245,13 @@ export function Dashboard() {
           setActiveGoalsCount(activeGoals.count ?? 0);
           setCompletedGoalsCount(completedGoals.count ?? 0);
         }
+        // Unread messages count (RLS limits to conversations/matches user belongs to)
+        const { count: unread } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .neq('sender_id', user.id)
+          .is('read_at', null);
+        setUnreadMsgCount(unread ?? 0);
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
       } finally {
@@ -953,13 +961,15 @@ export function Dashboard() {
               <p className="text-xs text-iron-500">Continue learning</p>
             </Card>
           </Link>
-          <Link to="/community">
+          <Link to="/messages">
             <Card className="hover:border-brand-200 transition-colors">
               <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center mb-3">
-                <MessageCircle className="w-5 h-5 text-brand-600" />
+                <MessageSquare className="w-5 h-5 text-brand-600" />
               </div>
-              <h4 className="font-medium text-iron-900 text-sm">Community</h4>
-              <p className="text-xs text-iron-500">Join the conversation</p>
+              <h4 className="font-medium text-iron-900 text-sm">Messages</h4>
+              <p className="text-xs text-iron-500">
+                {unreadMsgCount > 0 ? `${unreadMsgCount} unread` : 'View chats'}
+              </p>
             </Card>
           </Link>
           <Link to="/goals">

@@ -55,6 +55,7 @@ function AppRoutes() {
       <Route path="/community" element={isAuthenticated && hasProfile ? <CommunityPage /> : <Navigate to="/" replace />} />
       <Route path="/messages" element={isAuthenticated && hasProfile ? <MessagesPage /> : <Navigate to="/" replace />} />
       <Route path="/messages/:matchId" element={isAuthenticated && hasProfile ? <ChatPage /> : <Navigate to="/" replace />} />
+      <Route path="/messages/conversation/:conversationId" element={isAuthenticated && hasProfile ? <ChatPage /> : <Navigate to="/" replace />} />
       <Route path="/training" element={isAuthenticated && hasProfile ? <TrainingPage /> : <Navigate to="/" replace />} />
       <Route path="/training/:trackId" element={isAuthenticated && hasProfile ? <TrackDetailPage /> : <Navigate to="/" replace />} />
       <Route path="/training/:trackId/:moduleId" element={isAuthenticated && hasProfile ? <ModuleDetailPage /> : <Navigate to="/" replace />} />

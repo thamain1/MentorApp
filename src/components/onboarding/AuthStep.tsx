@@ -6,12 +6,13 @@ import { Button, Input } from '../ui';
 interface AuthStepProps {
   onSuccess: (userId: string, isNewUser: boolean) => void;
   onBack: () => void;
+  initialMode?: 'signup' | 'signin';
 }
 
 type Mode = 'signup' | 'signin';
 
-export function AuthStep({ onSuccess, onBack }: AuthStepProps) {
-  const [mode, setMode] = useState<Mode>('signup');
+export function AuthStep({ onSuccess, onBack, initialMode = 'signup' }: AuthStepProps) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

@@ -19,6 +19,7 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const { refreshProfile } = useAuth();
   const [step, setStep] = useState<OnboardingStep>('welcome');
+  const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
   const [userId, setUserId] = useState<string | null>(null);
   const [role, setRole] = useState<'mentor' | 'mentee' | null>(null);
   const [age, setAge] = useState<number | null>(null);
@@ -86,13 +87,17 @@ export function OnboardingPage() {
   return (
     <>
       {step === 'welcome' && (
-        <Welcome onContinue={() => setStep('auth')} />
+        <Welcome
+          onContinue={() => { setAuthMode('signup'); setStep('auth'); }}
+          onSignIn={() => { setAuthMode('signin'); setStep('auth'); }}
+        />
       )}
 
       {step === 'auth' && (
         <AuthStep
           onSuccess={handleAuthSuccess}
           onBack={() => setStep('welcome')}
+          initialMode={authMode}
         />
       )}
 

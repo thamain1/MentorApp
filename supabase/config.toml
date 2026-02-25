@@ -1,0 +1,5 @@
+project_id = "mfluryezsdzwnexucgau"
+
+[auth]
+site_url = "https://mentorapp-303.pages.dev"
+additional_redirect_urls = ["https://mentorapp-303.pages.dev/**"]

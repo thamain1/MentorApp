@@ -33,6 +33,7 @@ export function GoalsList() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [addError, setAddError] = useState('');
 
   const fetchGoals = useCallback(async () => {
     if (!user) return;
@@ -64,14 +65,20 @@ export function GoalsList() {
 
   const handleAdd = async (data: { title: string; description: string; targetDate: string }) => {
     if (!user) return;
-    await supabase.from('goals').insert({
+    setAddError('');
+    const { error } = await supabase.from('goals').insert({
       user_id: user.id,
       title: data.title,
       description: data.description || null,
       target_date: data.targetDate ? new Date(data.targetDate).toISOString() : null,
       status: 'active',
     });
-    fetchGoals();
+    if (error) {
+      setAddError(error.message);
+      return;
+    }
+    setShowAddModal(false);
+    await fetchGoals();
   };
 
   const activeGoals = goals.filter(g => g.status === 'active');
@@ -80,6 +87,11 @@ export function GoalsList() {
   return (
     <AppShell>
       <Header title="My Goals" showNotifications />
+      {addError && (
+        <div className="mx-4 mt-3 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+          {addError}
+        </div>
+      )}
 
       <div className="p-4 space-y-6">
         {loading ? (
@@ -105,7 +117,14 @@ export function GoalsList() {
                 <Card className="p-6 text-center">
                   <Target className="w-10 h-10 text-iron-300 mx-auto mb-2" />
                   <p className="text-iron-600 font-medium mb-1">No active goals</p>
-                  <p className="text-sm text-iron-500">Set a goal to start tracking your progress</p>
+                  <p className="text-sm text-iron-500 mb-4">Set a goal to start tracking your progress</p>
+                  <button
+                    onClick={() => setShowAddModal(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Your First Goal
+                  </button>
                 </Card>
               ) : (
                 <div className="space-y-3">
@@ -234,8 +253,9 @@ export function GoalsList() {
 
       <AddGoalModal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => { setShowAddModal(false); setAddError(''); }}
         onAdd={handleAdd}
+        error={addError}
       />
     </AppShell>
   );

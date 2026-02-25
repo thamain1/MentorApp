@@ -6,22 +6,28 @@ interface AddGoalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (goal: { title: string; description: string; targetDate: string }) => void;
+  error?: string;
 }
 
-export function AddGoalModal({ isOpen, onClose, onAdd }: AddGoalModalProps) {
+export function AddGoalModal({ isOpen, onClose, onAdd, error }: AddGoalModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim()) return;
-    onAdd({ title, description, targetDate });
-    setTitle('');
-    setDescription('');
-    setTargetDate('');
-    onClose();
+    setSubmitting(true);
+    await onAdd({ title, description, targetDate });
+    setSubmitting(false);
+    // Parent controls closing on success (no error)
+    if (!error) {
+      setTitle('');
+      setDescription('');
+      setTargetDate('');
+    }
   };
 
   return (
@@ -59,6 +65,11 @@ export function AddGoalModal({ isOpen, onClose, onAdd }: AddGoalModalProps) {
             value={targetDate}
             onChange={(e) => setTargetDate(e.target.value)}
           />
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Fixed Footer with Buttons */}
@@ -73,9 +84,9 @@ export function AddGoalModal({ isOpen, onClose, onAdd }: AddGoalModalProps) {
           <Button
             className="flex-1"
             onClick={handleSubmit}
-            disabled={!title.trim()}
+            disabled={!title.trim() || submitting}
           >
-            Add Goal
+            {submitting ? 'Saving...' : 'Add Goal'}
           </Button>
         </div>
       </div>

@@ -8,7 +8,7 @@ import {
   Calendar,
 } from 'lucide-react';
 import { Card, Avatar, Badge } from '../ui';
-import { supabaseAdmin } from '../../lib/supabase';
+import { supabase, supabaseAdmin } from '../../lib/supabase';
 
 interface MenteeRow {
   id: string;
@@ -118,7 +118,7 @@ export function MenteeAdminDetail({ mentee, onBack, onChanged }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const { data: matchData, error: matchErr } = await supabaseAdmin
+      const { data: matchData, error: matchErr } = await supabase
         .from('matches')
         .select('id, mentor_id, status, approved_at, requested_at')
         .eq('mentee_id', mentee.id)
@@ -133,28 +133,28 @@ export function MenteeAdminDetail({ mentee, onBack, onChanged }: Props) {
 
       const [sessionsRes, mentorRes, goalsRes, checkInsRes, trainingRes] = await Promise.all([
         matchIds.length
-          ? supabaseAdmin
+          ? supabase
               .from('sessions')
               .select('id, duration_mins, status, completed_at, created_at')
               .in('match_id', matchIds)
           : Promise.resolve({ data: [], error: null }),
         mentorIds.length
-          ? supabaseAdmin
+          ? supabase
               .from('profiles')
               .select('id, first_name, last_name, avatar_url')
               .in('id', mentorIds)
           : Promise.resolve({ data: [], error: null }),
-        supabaseAdmin
+        supabase
           .from('goals')
           .select('id, title, status, target_date, completed_at')
           .eq('user_id', mentee.id)
           .order('created_at', { ascending: false }),
-        supabaseAdmin
+        supabase
           .from('check_ins')
           .select('id, mood, created_at')
           .eq('user_id', mentee.id)
           .order('created_at', { ascending: false }),
-        supabaseAdmin
+        supabase
           .from('user_training_progress')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', mentee.id),

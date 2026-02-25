@@ -14,6 +14,7 @@ import {
   Flame,
   Award,
   AlertTriangle,
+  BarChart2,
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar, Card, Badge } from '../ui';
@@ -146,6 +147,11 @@ export function ProfilePage() {
       label: 'Notifications',
       onClick: () => navigate('/notifications'),
     },
+    ...(role === 'mentor' ? [{
+      icon: BarChart2,
+      label: 'My Reports',
+      onClick: () => navigate('/reports'),
+    }] : []),
     {
       icon: HelpCircle,
       label: 'Help & Support',

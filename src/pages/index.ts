@@ -20,3 +20,4 @@ export { MatchRequestsPage } from './MatchRequests';
 export { GroupsPage } from './Groups';
 export { GroupDetailPage } from './GroupDetail';
 export { AdminPage } from './Admin';
+export { ReportsPage } from './Reports';

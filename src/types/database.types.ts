@@ -634,6 +634,32 @@ export interface Database {
         };
         Relationships: [];
       };
+      mentor_surveys: {
+        Row: {
+          id: string;
+          match_id: string;
+          mentee_id: string;
+          mentor_id: string;
+          survey_month: string;
+          overall_rating: number;
+          communication_rating: number;
+          helpfulness_rating: number;
+          feedback_text: string | null;
+          created_at: string;
+        };
+        Insert: {
+          match_id: string;
+          mentee_id: string;
+          mentor_id: string;
+          survey_month: string;
+          overall_rating: number;
+          communication_rating: number;
+          helpfulness_rating: number;
+          feedback_text?: string | null;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -662,3 +688,4 @@ export type Message = Database['public']['Tables']['messages']['Row'];
 export type Notification = Database['public']['Tables']['notifications']['Row'];
 export type Conversation = Database['public']['Tables']['conversations']['Row'];
 export type ConversationParticipant = Database['public']['Tables']['conversation_participants']['Row'];
+export type MentorSurvey = Database['public']['Tables']['mentor_surveys']['Row'];

@@ -21,6 +21,7 @@ import {
   GroupsPage,
   GroupDetailPage,
   AdminPage,
+  ReportsPage,
 } from './pages';
 import { UserProvider } from './context';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -72,6 +73,7 @@ function AppRoutes() {
       <Route path="/groups" element={isAuthenticated && hasProfile ? <GroupsPage /> : <Navigate to="/" replace />} />
       <Route path="/groups/:groupId" element={isAuthenticated && hasProfile ? <GroupDetailPage /> : <Navigate to="/" replace />} />
       <Route path="/admin" element={isAuthenticated && hasProfile ? <AdminPage /> : <Navigate to="/" replace />} />
+      <Route path="/reports" element={isAuthenticated && hasProfile ? <ReportsPage /> : <Navigate to="/" replace />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

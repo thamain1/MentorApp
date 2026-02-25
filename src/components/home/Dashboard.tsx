@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import {
   Calendar, MessageCircle, MessageSquare, Target, TrendingUp,
   ChevronRight, Sparkles, Clock, Users, Shield, Edit3, Check,
-  Camera, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw, UserPlus
+  Camera, X, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, RotateCcw, UserPlus, Star
 } from 'lucide-react';
+import { MentorSurveyPrompt } from './MentorSurveyPrompt';
 import { Link, useNavigate } from 'react-router-dom';
 import { Header } from '../layout';
 import { Card, Avatar, Badge, Button } from '../ui';
@@ -140,6 +141,10 @@ export function Dashboard() {
   });
   const [dataLoading, setDataLoading] = useState(true);
   const [unreadMsgCount, setUnreadMsgCount] = useState<number>(0);
+  const [showSurveyPrompt, setShowSurveyPrompt] = useState(false);
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [mentorIdForSurvey, setMentorIdForSurvey] = useState<string>('');
+  const [mentorNameForSurvey, setMentorNameForSurvey] = useState<string>('your mentor');
 
   useEffect(() => {
     if (!user || !profile) return;
@@ -220,13 +225,14 @@ export function Dashboard() {
             .limit(1);
 
           if (matchesData && matchesData.length > 0) {
-            setActiveMatchId(matchesData[0].id);
+            const activeMatch = matchesData[0];
+            setActiveMatchId(activeMatch.id);
 
             // Fetch upcoming session
             const { data: sessionsData } = await supabase
               .from('sessions')
               .select('id, scheduled_at, match_id')
-              .eq('match_id', matchesData[0].id)
+              .eq('match_id', activeMatch.id)
               .eq('status', 'scheduled')
               .gte('scheduled_at', new Date().toISOString())
               .order('scheduled_at')
@@ -234,6 +240,29 @@ export function Dashboard() {
 
             if (sessionsData && sessionsData.length > 0) {
               setUpcomingSession(sessionsData[0] as UpcomingSession);
+            }
+
+            // Check if survey already submitted this month
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const { data: existingSurvey } = await supabase
+              .from('mentor_surveys')
+              .select('id')
+              .eq('match_id', activeMatch.id)
+              .eq('survey_month', currentMonth)
+              .maybeSingle();
+            setShowSurveyPrompt(!existingSurvey);
+            setMentorIdForSurvey(activeMatch.mentor_id);
+
+            // Fetch mentor name for survey modal
+            const { data: mentorProfile } = await supabase
+              .from('profiles')
+              .select('first_name, last_name')
+              .eq('id', activeMatch.mentor_id)
+              .maybeSingle();
+            if (mentorProfile) {
+              setMentorNameForSurvey(
+                `${mentorProfile.first_name ?? ''} ${mentorProfile.last_name ?? ''}`.trim() || 'your mentor'
+              );
             }
           }
 
@@ -732,6 +761,28 @@ export function Dashboard() {
           </Card>
         )}
 
+        {/* Monthly Mentor Survey Prompt (mentees with active match) */}
+        {role === 'mentee' && !dataLoading && showSurveyPrompt && activeMatchId && (
+          <Card className="mb-4 bg-amber-50 border-amber-200">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <Star className="w-5 h-5 text-amber-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900">Monthly Mentor Feedback</h3>
+                <p className="text-sm text-amber-700/80 mb-3">Help us improve — rate your mentor this month.</p>
+                <Button
+                  size="sm"
+                  onClick={() => setShowSurvey(true)}
+                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                >
+                  Give Feedback
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Role-specific Content */}
         {role === 'mentee' && !dataLoading && !activeMatchId && (
           <Card className="mb-4">
@@ -983,6 +1034,22 @@ export function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Monthly Mentor Survey Modal */}
+      {profile && activeMatchId && (
+        <MentorSurveyPrompt
+          isOpen={showSurvey}
+          onClose={() => setShowSurvey(false)}
+          onSubmitted={() => {
+            setShowSurvey(false);
+            setShowSurveyPrompt(false);
+          }}
+          matchId={activeMatchId}
+          mentorId={mentorIdForSurvey}
+          menteeId={profile.id}
+          mentorName={mentorNameForSurvey}
+        />
+      )}
     </div>
   );
 }

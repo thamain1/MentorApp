@@ -96,14 +96,15 @@ export function NewConversationModal({ isOpen, onClose, onCreated, isAdmin }: Pr
       return;
     }
 
-    // 1. Create conversation
-    const { data: conv, error: convError } = await supabase
-      .from('conversations')
-      .insert({ type: 'direct', created_by: profile.id })
-      .select('id')
-      .single();
+    // 1. Generate UUID client-side to avoid read-back RLS chicken-and-egg
+    //    (SELECT policy requires participants to exist, but we haven't added them yet)
+    const newConvId = crypto.randomUUID();
 
-    if (convError || !conv) {
+    const { error: convError } = await supabase
+      .from('conversations')
+      .insert({ id: newConvId, type: 'direct', created_by: profile.id });
+
+    if (convError) {
       setSaving(false);
       return;
     }
@@ -112,8 +113,8 @@ export function NewConversationModal({ isOpen, onClose, onCreated, isAdmin }: Pr
     const { error: partError } = await supabase
       .from('conversation_participants')
       .insert([
-        { conversation_id: conv.id, profile_id: profile.id, added_by: profile.id },
-        { conversation_id: conv.id, profile_id: selectedUser.id, added_by: profile.id },
+        { conversation_id: newConvId, profile_id: profile.id, added_by: profile.id },
+        { conversation_id: newConvId, profile_id: selectedUser.id, added_by: profile.id },
       ]);
 
     if (partError) {
@@ -126,7 +127,7 @@ export function NewConversationModal({ isOpen, onClose, onCreated, isAdmin }: Pr
       const { data: authUser } = await supabase.auth.getUser();
       if (authUser.user) {
         await supabase.from('messages').insert({
-          conversation_id: conv.id,
+          conversation_id: newConvId,
           sender_id: authUser.user.id,
           content: openingMessage.trim(),
         });
@@ -134,7 +135,7 @@ export function NewConversationModal({ isOpen, onClose, onCreated, isAdmin }: Pr
     }
 
     setSaving(false);
-    onCreated(conv.id);
+    onCreated(newConvId);
   };
 
   if (!isOpen) return null;

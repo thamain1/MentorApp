@@ -443,6 +443,12 @@ export function Dashboard() {
         {/* Layer 2: Affirmation text - bottom left, beside the profile image */}
         <div className="absolute z-20" style={{ bottom: '2.5rem', left: '1rem', maxWidth: '50%' }}>
           <div className="space-y-0 leading-snug">
+            <h2
+              className="font-black text-white uppercase tracking-wide leading-[1.1]"
+              style={{ fontSize: 'clamp(1.4rem, 5.5vw, 2rem)', textShadow: '1px 1px 6px rgba(0,0,0,0.7)' }}
+            >
+              I AM
+            </h2>
             {affirmation.split('\n').map((line: string, index: number) => {
               const len = line.length;
               const fontSize = len <= 10

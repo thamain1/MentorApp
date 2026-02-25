@@ -478,7 +478,7 @@ export function Dashboard() {
   return (
     <div className="min-h-screen bg-iron-50">
       {/* Hero Section with Profile Image and Affirmation */}
-      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', height: 'clamp(26rem, 75vw, 40rem)' }}>
+      <div className="relative overflow-hidden" style={{ backgroundColor: '#562F65', backgroundImage: "url('/images/3.png')", backgroundSize: 'cover', backgroundPosition: 'center top', height: 'clamp(26rem, 75vw, 40rem)' }}>
         {/* Header overlay - topmost */}
         <div className="absolute top-0 left-0 right-0 z-50">
           <Header

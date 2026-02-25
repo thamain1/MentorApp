@@ -1,3 +1,6 @@
+-- Enable pgcrypto for password hashing
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 /*
   # Seed Test Personas and Demo Data
 
@@ -42,7 +45,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'dan@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',
@@ -53,7 +56,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'david@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',
@@ -64,7 +67,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'marcus@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',
@@ -86,7 +89,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'james@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',
@@ -97,7 +100,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'michael@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',
@@ -108,7 +111,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'kevin@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',
@@ -119,7 +122,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'andre@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',
@@ -130,7 +133,7 @@ VALUES
     '00000000-0000-0000-0000-000000000000',
     'authenticated', 'authenticated',
     'jordan@ironsharpensirontest.dev',
-    crypt('IronTest2026!', gen_salt('bf')),
+    '$2b$10$M8N2gWDBgRo2oh.tSOMD7.Igh3lLMSsMlEQ3OYvKxKeMqgaDUWXem',
     NOW(), NOW(), NOW(),
     '{"provider":"email","providers":["email"]}',
     '{}',

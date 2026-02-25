@@ -169,10 +169,23 @@ npm run build    # Production build
 npm run preview  # Preview production build
 ```
 
+## Supabase Project
+- **Project Name**: Mentor Program
+- **Project ID**: `mfluryezsdzwnexucgau`
+- **URL**: https://mfluryezsdzwnexucgau.supabase.co
+- **Credentials file**: `C:\dev\MentorProgram\Mentor_Supabase_Info.txt`
+
 ## Environment Variables
 ```
-VITE_SUPABASE_URL=your-project-url
-VITE_SUPABASE_ANON_KEY=your-anon-key
+VITE_SUPABASE_URL=https://mfluryezsdzwnexucgau.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon key from Mentor_Supabase_Info.txt>
+```
+
+## Applying Migrations
+```bash
+cd C:\dev\MentorProgram\iron-sharpens-iron
+npx supabase link --project-ref mfluryezsdzwnexucgau
+npx supabase db push
 ```
 
 ## Current Status

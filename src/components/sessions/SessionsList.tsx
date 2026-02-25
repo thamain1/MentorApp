@@ -41,30 +41,33 @@ export function SessionsList() {
     if (!user || !profile) return;
 
     // 1. Fetch active matches for 1:1 sessions
-    const { data: matchData } = await supabase
+    const { data: matchData, error: matchError } = await supabase
       .from('matches')
       .select('id, mentor_id, mentee_id, status')
       .or(`mentor_id.eq.${profile.id},mentee_id.eq.${profile.id}`)
       .eq('status', 'active');
+    if (matchError) console.error('[SessionsList] matches fetch error:', matchError);
 
     const matchIds = (matchData ?? []).map(m => m.id);
 
     // 2. Fetch sessions for those matches
     let matchSessions: SessionRow[] = [];
     if (matchIds.length > 0) {
-      const { data: sessionData } = await supabase
+      const { data: sessionData, error: sessionError } = await supabase
         .from('sessions')
         .select('*')
         .in('match_id', matchIds)
         .order('scheduled_at', { ascending: false });
+      if (sessionError) console.error('[SessionsList] match sessions fetch error:', sessionError);
       matchSessions = (sessionData as SessionRow[]) ?? [];
     }
 
     // 3. Fetch group/additional sessions where user is a participant
-    const { data: participantRows } = await supabase
+    const { data: participantRows, error: participantError } = await supabase
       .from('session_participants')
       .select('session_id')
       .eq('profile_id', profile.id);
+    if (participantError) console.error('[SessionsList] session_participants fetch error:', participantError);
 
     const participantSessionIds = (participantRows ?? []).map(
       (r: { session_id: string }) => r.session_id
@@ -74,21 +77,24 @@ export function SessionsList() {
 
     let groupSessions: SessionRow[] = [];
     if (additionalIds.length > 0) {
-      const { data: groupData } = await supabase
+      const { data: groupData, error: groupError } = await supabase
         .from('sessions')
         .select('*')
         .in('id', additionalIds)
         .order('scheduled_at', { ascending: false });
+      if (groupError) console.error('[SessionsList] group sessions fetch error:', groupError);
       groupSessions = (groupData as SessionRow[]) ?? [];
     }
 
     // Also fetch sessions where user is the organizer (catches newly created
     // sessions before participants are inserted, and any edge cases)
-    const { data: organizerData } = await supabase
+    const { data: organizerData, error: organizerError } = await supabase
       .from('sessions')
       .select('*')
       .eq('organizer_id', profile.id)
       .order('scheduled_at', { ascending: false });
+    if (organizerError) console.error('[SessionsList] organizer sessions fetch error:', organizerError);
+    console.log('[SessionsList] organizer sessions:', organizerData);
 
     const seenIds = new Set([
       ...matchSessions.map(s => s.id),
@@ -133,7 +139,9 @@ export function SessionsList() {
       matchId: null,
     }));
 
-    setSessions([...enrichedMatch, ...enrichedGroup]);
+    const allSessions = [...enrichedMatch, ...enrichedGroup];
+    console.log('[SessionsList] total sessions loaded:', allSessions.length, allSessions.map(s => ({ id: s.id, status: s.status, scheduled_at: s.scheduled_at, organizer_id: s.organizer_id })));
+    setSessions(allSessions);
     setLoading(false);
   }, [user, profile, viewAs]);
 

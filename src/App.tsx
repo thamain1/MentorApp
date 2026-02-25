@@ -23,9 +23,7 @@ import {
   AdminPage,
   ReportsPage,
 } from './pages';
-import { UserProvider } from './context';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { RoleSwitcher } from './components/dev';
 
 function AppRoutes() {
   const { session, profile, loading } = useAuth();
@@ -83,12 +81,9 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <UserProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <RoleSwitcher />
-        </BrowserRouter>
-      </UserProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </AuthProvider>
   );
 }

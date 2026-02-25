@@ -7,11 +7,13 @@ import {
   Bell,
   HelpCircle,
   LogOut,
+  Trash2,
   ChevronRight,
   Target,
   Calendar,
   Flame,
   Award,
+  AlertTriangle,
 } from 'lucide-react';
 import { AppShell, Header } from '../layout';
 import { Avatar, Card, Badge } from '../ui';
@@ -66,6 +68,10 @@ export function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const displayImage = profile?.avatar_url ?? undefined;
   const displayPosition = getObjectPosition(
@@ -114,6 +120,21 @@ export function ProfilePage() {
     navigate('/');
   };
 
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const { error } = await supabase.rpc('delete_account');
+      if (error) throw error;
+      await signOut();
+      navigate('/');
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Failed to delete account. Please try again.');
+      setDeleting(false);
+    }
+  };
+
   const settingsItems = [
     {
       icon: Edit2,
@@ -134,6 +155,12 @@ export function ProfilePage() {
       icon: LogOut,
       label: 'Sign Out',
       onClick: handleSignOut,
+      danger: true,
+    },
+    {
+      icon: Trash2,
+      label: 'Delete Account',
+      onClick: () => { setDeleteConfirmText(''); setDeleteError(null); setShowDeleteModal(true); },
       danger: true,
     },
   ];
@@ -345,6 +372,64 @@ export function ProfilePage() {
       </div>
       {showEditModal && (
         <EditProfileModal onClose={() => setShowEditModal(false)} />
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => !deleting && setShowDeleteModal(false)}
+          />
+          <div className="relative bg-white rounded-t-2xl w-full max-w-lg p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h2 className="font-bold text-iron-900 text-lg">Delete Account</h2>
+                <p className="text-sm text-iron-500">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-iron-700 text-sm mb-4">
+              Deleting your account will permanently remove your profile, matches, sessions, goals, and all associated data.
+            </p>
+
+            <p className="text-sm font-medium text-iron-700 mb-2">
+              Type <span className="font-bold text-red-600">DELETE</span> to confirm:
+            </p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="DELETE"
+              className="w-full px-4 py-3 bg-iron-50 rounded-xl border border-iron-200 focus:ring-2 focus:ring-red-500 focus:outline-none text-sm mb-4"
+              disabled={deleting}
+            />
+
+            {deleteError && (
+              <p className="text-sm text-red-600 mb-4">{deleteError}</p>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 py-3 px-4 bg-iron-100 text-iron-700 rounded-xl font-medium hover:bg-iron-200 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'DELETE' || deleting}
+                className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                {deleting ? 'Deleting...' : 'Delete Account'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </AppShell>
   );
